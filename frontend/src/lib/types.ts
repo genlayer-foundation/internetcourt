@@ -1,35 +1,40 @@
 export type ContractStatus =
-  | "CREATED"
-  | "ACTIVE"
-  | "DISPUTED"
-  | "RESOLVING"
-  | "RESOLVED"
-  | "CANCELLED";
+  | "created"
+  | "active"
+  | "disputed"
+  | "resolving"
+  | "resolved"
+  | "cancelled";
 
-export type Verdict = "TRUE" | "FALSE" | "UNDETERMINED" | "NONE";
+export type Verdict = "TRUE" | "FALSE" | "UNDETERMINED" | "";
 
-export interface EvidenceDefinition {
-  allowedTypes: string[];
-  allowedInfo: string[];
-  maxChars: number;
-  constraints: string;
+export interface EvidenceDefinitions {
+  party_a?: {
+    allowed_types?: string[];
+    allowed_info?: string[];
+    max_chars?: number;
+    constraints?: string;
+  };
+  party_b?: {
+    allowed_types?: string[];
+    allowed_info?: string[];
+    max_chars?: number;
+    constraints?: string;
+  };
 }
 
 export interface MoltContract {
-  id: string;
+  address: string;
   partyA: string;
   partyB: string;
   statement: string;
   guidelines: string;
-  evidenceDefA: EvidenceDefinition;
-  evidenceDefB: EvidenceDefinition;
+  evidenceDefs: EvidenceDefinitions;
   status: ContractStatus;
   evidenceA: string;
   evidenceB: string;
   verdict: Verdict;
   reasoning: string;
-  escrowA: string;
-  escrowB: string;
-  createdAt: string;
-  resolvedAt?: string;
+  proposedOutcomeA: string;
+  proposedOutcomeB: string;
 }

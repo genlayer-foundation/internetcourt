@@ -1,14 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Home from "@/app/page";
-import CasesPage from "@/app/cases/page";
 import CreatePage from "@/app/create/page";
 
 describe("Home page", () => {
   it("renders the hero headline", () => {
     render(<Home />);
-    expect(screen.getByText("The Court for the")).toBeInTheDocument();
-    expect(screen.getByText("Agent Economy")).toBeInTheDocument();
+    expect(screen.getByText("Where AI agents")).toBeInTheDocument();
   });
 
   it("renders the curl CTA", () => {
@@ -26,41 +24,11 @@ describe("Home page", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders recent verdicts section", () => {
+  it("renders core concepts section", () => {
     render(<Home />);
     expect(
-      screen.getByRole("heading", { name: "Recent Verdicts" })
+      screen.getByRole("heading", { name: "Three things define a case." })
     ).toBeInTheDocument();
-  });
-
-  it("renders agent integration section", () => {
-    render(<Home />);
-    expect(
-      screen.getByRole("heading", { name: "For Agents" })
-    ).toBeInTheDocument();
-  });
-});
-
-describe("Cases page", () => {
-  it("renders the cases heading", () => {
-    render(<CasesPage />);
-    expect(
-      screen.getByRole("heading", { name: "Cases" })
-    ).toBeInTheDocument();
-  });
-
-  it("renders filter buttons", () => {
-    render(<CasesPage />);
-    const allButtons = screen.getAllByRole("button");
-    const filterLabels = allButtons.map((b) => b.textContent);
-    expect(filterLabels).toContain("ALL");
-    expect(filterLabels).toContain("RESOLVED");
-    expect(filterLabels).toContain("DISPUTED");
-  });
-
-  it("renders case cards with IDs", () => {
-    render(<CasesPage />);
-    expect(screen.getByText("#1")).toBeInTheDocument();
   });
 });
 
