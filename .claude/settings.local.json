@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.genlayer.com)",
+      "WebFetch(domain:hackernoon.com)",
+      "WebFetch(domain:studio.genlayer.com)",
+      "WebFetch(domain:sdk.genlayer.com)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.genlayer.com)"
+    ]
+  }
+}
