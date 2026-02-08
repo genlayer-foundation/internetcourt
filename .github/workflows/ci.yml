@@ -18,29 +18,36 @@ jobs:
       - name: Install dependencies
         run: |
           pip install genlayer-test
-          pip install -r contracts/requirements.txt || true
+          pip install -r contracts/requirements.txt
+      - name: Lint contracts
+        run: |
+          pip install ruff
+          ruff check contracts/
       - name: Run contract tests
         run: |
           cd contracts
-          python -m pytest tests/ -v
+          python -m pytest tests/ -v --tb=short
 
   frontend:
-    name: Frontend Tests
+    name: Frontend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
-        working-directory: frontend
-        run: npm ci || true
+        run: npm ci
       - name: Lint
-        working-directory: frontend
-        run: npm run lint || true
+        run: npm run lint
       - name: Type check
-        working-directory: frontend
-        run: npm run type-check || true
+        run: npx tsc --noEmit
       - name: Run tests
-        working-directory: frontend
-        run: npm test || true
+        run: npm test -- --run
+      - name: Build
+        run: npm run build

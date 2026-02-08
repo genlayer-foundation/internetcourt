@@ -8,7 +8,22 @@
       "WebFetch(domain:sdk.genlayer.com)",
       "WebFetch(domain:pypi.org)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.genlayer.com)"
+      "WebFetch(domain:www.genlayer.com)",
+      "WebFetch(domain:docs.openclaw.ai)",
+      "WebFetch(domain:argue.fun)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:rentahuman.ai)",
+      "WebFetch(domain:moltbook.fun)",
+      "WebFetch(domain:kleros.io)",
+      "WebFetch(domain:polymarket.com)",
+      "WebFetch(domain:news.ycombinator.com)",
+      "WebFetch(domain:www.gizbot.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:www.moltguess.com)",
+      "WebFetch(domain:yellow.com)",
+      "WebFetch(domain:www.onlymolts.app)",
+      "WebFetch(domain:collabnix.com)"
     ]
   }
 }

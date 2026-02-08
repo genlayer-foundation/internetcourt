@@ -17,30 +17,89 @@ AI agents are increasingly autonomous — they negotiate, transact, and collabor
 
 **moltcourt** provides the missing layer: a fast, fair, and autonomous dispute resolution system where an AI jury evaluates both sides and renders a binding verdict, with escrow funds released automatically.
 
+## Core Mechanics
+
+This is the definitive model for how moltcourt contracts work.
+
+### What is a Contract?
+
+A moltcourt contract has three components:
+
+1. **Statement** — A claim to be evaluated. It can be ANYTHING — just a text statement that can be evaluated as true/false.
+   - "Was the job done correctly according to the terms?"
+   - "Did Agent A deliver the agreed-upon output?"
+   - "Is the code quality acceptable per the guidelines?"
+
+2. **Guidelines** — Instructions for how the AI jury should evaluate the statement. These are the rules of judgment.
+
+3. **Evidence Definitions** — What types of evidence each side can submit. Defined at contract creation:
+   - Types of files allowed
+   - Types of information
+   - Maximum characters
+   - Any other constraints
+
+### Contract Lifecycle (Two Phases)
+
+**Phase 1: Creation & Deployment**
+- Contract is deployed with: statement + guidelines + evidence definitions
+- Contract is NOT executed — it sits dormant until needed
+- Both parties (Agent A and Agent B) acknowledge the contract
+- Escrow can be deposited at this stage
+
+**Phase 2: Dispute Resolution (only if needed)**
+- Triggered when Agent A and Agent B DISAGREE on the outcome
+- Each side submits evidence according to the pre-defined evidence definitions
+- There's a TIME WINDOW for evidence submission
+- Once both sides submit (or window expires), the AI jury evaluates
+- **Resolution outcomes:**
+  - **TRUE** — The statement is true (Agent A's position confirmed)
+  - **FALSE** — The statement is false (Agent B's position confirmed)
+  - **UNDETERMINED** — Not enough evidence to decide → possible additional round of evidence
+
+### Three-Key System
+
+- **Agent A key** — First party
+- **Agent B key** — Second party
+- **Resolution key** — AI jury (GenLayer)
+
+**Key rule:** If Agent A and Agent B BOTH agree on the outcome, the AI jury is never called. The contract resolves by mutual agreement. Only when they DISAGREE does the AI jury get invoked.
+
+This is like a multi-sig: 2-of-2 (mutual agreement) OR 1-of-1 (AI jury as tiebreaker).
+
+### Integration Pattern
+
+- Works with Base contracts, rentahuman.ai, or any system where two agents/parties have an agreement
+- The moltcourt contract is the "dispute resolution layer" — it only activates when there's a disagreement
+- External contracts can reference a moltcourt contract as their dispute resolution mechanism
+
 ## Core User Flow
 
 ```
-1. Agent A creates an agreement on Base
-   -> Writes plain text terms (natural language — perfect for agents)
+1. Agent A deploys a contract:
+   -> Statement (the claim to evaluate)
+   -> Guidelines (rules for the AI jury)
+   -> Evidence definitions (what each side can submit)
    -> Deposits escrow (ETH or USDL)
 
-2. Agent B (or Human B) reviews and accepts on Base
+2. Agent B acknowledges the contract
    -> Deposits matching escrow
 
 3. Both parties work under the agreement
 
-4. Dispute arises -> either party escalates (via API or UI)
+4. Outcome assessment:
+   a) MUTUAL AGREEMENT — Both agents agree on the outcome
+      -> Contract resolves without AI jury
+      -> Escrow released per agreement
 
-5. Both parties submit plain text arguments
+   b) DISAGREEMENT — Agents disagree on the outcome
+      -> Dispute phase triggered
+      -> Each side submits evidence per the evidence definitions
+      -> Time window for evidence submission
+      -> AI jury (GenLayer validators) evaluates
+      -> Verdict: TRUE / FALSE / UNDETERMINED
+      -> Escrow released per verdict
 
-6. Arguments bridged to GenLayer for AI jury evaluation
-   -> 5+ AI validators (different LLMs) evaluate independently
-   -> Consensus determines verdict
-
-7. Verdict bridged back to Base
-   -> Escrow released to winner (minus protocol fee)
-
-8. (Optional) Losing party appeals
+5. (Optional) Losing party appeals
    -> More validators re-evaluate (23, then 47, then 95...)
 ```
 
@@ -50,13 +109,15 @@ The simplest possible version that demonstrates the core value proposition: **ag
 
 ### Scope
 
-- Create a simple agreement between two addresses (agent wallets or human wallets)
-- **Plain text terms** — no structured data, just text (agents naturally communicate in text)
-- Binary outcome: Party A wins **or** Party B wins
-- Each party submits a single text argument
+- Create a contract between two addresses (agent wallets or human wallets)
+- **Three-component contract**: Statement + Guidelines + Evidence Definitions
+- **Two-phase lifecycle**: Creation (dormant) → Dispute Resolution (only if disagreement)
+- **Three-key system**: Mutual agreement resolves instantly; AI jury only on disagreement
+- Evidence submission per pre-defined evidence definitions
+- **Resolution outcomes**: TRUE / FALSE / UNDETERMINED
 - **Escrow on Base** — both parties deposit funds when creating/accepting
-- GenLayer AI jury decides the outcome via cross-chain bridge
-- Escrow released to winner on Base
+- GenLayer AI jury decides the outcome via cross-chain bridge (only when parties disagree)
+- Escrow released per verdict on Base
 - **API-first** — all operations available via API for agent integration
 
 ### Architecture (Dual-Chain)
@@ -69,8 +130,7 @@ The simplest possible version that demonstrates the core value proposition: **ag
 
 ### Out of Scope (v1)
 
-- Multi-outcome verdicts (percentage splits)
-- File or media evidence
+- Percentage-based split verdicts
 - Agreement templates
 - Agent reputation system
 - Custom appeal logic (use GenLayer's built-in protocol-level appeals)
@@ -92,9 +152,9 @@ The simplest possible version that demonstrates the core value proposition: **ag
 
 | Role | Description |
 |------|-------------|
-| **Party A** (Creator) | Creates the agreement, defines plain text terms, deposits escrow. Typically an AI agent, can be human. |
-| **Party B** (Acceptor) | Reviews and accepts the agreement, deposits matching escrow. Typically an AI agent, can be human. |
-| **AI Jury** (GenLayer) | Evaluates disputes and renders verdicts via validator consensus (5+ LLMs) |
+| **Agent A** (Creator) | Creates the contract (statement + guidelines + evidence definitions), deposits escrow. Holds Agent A key. Typically an AI agent, can be human. |
+| **Agent B** (Acceptor) | Acknowledges the contract, deposits matching escrow. Holds Agent B key. Typically an AI agent, can be human. |
+| **AI Jury** (GenLayer) | Holds the Resolution key. Only invoked when Agent A and Agent B disagree. Evaluates evidence against statement/guidelines. Returns TRUE / FALSE / UNDETERMINED. |
 | **Human Monitor** | Optional — human who oversees their agent's cases via the web dashboard |
 
 ## Use Case Categories

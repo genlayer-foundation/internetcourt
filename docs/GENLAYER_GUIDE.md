@@ -725,7 +725,9 @@ const schema = await client.getContractSchema({
 // Returns: constructor info, method signatures, parameter types, return types
 ```
 
-### Full React Integration Pattern
+### Full React Integration Pattern (Human Monitoring Dashboard)
+
+The frontend is a monitoring dashboard for humans to oversee their agents' cases. Agents interact via the API directly.
 
 ```typescript
 // hooks/useDisputeContract.ts
@@ -734,7 +736,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 const client = createClient({ chain: testnetAsimov, account: userAddress });
 
-export function useDisputeCases(contractAddress: string) {
+// Dashboard: view all cases for the user's agents
+export function useAgentCases(contractAddress: string) {
   return useQuery({
     queryKey: ['cases', contractAddress],
     queryFn: () => client.readContract({
@@ -745,6 +748,7 @@ export function useDisputeCases(contractAddress: string) {
   });
 }
 
+// Manual intervention: human creates a dispute on behalf of their agent
 export function useCreateDispute(contractAddress: string) {
   return useMutation({
     mutationFn: async ({ defendant, description, escrowAmount }) => {
@@ -808,31 +812,35 @@ moltcourt.ai should leverage GenLayer's strengths for an agent-native dispute sy
 
 3. **Escrow pattern for stakes** — Both parties deposit funds into the contract via payable methods. The ruling determines fund release. This creates "skin in the game."
 
-4. **Structure evidence as on-chain text** — Store case descriptions, evidence summaries, and arguments as contract state. The AI validators process this text during evaluation.
+4. **Structure evidence as on-chain text** — Store case descriptions, evidence summaries, and arguments as contract state. Plain text is perfect for agents — they naturally communicate in text.
 
-5. **Use JSON response format for structured rulings** — Force LLM outputs into structured JSON so the contract can programmatically act on rulings (release escrow, update status, etc.).
+5. **Use JSON response format for structured rulings** — Force LLM outputs into structured JSON so the contract can programmatically act on rulings (release escrow, update status, etc.). Agents parse JSON trivially.
 
 6. **External evidence via web access** — Contracts can fetch external data (URLs, APIs) to verify claims. Design cases to optionally include evidence URLs that the contract fetches during evaluation.
+
+7. **API-first design** — Every contract interaction must be accessible programmatically. Agents interact via API/SDK, not a web browser.
 
 ### Dispute Lifecycle Design
 
 ```
-1. CREATE  — Plaintiff files dispute, deposits escrow
-2. RESPOND — Defendant responds, deposits counter-escrow
-3. SUBMIT  — Both parties submit evidence/arguments (on-chain text)
-4. EVALUATE — AI validators evaluate case (non-deterministic LLM evaluation)
-5. RULING  — Contract stores ruling, starts finality window
-6. APPEAL  — Losing party can appeal (protocol-level, more validators)
-7. FINALIZE — After finality window, escrow released per ruling
+1. CREATE   — Party A (agent or human) files agreement, deposits escrow (via API)
+2. RESPOND  — Party B responds, deposits counter-escrow (via API)
+3. DISPUTE  — Either party raises dispute with argument (via API)
+4. ARGUE    — Other party submits counter-argument (via API)
+5. EVALUATE — AI validators evaluate case (non-deterministic LLM evaluation)
+6. RULING   — Contract stores ruling, starts finality window; webhook sent to both parties
+7. APPEAL   — Losing party can appeal (protocol-level, more validators, via API)
+8. FINALIZE — After finality window, escrow released per ruling
 ```
 
 ### Prompt Engineering Considerations
 
-The ruling quality depends heavily on how you structure the LLM prompt:
+The ruling quality depends heavily on how you structure the LLM prompt. Note: since agents may be more sophisticated at prompt injection than humans, the prompt framing must be robust.
 
 ```python
 prompt = f"""
-You are an impartial arbitrator in a dispute resolution system.
+You are an impartial arbitrator in a dispute resolution system for the agent economy.
+The parties may be AI agents, humans, or a mix. Judge based on the agreement and evidence only.
 
 ## Case Details
 - Case ID: {case_id}
@@ -878,7 +886,7 @@ You are an impartial arbitrator in a dispute resolution system.
 
 ## Example: Dispute Resolution Contract
 
-Here is a complete contract skeleton for moltcourt.ai:
+Here is a complete contract skeleton for moltcourt.ai's agent-native dispute system:
 
 ```python
 from genlayer import *
@@ -932,7 +940,7 @@ class MoltCourt(gl.Contract):
         description: str,
         plaintiff_argument: str,
     ) -> str:
-        """Plaintiff files a dispute and deposits escrow stake."""
+        """Party A (agent or human) files a dispute and deposits escrow stake."""
         if gl.message.value < self.min_stake:
             raise gl.vm.UserError("Insufficient stake")
 
@@ -962,7 +970,7 @@ class MoltCourt(gl.Contract):
         case_id: str,
         defendant_argument: str,
     ):
-        """Defendant responds and deposits counter-stake."""
+        """Party B (agent or human) responds and deposits counter-stake."""
         if self.case_statuses[case_id] != CASE_STATUS_OPEN:
             raise gl.vm.UserError("Case not open for response")
 
@@ -1020,7 +1028,8 @@ class MoltCourt(gl.Contract):
         evidence = gl.storage.copy_to_memory(self.case_evidence[case_id])
 
         def nondet():
-            prompt = f"""You are an impartial AI arbitrator in a decentralized dispute resolution system called MoltCourt.
+            prompt = f"""You are an impartial AI arbitrator in MoltCourt, a dispute resolution system for the agent economy.
+The parties may be AI agents, humans, or a mix. Judge based on the agreement and evidence, not on who or what the parties are.
 
 ## Dispute Description
 {description}
@@ -1225,19 +1234,21 @@ The SDK has undergone significant restructuring:
 - Mock LLM responses with regex patterns for deterministic tests
 - Statistical analysis needs real LLM API keys and costs money
 
-### Design Gotchas for Dispute Resolution
+### Design Gotchas for Agent Dispute Resolution
 
-1. **Prompt injection risk** — Users submit text that becomes part of LLM prompts. An adversarial party could craft arguments designed to manipulate the AI. Mitigate with structured prompts, clear instruction separation, and system-level prompt framing.
+1. **Prompt injection risk (heightened for agents)** — Both humans and AI agents submit text that becomes part of LLM prompts. Agents may be more sophisticated at prompt injection than humans — they can craft adversarial arguments designed to manipulate the AI jury. Mitigate with structured prompts, clear instruction separation, and system-level prompt framing. Test extensively with adversarial agent inputs.
 
 2. **Evidence size limits** — On-chain storage is expensive. Consider storing evidence hashes on-chain with full evidence stored off-chain (IPFS, Arweave), and have the contract fetch/verify during evaluation.
 
-3. **Finality window timing** — The 30-minute finality window is protocol-level. Cannot be customized per contract. Design the UX to set expectations.
+3. **Finality window timing** — The 30-minute finality window is protocol-level. Cannot be customized per contract. Design the API and webhooks to handle this delay gracefully — agents should not block waiting for finality.
 
-4. **Appeal costs** — Appeals require staking GEN tokens. This is a feature (prevents frivolous appeals) but could be a barrier for small disputes.
+4. **Appeal costs** — Appeals require staking GEN tokens. This prevents frivolous appeals but could be a barrier for low-value agent disputes.
 
-5. **No private data** — Everything on-chain is public. Dispute details, evidence, and rulings are all visible. Consider privacy-preserving techniques for sensitive cases.
+5. **No private data** — Everything on-chain is public. Dispute details, evidence, and rulings are all visible. Consider privacy-preserving techniques for sensitive agent operations.
 
 6. **Cross-model consistency** — Validators use different LLMs. A prompt that works perfectly with GPT-4 might fail with Llama. Test across models using the statistical analysis feature.
+
+7. **Agent identity verification** — How to verify that an agent wallet actually represents a specific agent? Consider integration with ERC-8004 agent identity registries or custom agent verification.
 
 ---
 

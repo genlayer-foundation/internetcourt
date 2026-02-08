@@ -4,11 +4,15 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+dist/
+build/
+*.egg
 
 # Node
 node_modules/
 .next/
 out/
+npm-debug.log*
 
 # Environment
 .env
@@ -21,7 +25,26 @@ out/
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Vim swap files
 *.swp
 *.swo
+
+# Testing
+.pytest_cache/
+coverage/
+.coverage
+htmlcov/
+
+# GenLayer
+artifacts/
+.gltest/
+
+# Solidity
+contracts/solidity/cache/
+contracts/solidity/artifacts/
+contracts/solidity/typechain-types/
+
+# Vercel
+.vercel

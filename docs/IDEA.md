@@ -4,7 +4,7 @@
 
 ## The One-Liner
 
-AI agents make agreements in plain text. When they disagree, an AI jury decides who's right. Escrow ensures skin in the game.
+AI agents create contracts with a statement, guidelines, and evidence definitions. If they agree on the outcome, it resolves instantly. If they disagree, an AI jury evaluates the evidence and decides: TRUE, FALSE, or UNDETERMINED. Escrow ensures skin in the game.
 
 ---
 
@@ -43,18 +43,18 @@ Two humans can still use moltcourt directly. Freelancer disputes, bet resolution
 ## V1: The Simplest Possible Thing
 
 ### What it is
-A single GenLayer intelligent contract that:
-1. Accepts a plain-text agreement between two parties (agents or humans)
-2. Lets either party trigger a dispute
-3. Collects arguments from both sides
-4. Has an AI jury (GenLayer validators + LLM) decide the outcome
-5. Binary result: Party A wins or Party B wins
-6. **Accessible via API** — agents don't use web browsers
+A GenLayer intelligent contract implementing the **three-key system**:
+1. Accepts a contract with three components: **statement** + **guidelines** + **evidence definitions**
+2. Both parties acknowledge the contract (Agent A key + Agent B key)
+3. If both agree on the outcome → resolves instantly (2-of-2 mutual agreement)
+4. If they disagree → each submits evidence per the evidence definitions → AI jury evaluates
+5. AI jury (Resolution key) returns: **TRUE** / **FALSE** / **UNDETERMINED**
+6. **Two-phase lifecycle**: contract sits dormant until dispute needed
+7. **Accessible via API** — agents don't use web browsers
 
 ### What it is NOT (yet)
-- No escrow / money handling
 - No web UI (interact via API, GenLayer Studio, or CLI)
-- No complex outcome types
+- No percentage-based splits
 - No appeals
 - No agent reputation system
 
@@ -65,100 +65,135 @@ from genlayer import *
 import json
 
 class MoltCourt(gl.Contract):
-    # Contract state
-    party_a: str          # address (agent or human wallet)
-    party_b: str          # address (agent or human wallet)
-    agreement: str        # the plain-text contract/agreement
-    status: str           # "active" | "disputed" | "resolved"
+    # Three components
+    statement: str         # Claim to evaluate (true/false)
+    guidelines: str        # Instructions for AI jury evaluation
+    evidence_defs: str     # JSON: evidence definitions per side
 
-    # Dispute state
-    argument_a: str       # Party A's argument
-    argument_b: str       # Party B's argument
-    verdict: str          # "party_a" | "party_b"
-    reasoning: str        # AI jury's reasoning
+    # Parties (Three-Key System)
+    agent_a: str           # Agent A key (address)
+    agent_b: str           # Agent B key (address)
+    # Resolution key = AI jury (GenLayer validators)
 
-    def __init__(self, party_a: str, party_b: str, agreement: str):
-        self.party_a = party_a
-        self.party_b = party_b
-        self.agreement = agreement
-        self.status = "active"
-        self.argument_a = ""
-        self.argument_b = ""
-        self.verdict = ""
+    # State
+    status: str            # "created" | "active" | "disputed" | "resolving" | "resolved"
+
+    # Evidence submissions
+    evidence_a: str        # Agent A's submitted evidence
+    evidence_b: str        # Agent B's submitted evidence
+
+    # Resolution
+    outcome: str           # "TRUE" | "FALSE" | "UNDETERMINED"
+    reasoning: str         # AI jury's reasoning
+
+    # Mutual agreement tracking
+    proposed_outcome_a: str  # Agent A's proposed outcome (mutual agreement path)
+    proposed_outcome_b: str  # Agent B's proposed outcome (mutual agreement path)
+
+    def __init__(self, agent_a: str, agent_b: str, statement: str,
+                 guidelines: str, evidence_defs: str):
+        self.agent_a = agent_a
+        self.agent_b = agent_b
+        self.statement = statement
+        self.guidelines = guidelines
+        self.evidence_defs = evidence_defs
+        self.status = "created"
+        self.evidence_a = ""
+        self.evidence_b = ""
+        self.outcome = ""
         self.reasoning = ""
+        self.proposed_outcome_a = ""
+        self.proposed_outcome_b = ""
 
     @gl.public.write
-    def raise_dispute(self, argument: str) -> None:
-        """Either party can raise a dispute with their argument."""
+    def acknowledge(self) -> None:
+        """Agent B acknowledges the contract. Status: created -> active."""
+        assert self.status == "created", "Contract not in created state"
+        assert gl.message.sender_account == self.agent_b, "Only Agent B can acknowledge"
+        self.status = "active"
+
+    @gl.public.write
+    def propose_outcome(self, outcome: str) -> None:
+        """Either party proposes an outcome (mutual agreement path - 2-of-2)."""
+        assert self.status == "active", "Contract not active"
+        assert outcome in ("TRUE", "FALSE"), "Outcome must be TRUE or FALSE"
+        sender = gl.message.sender_account
+        assert sender == self.agent_a or sender == self.agent_b, "Not a party"
+
+        if sender == self.agent_a:
+            self.proposed_outcome_a = outcome
+        else:
+            self.proposed_outcome_b = outcome
+
+        # If both agree → resolve immediately (no jury needed)
+        if (self.proposed_outcome_a != "" and self.proposed_outcome_b != ""
+                and self.proposed_outcome_a == self.proposed_outcome_b):
+            self.outcome = self.proposed_outcome_a
+            self.reasoning = "Resolved by mutual agreement (2-of-2)"
+            self.status = "resolved"
+
+    @gl.public.write
+    def initiate_dispute(self) -> None:
+        """Either party initiates a dispute (disagreement path)."""
         assert self.status == "active", "Contract not active"
         sender = gl.message.sender_account
-        assert sender == self.party_a or sender == self.party_b, "Not a party"
-
-        if sender == self.party_a:
-            self.argument_a = argument
-        else:
-            self.argument_b = argument
-
+        assert sender == self.agent_a or sender == self.agent_b, "Not a party"
         self.status = "disputed"
 
     @gl.public.write
-    def submit_response(self, argument: str) -> None:
-        """The other party responds to the dispute."""
+    def submit_evidence(self, evidence: str) -> None:
+        """Submit evidence per the pre-defined evidence definitions."""
         assert self.status == "disputed", "No active dispute"
         sender = gl.message.sender_account
 
-        if sender == self.party_a and self.argument_a == "":
-            self.argument_a = argument
-        elif sender == self.party_b and self.argument_b == "":
-            self.argument_b = argument
+        if sender == self.agent_a and self.evidence_a == "":
+            self.evidence_a = evidence
+        elif sender == self.agent_b and self.evidence_b == "":
+            self.evidence_b = evidence
         else:
             assert False, "Already submitted or not a party"
 
     @gl.public.write
     def resolve(self) -> None:
-        """AI jury resolves the dispute. Can only be called once both sides argued."""
+        """AI jury (Resolution key) resolves the dispute."""
         assert self.status == "disputed", "No active dispute"
-        assert self.argument_a != "" and self.argument_b != "", "Both parties must submit arguments"
+        assert self.evidence_a != "" and self.evidence_b != "", "Both must submit evidence"
+        self.status = "resolving"
 
         prompt = f"""
-You are an impartial AI juror resolving a dispute between two parties.
-The parties may be AI agents, humans, or a mix. Judge based on the
-agreement terms and arguments, not on who or what the parties are.
+You are an impartial AI juror in the MoltCourt dispute resolution system.
+Evaluate the following statement based on the guidelines and evidence.
 
-## The Original Agreement
-{self.agreement}
+## Statement to Evaluate
+{self.statement}
 
-## Party A's Argument
-{self.argument_a}
+## Guidelines (Rules for Judgment)
+{self.guidelines}
 
-## Party B's Argument
-{self.argument_b}
+## Evidence from Agent A (supports TRUE)
+{self.evidence_a}
+
+## Evidence from Agent B (supports FALSE)
+{self.evidence_b}
 
 ## Your Task
-1. Carefully read the original agreement
-2. Evaluate both arguments against the agreement terms
-3. Decide which party is right based on the agreement
-4. If the agreement is ambiguous, favor the most reasonable interpretation
+1. Read the statement and guidelines carefully
+2. Evaluate both sides' evidence per the guidelines
+3. Determine: is the statement TRUE, FALSE, or UNDETERMINED?
+4. UNDETERMINED = not enough evidence to decide either way
 
-Respond ONLY with this JSON format:
-{{
-  "verdict": "party_a" or "party_b",
-  "reasoning": "2-3 sentence explanation"
-}}
-Output only valid JSON. No markdown, no extra text.
+Respond ONLY with JSON:
+{{"verdict": "TRUE" or "FALSE" or "UNDETERMINED", "reasoning": "2-3 sentences"}}
 """
 
         def judge():
             result = gl.exec_prompt(prompt)
             result = result.replace("```json", "").replace("```", "").strip()
-            parsed = json.loads(result)
-            return parsed
+            return json.loads(result)
 
-        # Non-comparative: validators check if the verdict is reasonable
-        # given the agreement and arguments, without re-running the full judgment
         result = gl.eq_principle_strict_eq(judge)
 
-        self.verdict = result["verdict"]
+        self.outcome = result["verdict"]
         self.reasoning = result["reasoning"]
         self.status = "resolved"
 
@@ -166,8 +201,8 @@ Output only valid JSON. No markdown, no extra text.
     def get_status(self) -> dict:
         return {
             "status": self.status,
-            "agreement": self.agreement,
-            "verdict": self.verdict,
+            "statement": self.statement,
+            "outcome": self.outcome,
             "reasoning": self.reasoning
         }
 ```
@@ -175,30 +210,39 @@ Output only valid JSON. No markdown, no extra text.
 ### V1 User Flow (Agent-First)
 
 ```
-1. CREATE   -> Agent A deploys MoltCourt contract via API with:
-                - Agent A address (wallet)
-                - Agent B address (wallet)
-                - Agreement text (plain text — agents naturally produce text)
+PHASE 1: Creation & Deployment
 
-2. AGREE    -> Agent B calls accept() via API to confirm
-               (or we skip this in v1 and assume both agreed off-chain)
+1. CREATE      -> Agent A deploys MoltCourt contract via API with:
+                   - Statement (claim to evaluate)
+                   - Guidelines (rules for AI jury)
+                   - Evidence definitions (what each side can submit)
+                   - Agent A & Agent B addresses
 
-3. FULFILL  -> Parties attempt to fulfill the agreement
-               (happens off-chain — agents doing tasks, writing code, etc.)
+2. ACKNOWLEDGE -> Agent B calls acknowledge() to confirm
+                   - Contract is now ACTIVE but dormant
 
-4. DISPUTE  -> Agent A or B calls raise_dispute("Here's why I'm right...")
+3. FULFILL     -> Parties attempt to fulfill the agreement
+                   (happens off-chain — agents doing tasks, writing code, etc.)
 
-5. RESPOND  -> The other party calls submit_response("No, here's why I'M right...")
+PHASE 2: Resolution
 
-6. RESOLVE  -> Anyone calls resolve()
-               - GenLayer validators run the LLM jury
-               - Multiple validators independently judge the case
-               - Consensus determines the verdict
-               - Result stored on-chain
+4a. MUTUAL     -> Both agents call propose_outcome() with the same value
+    AGREEMENT     - If both agree (2-of-2): contract resolves immediately
+                   - No AI jury needed, no cost
 
-7. VERDICT  -> Call get_status() to see who won and why
-               - Agent receives verdict via API/webhook
-               - Human can view on dashboard
+4b. DISPUTE    -> Agents disagree → either calls initiate_dispute()
+                   - Evidence submission window opens
+
+5. EVIDENCE    -> Each side calls submit_evidence() per evidence definitions
+
+6. RESOLVE     -> resolve() called → AI jury (Resolution key) evaluates
+                   - Statement evaluated against guidelines using evidence
+                   - Multiple validators independently judge
+                   - Verdict: TRUE / FALSE / UNDETERMINED
+
+7. VERDICT     -> Call get_status() to see outcome and reasoning
+                   - Agent receives verdict via API/webhook
+                   - Human can view on dashboard
 ```
 
 ---
@@ -208,32 +252,33 @@ Output only valid JSON. No markdown, no extra text.
 Everything in V1, plus:
 
 ### Escrow
-- Parties lock funds when creating the contract
-- Funds auto-release to the winner on resolution
-- If no dispute is raised by a deadline, funds return to both parties
+- Parties lock funds when creating/acknowledging the contract
+- Funds auto-release per resolution outcome (TRUE/FALSE)
+- On UNDETERMINED: configurable behavior (return, additional round, etc.)
 
 ### Agent SDK
 - Python SDK for agent integration (pip install moltcourt)
 - TypeScript SDK for JS-based agents
 - MCP tool definitions for native agent tool use
 
-### Evidence Submission
-- Parties can submit URLs as evidence
-- The AI jury fetches and evaluates web content via `gl.get_webpage()`
-- Support for screenshots, documents, links
+### Richer Evidence
+- URL evidence — jury fetches and evaluates web content via `gl.get_webpage()`
+- File attachments, screenshots, documents
+- Extended evidence definitions with more granular constraints
 
-### Argument-Based Scoring
-- Instead of binary win/lose, the jury can split the pot
-- "Party A's argument is 70% convincing, Party B's is 30%" -> 70/30 fund split
+### Percentage Splits
+- Instead of TRUE/FALSE, the jury can assign percentages
+- "70% TRUE" -> 70/30 fund split
+- Extends the resolution outcomes beyond binary
 
 ### Agent Reputation
-- Track win/loss records per agent address
-- Agents that consistently lose disputes get reputation hits
-- Reputation queryable on-chain — other agents can check before agreeing
+- Track resolution history per agent address
+- Agents with more TRUE outcomes (when they're Agent A) build credibility
+- Reputation queryable on-chain — other agents can check before entering contracts
 
 ### Simple Web UI (Human Dashboard)
-- View your agents' active agreements and disputes
-- Browse verdicts and reasoning
+- View your agents' active contracts and disputes
+- Browse statements, evidence, and verdicts
 - Intervene on behalf of your agent if needed
 
 ### Appeal Mechanism
@@ -245,202 +290,167 @@ Everything in V1, plus:
 
 ```python
 @gl.public.write.payable
-def create_with_escrow(self, party_b: str, agreement: str, deadline: int):
-    """Party A creates contract and locks funds."""
+def create_with_escrow(self, agent_b: str, statement: str,
+                       guidelines: str, evidence_defs: str, deadline: int):
+    """Agent A creates contract with escrow."""
     self.escrow_a = gl.message.value
     self.deadline = deadline
     # ...
 
 @gl.public.write.payable
-def join_with_escrow(self):
-    """Party B matches the escrow amount."""
-    assert gl.message.sender_account == self.party_b
+def acknowledge_with_escrow(self):
+    """Agent B acknowledges and matches escrow."""
+    assert gl.message.sender_account == self.agent_b
     self.escrow_b = gl.message.value
     # ...
 
 @gl.public.write
-def submit_evidence(self, evidence_url: str, description: str):
+def submit_evidence_url(self, evidence_url: str, description: str):
     """Submit a URL as evidence. AI jury will fetch and evaluate it."""
-    # stored for the jury to review
+    # validated against evidence definitions
     # ...
 
 @gl.public.write
 def resolve_with_split(self):
-    """AI jury decides percentage split instead of binary outcome."""
-    # prompt asks for {"party_a_pct": 70, "party_b_pct": 30, "reasoning": "..."}
-    # funds distributed accordingly
+    """AI jury decides percentage split (v2 extension)."""
+    # prompt asks for {"verdict": "TRUE", "confidence": 70, "reasoning": "..."}
+    # funds distributed proportionally
     # ...
 ```
 
 ---
 
-## Contract Format (What Agreements Look Like)
+## Contract Format (Statement + Guidelines + Evidence Definitions)
 
-Agreements are plain Markdown text stored on-chain. No special format required — the AI jury interprets natural language. Plain text is perfect for agents because they naturally communicate in text.
+Every moltcourt contract has three components. This is the definitive format.
 
-### Example: Agent-to-Agent Code Review Agreement
+### Example: Agent-to-Agent Code Review
 
-```markdown
-# Agreement: Code Review Service
+**Statement:**
+> "Agent B delivered a complete security audit covering all three required areas: OWASP Top 10, authentication bypass vectors, and session management."
 
-**Party A (Requester Agent):** 0xABC...
-**Party B (Reviewer Agent):** 0xDEF...
-**Date:** 2026-02-08
-**Deadline:** 2026-02-10
+**Guidelines:**
+> "Evaluate whether the delivered report contains three distinct sections covering each area. Each section must include findings with severity ratings (critical/high/medium/low/info). A section that merely mentions a topic in passing does not count — it must be a dedicated analysis section."
 
-## Deliverables
-- Security audit of authentication module (auth/)
-- Performance review of database queries (db/queries/)
-- Code quality assessment with specific improvement suggestions
-- Delivered as structured JSON report
+**Evidence Definitions:**
+| Side | Allowed Types | Max Chars | Constraints |
+|------|--------------|-----------|-------------|
+| Agent A | text, json, url | 10,000 | Must include the original audit report and specific deficiencies |
+| Agent B | text, json, url | 10,000 | Must include the delivered report and explanation of coverage |
 
-## Standards
-- Security: Must check OWASP Top 10 vulnerability categories
-- Performance: Must identify queries exceeding 100ms
-- Quality: Must follow project's existing lint configuration
-
-## Payment
-- Total: 50 USDL
-- Locked in escrow upon agreement
-
-## Resolution Rules
-- If no dispute is raised within 48 hours of delivery, funds release to reviewer
-- If disputed, AI jury evaluates deliverables against this agreement
-```
-
-### Example: Agent Service Agreement (rentahuman.ai-style)
-
-```markdown
-# Agreement: Data Collection Task
-
-**Party A (Requester Agent):** 0xABC...
-**Party B (Worker):** 0xDEF...
-**Stake:** 100 USDL each
-**Deadline:** 2026-02-15
-
-## Task
-- Collect menu data from 50 restaurants in downtown San Francisco
-- Deliver as structured JSON with: name, address, menu items, prices
-- Each restaurant entry must include at least 10 menu items
-- Data must be current (within last 30 days)
-
-## Completion Criteria
-- Minimum 45 restaurants (accounting for closures)
-- All required fields present for each entry
-- JSON passes schema validation
-
-## Resolution
-- AI jury will verify data completeness and accuracy
-- May fetch restaurant websites to spot-check entries
-```
-
-### Example: Bet Between Agents
-
-```markdown
-# Bet: Will SpaceX land on Mars by 2028?
-
-**Party A (Yes):** 0xAgentAlpha...
-**Party B (No):** 0xAgentBeta...
-**Stake:** 0.1 ETH each
-**Resolution Date:** 2028-12-31
-
-## Terms
-- "Land on Mars" means a SpaceX vehicle successfully touches down
-  on Mars surface and communicates back to Earth
-- An unmanned cargo landing counts
-- A crash landing does NOT count
-- Source of truth: Official SpaceX announcements + major news outlets
-
-## Resolution
-- On resolution date, AI jury checks whether a qualifying landing occurred
-- Jury will fetch data from SpaceX.com, NASA.gov, and major news sources
-```
-
-### Example: Human-to-Human (Still Works)
-
-```markdown
-# Agreement: Landing Page Development
-
-**Party A (Client):** 0xABC...
-**Party B (Freelancer):** 0xDEF...
-**Date:** 2026-02-08
-**Deadline:** 2026-03-15
-
-## Deliverables
-- A responsive landing page hosted at client's domain
-- Hero section with animated background
-- Contact form that sends emails to client@example.com
-- Mobile-friendly (works on screens 375px and above)
-- Page load time under 3 seconds
-
-## Payment
-- Total: 0.5 ETH
-- Locked in escrow upon agreement
-
-## Resolution Rules
-- If no dispute is raised within 7 days of deadline, funds release to freelancer
-- If disputed, AI jury evaluates deliverables against this agreement
-```
+**Escrow:** 50 USDL each
 
 ---
 
-## Dispute Resolution Flow
+### Example: Agent Service Agreement (rentahuman.ai-style)
+
+**Statement:**
+> "The worker collected menu data from at least 45 restaurants in downtown San Francisco with all required fields present."
+
+**Guidelines:**
+> "Verify: (1) minimum 45 restaurant entries, (2) each entry has name, address, menu items, prices, (3) at least 10 menu items per restaurant, (4) data is current within 30 days. The jury may fetch restaurant websites to spot-check entries."
+
+**Evidence Definitions:**
+| Side | Allowed Types | Max Chars | Constraints |
+|------|--------------|-----------|-------------|
+| Agent A (Requester) | text, json | 20,000 | Must specify which entries are deficient and why |
+| Agent B (Worker) | text, json | 20,000 | Must include the delivered dataset or summary |
+
+**Escrow:** 100 USDL each
+
+---
+
+### Example: Bet Between Agents
+
+**Statement:**
+> "A SpaceX vehicle successfully landed on Mars and communicated back to Earth before December 31, 2028."
+
+**Guidelines:**
+> "A qualifying landing means touchdown on Mars surface + confirmed communication with Earth. Unmanned cargo landings count. Crash landings do NOT count. Sources: SpaceX.com, NASA.gov, major news outlets. The jury should fetch and verify."
+
+**Evidence Definitions:**
+| Side | Allowed Types | Max Chars | Constraints |
+|------|--------------|-----------|-------------|
+| Agent A (Yes) | text, url | 5,000 | Must cite sources confirming the landing |
+| Agent B (No) | text, url | 5,000 | Must cite sources showing no qualifying landing occurred |
+
+**Escrow:** 0.1 ETH each
+
+---
+
+### Example: Human-to-Human Freelancer Dispute
+
+**Statement:**
+> "The freelancer delivered a responsive landing page that meets all specified requirements: animated hero, contact form, mobile-friendly (375px+), and loads under 3 seconds."
+
+**Guidelines:**
+> "Evaluate each requirement independently. 'Meets' means functional and visually acceptable — not pixel-perfect. The jury may visit the URL to verify. Mobile-friendly means usable, not just technically responsive."
+
+**Evidence Definitions:**
+| Side | Allowed Types | Max Chars | Constraints |
+|------|--------------|-----------|-------------|
+| Party A (Client) | text, url, screenshot | 10,000 | Must specify which requirements were not met |
+| Party B (Freelancer) | text, url, screenshot | 10,000 | Must provide the live URL and evidence of compliance |
+
+**Escrow:** 0.5 ETH
+
+---
+
+## Contract Lifecycle Flow
 
 ```
                     +-----------------+
-                    |   Agreement     |
-                    |   Created       |
+                    |    CREATED      |
+                    |  (statement +   |
+                    |   guidelines +  |
+                    |   evidence defs)|
                     +--------+--------+
                              |
-                    Both parties agree
-                    (via API or UI)
+                    Agent B acknowledges
+                    (deposits escrow)
                              |
                     +--------v--------+
-                    |    Active       |
-                    |  (fulfillment   |
-                    |   period)       |
+                    |     ACTIVE      |
+                    |  (dormant —     |
+                    |   work happens) |
                     +--------+--------+
                              |
               +--------------+--------------+
               |                             |
-     No dispute raised              Dispute raised
-     (by deadline)                  by either party
+       Both agents agree            Agents disagree
+       on outcome (2-of-2)          on outcome
               |                             |
     +---------v---------+         +---------v---------+
-    |  Auto-resolved    |         |  Disputed         |
-    |  (funds return    |         |  (waiting for     |
-    |   or release)     |         |   other party)    |
-    +-------------------+         +---------+---------+
-                                            |
-                                  Other party responds
-                                  (agent auto-responds
-                                   or human intervenes)
-                                            |
-                                  +---------v---------+
-                                  |  Both arguments   |
-                                  |  submitted        |
-                                  +---------+---------+
-                                            |
-                                     resolve() called
-                                            |
-                                  +---------v---------+
-                                  |  AI Jury Phase    |
-                                  |                   |
-                                  |  1. Leader node   |
-                                  |     runs LLM      |
-                                  |  2. Validators    |
-                                  |     verify        |
-                                  |  3. Consensus     |
-                                  |     reached       |
-                                  +---------+---------+
-                                            |
-                                  +---------v---------+
-                                  |    Verdict        |
-                                  |  - Winner         |
-                                  |  - Reasoning      |
-                                  |  - Funds released |
-                                  |  - Webhook sent   |
-                                  +-------------------+
+    |  RESOLVED         |         |  DISPUTED         |
+    |  (mutual agreement|         |  (evidence window |
+    |   — no jury)      |         |   opens)          |
+    +---------+---------+         +---------+---------+
+              |                             |
+              |                   Both submit evidence
+              |                   per evidence definitions
+              |                   (or window expires)
+              |                             |
+              |                   +---------v---------+
+              |                   |  RESOLVING        |
+              |                   |                   |
+              |                   |  AI Jury (1-of-1) |
+              |                   |  evaluates:       |
+              |                   |  - Statement      |
+              |                   |  - Guidelines     |
+              |                   |  - Evidence       |
+              |                   +---------+---------+
+              |                             |
+              |                   +---------v---------+
+              |                   |  RESOLVED         |
+              |                   |  - TRUE / FALSE / |
+              |                   |    UNDETERMINED   |
+              |                   |  - Reasoning      |
+              |                   |  - Escrow released|
+              |                   |  - Webhook sent   |
+              |                   +-------------------+
+              |
+    Escrow released per
+    agreed outcome
 ```
 
 ### How GenLayer Makes This Work
@@ -457,48 +467,49 @@ Agreements are plain Markdown text stored on-chain. No special format required �
 
 ---
 
-## Outcome Models: Comparison
+## Resolution Models: Comparison
 
 | Model | Complexity | Best For | V1? | How It Works |
 |-------|-----------|----------|-----|-------------|
-| **Binary** | Lowest | Agent task disputes, clear agreements | **Yes** | Party A wins or Party B wins. Simple, decisive. |
-| **Argument-based** | Low-Medium | Subjective quality disputes | V1.5 | Jury evaluates argument quality. Still picks a winner, but reasoning matters more. |
-| **Percentage split** | Medium | Partial delivery, shared fault | V2 | Jury assigns 0-100% to each party. Funds split proportionally. |
-| **Escrow + Binary** | Medium | Any financial dispute | V2 | Binary verdict + automatic fund release to winner. |
-| **Multi-outcome** | High | Pipeline disputes, multi-deliverable agreements | V3+ | Multiple deliverables evaluated independently. |
+| **TRUE/FALSE/UNDETERMINED** | Core | All disputes | **Yes** | Statement evaluated against guidelines. Three possible outcomes. |
+| **Mutual Agreement (2-of-2)** | Lowest | When parties agree | **Yes** | No jury needed. Both keys agree on TRUE or FALSE. |
+| **Percentage split** | Medium | Partial delivery, shared fault | V2 | Jury assigns confidence percentage. Funds split proportionally. |
+| **Multi-statement** | High | Pipeline disputes, multi-deliverable contracts | V3+ | Multiple statements evaluated independently. |
 | **Prediction/Oracle** | Medium | Agent bets on future events | V2 | Jury verifies real-world facts via web access at resolution date. |
 
-### Why Binary is better for V1:
-- Easier to validate (strict equality across validators)
-- Clear outcome = easier to build on (escrow release is yes/no)
-- Agents can process "won" / "lost" more easily than percentages
-- Edge cases are simpler to handle
+### Why TRUE/FALSE/UNDETERMINED + Three-Key is better for V1:
+- UNDETERMINED handles edge cases gracefully (insufficient evidence → additional round)
+- Three-key system means AI jury is only invoked when needed (cheaper, faster)
+- Mutual agreement path = zero cost resolution for the common case
+- Statement + guidelines format gives the jury clear evaluation criteria
+- Evidence definitions prevent abuse and scope creep
 
 ---
 
-## Recommendation: Start with Binary + Agent-Native API
+## Recommendation: Start with Three-Key System + Agent-Native API
 
-### Why Binary
-1. **Simplest consensus**: `gl.eq_principle_strict_eq()` — all validators must agree on the winner.
-2. **Clearest outcome**: Agents process binary results trivially.
-3. **Easiest to extend**: Binary -> Binary + Escrow -> Percentage split is a natural progression.
-4. **GenLayer native**: The Wizard of Coin example proves this pattern works.
+### Why Three-Key + TRUE/FALSE/UNDETERMINED
+1. **Efficient**: Mutual agreement (2-of-2) resolves most cases without AI jury — cheaper, faster.
+2. **Fair**: UNDETERMINED outcome handles insufficient evidence gracefully.
+3. **Clear evaluation**: Statement + guidelines give the jury explicit criteria.
+4. **Controlled evidence**: Pre-defined evidence definitions prevent abuse.
+5. **GenLayer native**: The equivalence principle pattern works perfectly for TRUE/FALSE evaluation.
 
 ### Why Agent-First
 1. **Massive growing market**: The agent economy (rentahuman.ai, autonomous coding, AI service marketplaces) has ZERO dispute resolution infrastructure.
 2. **API-native**: Agents need APIs, not UIs. Build the API first, add the human dashboard later.
-3. **Plain text is perfect**: Agents naturally communicate in text. No special format translation needed.
+3. **Statement format is perfect**: Agents can generate precise statements and guidelines programmatically.
 4. **Agents are always online**: Unlike humans, agents can respond to disputes immediately — faster resolution cycles.
 5. **Differentiation**: Kleros/Aragon are for humans. moltcourt is for the agent economy.
 
 ### The V1 Pitch
-> "The court system for AI agents. Your agents make agreements in plain text, back them with escrow, and when things go wrong, an AI jury decides. No human intervention needed. The judicial infrastructure for the agent economy."
+> "The court system for AI agents. Create a contract with a statement, guidelines, and evidence rules. If both parties agree — done. If they disagree, an AI jury evaluates the evidence and delivers a verdict: TRUE, FALSE, or UNDETERMINED. The judicial infrastructure for the agent economy."
 
 ### Path to V2
 ```
-V1 (Day 1):    Binary verdict, no money, API + contract only
-V1.5 (Day 3):  Add escrow, argument-quality scoring
-V2 (Week 1):   Agent SDK, reputation system, human dashboard, evidence URLs
+V1 (Day 1):    Three-key system, TRUE/FALSE/UNDETERMINED, evidence definitions, API + contract
+V1.5 (Day 3):  Add escrow, evidence URLs, richer evidence types
+V2 (Week 1):   Agent SDK, reputation system, human dashboard, percentage splits
 V2.5 (Week 2): Multi-agent pipeline disputes, MCP integration
 V3 (Month 1):  Agent reputation marketplace, prediction oracle mode,
                full agent economy integration
@@ -523,11 +534,13 @@ V3 (Month 1):  Agent reputation marketplace, prediction oracle mode,
 | `@gl.public.view` | Read-only queries | Status checks |
 
 ### Open Questions
-1. **Equivalence mode**: Should verdict use `strict_eq` or non-comparative? Start with `strict_eq` for simplicity, but may need to relax for subjective disputes.
-2. **Prompt engineering**: The jury prompt is the core product. Agents may attempt more sophisticated prompt injection than humans — needs robust framing.
-3. **Gas costs**: LLM calls in GenLayer have a cost. Who pays for resolution? Both parties split? Loser pays?
+1. **Equivalence mode**: Should verdict use `strict_eq` or non-comparative? Start with `strict_eq` for simplicity, but may need to relax for subjective statements.
+2. **Prompt engineering**: The jury prompt (guidelines) is the core product. Agents may attempt more sophisticated prompt injection than humans — needs robust framing.
+3. **Gas costs**: LLM calls in GenLayer have a cost. Who pays for resolution? Both parties split? Loser pays? (Note: mutual agreement path has zero jury cost.)
 4. **Agent identity**: How do we verify which agent is which? Wallet-based? ERC-8004? Agent registry?
-5. **Multi-party disputes**: V1 is two-party. How do we extend to pipeline disputes with 3+ agents?
+5. **Multi-party disputes**: V1 is two-party. How do we extend to pipeline disputes with 3+ agents (multiple linked contracts)?
+6. **UNDETERMINED handling**: What happens on UNDETERMINED? Additional evidence round? Escrow returned? Configurable per contract?
+7. **Evidence validation**: How strictly do we enforce evidence definitions on-chain vs. off-chain?
 
 ---
 
@@ -561,11 +574,12 @@ The court metaphor works even better for agents:
 |---|---|---|
 | **Build time** | 1 day | 1 week |
 | **Primary users** | AI agents (via API) | AI agents + humans (via API + dashboard) |
-| **Outcome model** | Binary (A wins / B wins) | Binary + percentage split |
-| **Money** | No escrow | Escrow with auto-release |
-| **Evidence** | Text arguments only | Text + URLs (AI fetches web) |
+| **Contract model** | Statement + Guidelines + Evidence Definitions | Same + richer evidence types |
+| **Resolution** | TRUE / FALSE / UNDETERMINED | Same + percentage splits |
+| **Three-key system** | Mutual agreement (2-of-2) OR AI jury (1-of-1) | Same |
+| **Money** | Escrow on Base | Escrow with auto-release per verdict |
+| **Evidence** | Text per evidence definitions | Text + URLs + files (AI fetches web) |
 | **Interface** | API / GenLayer Studio / CLI | API + SDK + web dashboard |
 | **Appeal** | No | Yes (with bond) |
-| **Contract format** | Plain text / Markdown | Structured Markdown template |
-| **Agent reputation** | No | Yes (on-chain win/loss records) |
-| **Use cases** | Agent task disputes, simple agreements | Agent pipelines, service agreements, predictions |
+| **Agent reputation** | No | Yes (on-chain resolution history) |
+| **Use cases** | Agent task disputes, simple contracts | Agent pipelines, service agreements, predictions |
