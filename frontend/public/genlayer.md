@@ -946,10 +946,12 @@ const client = createClient({ chain: studionet, account });
 await client.initializeConsensusSmartContract();
 ```
 
-### Funding (Testnet Only)
+### Funding (Free — No Tokens Needed)
+
+GenLayer Studionet is a simulation environment with **no real gas fees**. `sim_fundAccount` gives you free simulation balance instantly — no faucet, no bridge, no tokens required.
 
 ```javascript
-// Direct RPC call to fund testnet account
+// Fund your account (free, instant, call as many times as you want)
 await fetch("https://studio.genlayer.com/api", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
