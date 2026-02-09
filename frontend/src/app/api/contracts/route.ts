@@ -13,25 +13,43 @@ export async function GET() {
       return NextResponse.json({ contracts: [], errors: {} });
     }
 
-    const raw = await callContractView(
+    // Factory uses get_contract_count() + get_contract(id) pattern
+    const count = await callContractView(
       FACTORY_ADDRESS,
-      "get_all_contracts",
+      "get_contract_count",
       []
     );
-    const addresses: string[] = Array.isArray(raw)
-      ? raw
-      : typeof raw === "string"
-        ? JSON.parse(raw)
-        : [];
+    const total = Number(count) || 0;
+
+    if (total === 0) {
+      return NextResponse.json({ contracts: [], errors: {} });
+    }
+
+    // Fetch latest 4 registered contracts (newest first)
+    const start = Math.max(0, total - 4);
+    const entries = await Promise.all(
+      Array.from({ length: total - start }, (_, i) =>
+        callContractView(FACTORY_ADDRESS, "get_contract", [total - 1 - i])
+      )
+    );
+
+    const addresses: string[] = entries
+      .map((entry) => {
+        if (typeof entry === "object" && entry !== null && "address" in entry) {
+          return (entry as { address: string }).address;
+        }
+        return null;
+      })
+      .filter((a): a is string => a !== null);
 
     if (addresses.length === 0) {
       return NextResponse.json({ contracts: [], errors: {} });
     }
 
-    const latest = addresses.slice(-4).reverse();
-    const { contracts, errors } = await fetchMultipleContracts(latest);
+    const { contracts, errors } = await fetchMultipleContracts(addresses);
     return NextResponse.json({ contracts, errors });
-  } catch {
+  } catch (err) {
+    console.error("GET /api/contracts error:", err);
     return NextResponse.json({ contracts: [], errors: {} });
   }
 }

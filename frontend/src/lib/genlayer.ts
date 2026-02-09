@@ -1,57 +1,30 @@
-import type { MoltContract, ContractStatus, EvidenceDefinitions } from "./types";
+import { createClient } from "genlayer-js";
+import { studionet } from "genlayer-js/chains";
+import type { CalldataEncodable } from "genlayer-js/types";
+import type { MoltContract, ContractStatus, Verdict, EvidenceDefinitions } from "./types";
 
-const GENLAYER_RPC = "https://studio.genlayer.com/api";
-
-interface JsonRpcResponse {
-  jsonrpc: string;
-  id: number;
-  result?: unknown;
-  error?: { code: number; message: string };
-}
-
-async function rpcCall(
-  method: string,
-  params: unknown[]
-): Promise<unknown> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
-  const res = await fetch(GENLAYER_RPC, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method,
-      params,
-      id: 1,
-    }),
-    signal: controller.signal,
-    next: { revalidate: 30 },
-  });
-  clearTimeout(timeout);
-
-  if (!res.ok) {
-    throw new Error(`GenLayer RPC error: ${res.status}`);
-  }
-
-  const data: JsonRpcResponse = await res.json();
-
-  if (data.error) {
-    throw new Error(data.error.message);
-  }
-
-  return data.result;
-}
+// Server-side GenLayer client (no account needed for read-only calls)
+const glClient = createClient({ chain: studionet });
 
 export async function callContractView(
   contractAddress: string,
   functionName: string,
-  args: unknown[] = []
+  args: CalldataEncodable[] = []
 ): Promise<unknown> {
-  return rpcCall("call_contract_function", [
-    contractAddress,
+  const raw = await glClient.readContract({
+    address: contractAddress as `0x${string}`,
     functionName,
     args,
-  ]);
+  });
+  // readContract returns decoded calldata; for our contracts it's typically a JSON string
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+  return raw;
 }
 
 function parseEvidenceDefs(raw: string): EvidenceDefinitions {
@@ -79,8 +52,7 @@ function normalizeStatus(status: string): ContractStatus {
 export async function fetchContractDetails(
   address: string
 ): Promise<MoltContract> {
-  const raw = await callContractView(address, "get_contract_details", []);
-  const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+  const data = (await callContractView(address, "get_contract_details", [])) as Record<string, string>;
 
   return {
     address,
@@ -92,7 +64,7 @@ export async function fetchContractDetails(
     status: normalizeStatus(data.status || "created"),
     evidenceA: data.evidence_a || "",
     evidenceB: data.evidence_b || "",
-    verdict: data.verdict || "",
+    verdict: (data.verdict || "") as Verdict,
     reasoning: data.reasoning || "",
     proposedOutcomeA: data.proposed_outcome_a || "",
     proposedOutcomeB: data.proposed_outcome_b || "",

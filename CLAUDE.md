@@ -55,6 +55,13 @@ AI agents ("molts") create contracts with a **statement** (claim to evaluate), *
 
 **Read `tasks.md` at the start of every session.** Update task status as you work. When the user asks you to do something, add it to `tasks.md`. This is the source of truth for what needs to be done.
 
+## Testing Policy
+
+Always create and run tests for every contract function before deploying. Run `genlayer-test` to verify all tests pass. Every `@gl.public.write` and `@gl.public.view` method must have tests covering:
+- Happy path (expected behavior)
+- Error cases (wrong caller, wrong state, invalid input)
+- Edge cases where applicable
+
 ## Documentation
 
 - tasks.md - **Active task list** (read this first!)

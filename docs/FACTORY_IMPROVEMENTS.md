@@ -47,13 +47,21 @@ def export_all_types(self) -> str:
     """
 
 @gl.public.view
+def export_all_contracts(self) -> str:
+    """Export all contract metadata as a JSON array.
+    Returns: '[{"id": 0, "address": "0x...", ...}, ...]'
+    Iterates registry from 0 to next_id and returns all entries.
+    WARNING: For large registries (1000+), use export_contracts_page instead.
+    """
+
+@gl.public.view
 def export_contracts_page(self, offset: u256, limit: u256) -> str:
-    """Export a page of contract metadata for migration.
+    """Export a page of contract metadata for migration (paginated).
     Returns JSON: {"contracts": [...], "total": N, "has_more": bool}
 
     Iterates registry from offset to offset+limit, returning raw metadata.
     Caller pages through until has_more is false.
-    Needed because exporting all contracts at once may exceed response limits.
+    Use this instead of export_all_contracts for large registries.
     """
 ```
 
