@@ -27,7 +27,133 @@ The factory contract (`MoltCourtFactory.py`) currently supports:
 
 ### HIGH Priority
 
-#### 1. Pagination — `get_contracts_page(offset, limit)`
+#### 1. Factory Migration (Export/Import)
+
+**Problem**: If we deploy a new version of the factory contract (e.g., to add party indexing or pagination), all existing registry data is stranded in the old contract. We need a way to export the full dataset from the old factory and import it into the new one without data loss.
+
+**Data to migrate**:
+- `registry` — all contract metadata (ID → JSON)
+- `registered_types` — all type registrations
+- `type_index` and `deployer_index` — can be rebuilt from registry data during import
+
+**Proposed export methods** (view, anyone can call):
+
+```python
+@gl.public.view
+def export_all_types(self) -> str:
+    """Export all registered type names as a JSON array.
+    Returns: '["MoltCourt", "Escrow", ...]'
+    Only includes currently-active types (registered_types == "true").
+    """
+
+@gl.public.view
+def export_contracts_page(self, offset: u256, limit: u256) -> str:
+    """Export a page of contract metadata for migration.
+    Returns JSON: {"contracts": [...], "total": N, "has_more": bool}
+
+    Iterates registry from offset to offset+limit, returning raw metadata.
+    Caller pages through until has_more is false.
+    Needed because exporting all contracts at once may exceed response limits.
+    """
+```
+
+**Proposed import methods** (write, owner-only):
+
+```python
+@gl.public.write
+def import_types(self, types_json: str) -> None:
+    """Import type registrations from a previous factory version.
+    Owner-only. Expects JSON array of type name strings.
+    Skips types that are already registered.
+    """
+    if gl.message.sender_address != self.owner:
+        raise ValueError("Only owner can import types")
+    types = json.loads(types_json)
+    for t in types:
+        existing = self.registered_types.get(t)
+        if existing is None or existing != "true":
+            self.registered_types[t] = "true"
+
+@gl.public.write
+def import_contracts(self, contracts_json: str) -> None:
+    """Import contract metadata from a previous factory version.
+    Owner-only. Expects JSON array of metadata objects.
+
+    Each object must have: id, address, contract_type, deployer, params.
+    Preserves original IDs. Rebuilds type_index and deployer_index.
+    The contract type must already be registered (call import_types first).
+    Sets next_id to max(imported_id) + 1.
+    """
+    if gl.message.sender_address != self.owner:
+        raise ValueError("Only owner can import contracts")
+    contracts = json.loads(contracts_json)
+    max_id = int(self.next_id) - 1
+    for c in contracts:
+        cid = u256(c["id"])
+        # Store metadata
+        self.registry[cid] = json.dumps(c)
+        # Rebuild type index
+        ct = c["contract_type"]
+        type_ids = self.type_index.get(ct)
+        if type_ids is None:
+            id_list = [c["id"]]
+        else:
+            id_list = json.loads(type_ids)
+            id_list.append(c["id"])
+        self.type_index[ct] = json.dumps(id_list)
+        # Rebuild deployer index
+        dep = c["deployer"]
+        deployer_ids = self.deployer_index.get(dep)
+        if deployer_ids is None:
+            dep_list = [c["id"]]
+        else:
+            dep_list = json.loads(deployer_ids)
+            dep_list.append(c["id"])
+        self.deployer_index[dep] = json.dumps(dep_list)
+        # Track max ID
+        if c["id"] > max_id:
+            max_id = c["id"]
+    self.next_id = u256(max_id + 1)
+```
+
+**Constraints**:
+- New factory MUST be deployed by the same owner address as the old factory
+- `import_types` must be called before `import_contracts` (contracts require registered types)
+- Import is idempotent for types (skips duplicates), but NOT for contracts (importing the same contract twice would duplicate index entries) — add a guard: skip if `registry.get(cid)` already exists
+
+**Migration script** (JS/Python using GenLayer SDK):
+
+```
+1. Deploy new MoltCourtFactory with same owner wallet
+   → new_factory_address = deploy(MoltCourtFactory)
+
+2. Export types from old factory
+   → types = old_factory.export_all_types()
+
+3. Import types into new factory
+   → new_factory.import_types(types)  # owner-only tx
+
+4. Export contracts in pages from old factory
+   → page = 0, batch_size = 50
+   → while True:
+       data = old_factory.export_contracts_page(page * batch_size, batch_size)
+       if len(data.contracts) == 0: break
+       new_factory.import_contracts(json.dumps(data.contracts))  # owner-only tx
+       page += 1
+
+5. Verify: new_factory.get_contract_count() == old_factory.get_contract_count()
+
+6. Update frontend env var:
+   NEXT_PUBLIC_FACTORY_ADDRESS=new_factory_address
+
+7. (Optional) old_factory.transfer_ownership(burn_address) to prevent further writes
+```
+
+**Batch size considerations**: GenLayer transactions have gas/size limits. Importing 50 contracts per transaction is a safe batch size. For a registry with 1000 contracts, that's 20 transactions — manageable.
+
+**Storage changes**: None for export (view methods). Import methods write to existing storage fields.
+
+#### 2. Pagination — `get_contracts_page(offset, limit)`
 
 **Problem**: `get_contracts_by_type()` and `get_contracts_by_deployer()` return ALL results. With 1000+ contracts, this becomes a huge JSON payload — slow and potentially exceeding response limits.
 
@@ -141,9 +267,11 @@ def get_contracts_by_status(self, status: str) -> str:
 
 | Phase | Features | Effort |
 |-------|----------|--------|
-| Phase 1 | Pagination (#1), Recent contracts (#3) | Low — no storage changes |
-| Phase 2 | Party index (#2) | Medium — new storage + register_contract change |
-| Phase 3 | Status tracking (#4, #5) if needed | High — sync mechanism needed |
+| Phase 1 | Migration export/import (#1), Pagination (#2), Recent contracts (#4) | Medium — export/import + pagination, no storage schema changes |
+| Phase 2 | Party index (#3) — deploy new factory v2, migrate data from v1 | Medium — new storage + migration script execution |
+| Phase 3 | Status tracking (#5, #6) if needed | High — sync mechanism needed |
+
+**Migration is Phase 1** because every future upgrade (Phase 2, 3) depends on being able to migrate data to a new factory version. It's foundational infrastructure.
 
 ## Indexing Strategy Notes
 
