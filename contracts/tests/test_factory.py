@@ -727,3 +727,94 @@ class TestSnapshotRevertExtended:
 
         direct_vm.revert(snap)
         assert contract.get_owner() == owner.as_hex
+
+
+# ============================================================
+# Get Owner View
+# ============================================================
+
+
+class TestGetOwner:
+    def test_get_owner_returns_hex_string(self, deploy_factory):
+        """get_owner returns a hex string, not raw bytes."""
+        contract, owner = deploy_factory
+        result = contract.get_owner()
+        assert isinstance(result, str)
+        assert result.startswith("0x")
+
+    def test_get_owner_matches_deployer(self, deploy_factory):
+        contract, owner = deploy_factory
+        assert contract.get_owner() == owner.as_hex
+
+
+# ============================================================
+# Get Contract Count View
+# ============================================================
+
+
+class TestGetContractCountView:
+    def test_count_is_u256(self, deploy_factory):
+        """get_contract_count returns a u256 type."""
+        contract, owner = deploy_factory
+        count = contract.get_contract_count()
+        assert int(count) == 0
+
+    def test_count_never_decreases(self, factory_with_type, direct_vm):
+        """IDs are never reused — count only goes up."""
+        contract, owner = factory_with_type
+        with direct_vm.prank(owner):
+            contract.register_contract("0xa", "MoltCourt", "{}")
+        with direct_vm.prank(owner):
+            contract.register_contract("0xb", "MoltCourt", "{}")
+        assert int(contract.get_contract_count()) == 2
+        # Even after unregistering the type, count stays
+        with direct_vm.prank(owner):
+            contract.unregister_type("MoltCourt")
+        assert int(contract.get_contract_count()) == 2
+
+
+# ============================================================
+# Is Type Registered View
+# ============================================================
+
+
+class TestIsTypeRegisteredView:
+    def test_returns_true_for_registered(self, factory_with_type):
+        contract, owner = factory_with_type
+        assert contract.is_type_registered("MoltCourt") == "true"
+
+    def test_returns_false_for_unregistered(self, deploy_factory):
+        contract, owner = deploy_factory
+        assert contract.is_type_registered("Unknown") == "false"
+
+    def test_returns_false_after_unregister(self, factory_with_type, direct_vm):
+        contract, owner = factory_with_type
+        with direct_vm.prank(owner):
+            contract.unregister_type("MoltCourt")
+        assert contract.is_type_registered("MoltCourt") == "false"
+
+
+# ============================================================
+# Register Contract with Unregistered Type After Contracts Exist
+# ============================================================
+
+
+class TestRegisterContractAfterUnregister:
+    def test_existing_contracts_still_queryable_after_type_unregister(self, factory_with_type, direct_vm):
+        """Contracts registered before type unregister are still queryable."""
+        contract, owner = factory_with_type
+        with direct_vm.prank(owner):
+            contract.register_contract("0xbefore", "MoltCourt", "{}")
+
+        with direct_vm.prank(owner):
+            contract.unregister_type("MoltCourt")
+
+        # Existing contracts still queryable by type
+        result = json.loads(contract.get_contracts_by_type("MoltCourt"))
+        assert len(result) == 1
+        assert result[0]["address"] == "0xbefore"
+
+        # And by ID
+        from genlayer import u256
+        metadata = json.loads(contract.get_contract(u256(0)))
+        assert metadata["address"] == "0xbefore"

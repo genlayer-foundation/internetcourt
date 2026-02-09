@@ -1406,3 +1406,63 @@ class TestEvidenceDeadline:
 
         assert contract.status == "resolved"
         assert contract.verdict == "UNDETERMINED"
+
+
+# ============================================================
+# Dispute Timestamp
+# ============================================================
+
+
+class TestDisputeTimestamp:
+    """Test that dispute_timestamp is set correctly when disputes are initiated."""
+
+    def test_dispute_timestamp_empty_before_dispute(self, active_contract):
+        contract, alice, bob = active_contract
+        assert contract.dispute_timestamp == ""
+
+    def test_dispute_timestamp_set_after_dispute(self, disputed_contract):
+        contract, alice, bob = disputed_contract
+        assert contract.dispute_timestamp != ""
+
+    def test_dispute_timestamp_contains_iso_format(self, disputed_contract):
+        """Timestamp should be ISO format with timezone info."""
+        contract, alice, bob = disputed_contract
+        ts = contract.dispute_timestamp
+        # Should be parseable as ISO format
+        import datetime
+        parsed = datetime.datetime.fromisoformat(ts)
+        assert parsed is not None
+
+
+# ============================================================
+# Get Evidence Deadline View Method
+# ============================================================
+
+
+class TestGetEvidenceDeadlineView:
+    """Test get_evidence_deadline view method across different states."""
+
+    def test_default_deadline_before_dispute(self, deploy_moltcourt):
+        """Default contract shows 0 deadline and no dispute timestamp."""
+        contract, alice, bob = deploy_moltcourt
+        info = json.loads(contract.get_evidence_deadline())
+        assert info["evidence_deadline_seconds"] == 0
+        assert info["dispute_timestamp"] == ""
+        assert info["deadline_passed"] is False
+
+    def test_deadline_on_active_contract(self, active_contract):
+        """Active contract (not disputed) shows deadline info."""
+        contract, alice, bob = active_contract
+        info = json.loads(contract.get_evidence_deadline())
+        assert info["evidence_deadline_seconds"] == 0
+        assert info["dispute_timestamp"] == ""
+        assert info["deadline_passed"] is False
+
+    def test_deadline_on_cancelled_contract(self, deploy_moltcourt, direct_vm):
+        """Cancelled contract deadline info is still accessible."""
+        contract, alice, bob = deploy_moltcourt
+        with direct_vm.prank(alice):
+            contract.cancel()
+        info = json.loads(contract.get_evidence_deadline())
+        assert info["evidence_deadline_seconds"] == 0
+        assert info["deadline_passed"] is False
