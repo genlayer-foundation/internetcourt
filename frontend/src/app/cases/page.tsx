@@ -44,11 +44,15 @@ export default function CasesPage() {
 
     setLoading(true);
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
       const res = await fetch("/api/contracts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ addresses: addrs }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const data = await res.json();
       if (data.error) {
         setErrors({ _global: data.error });
@@ -58,7 +62,10 @@ export default function CasesPage() {
         setErrors(data.errors || {});
       }
     } catch (err) {
-      setErrors({ _global: err instanceof Error ? err.message : "Fetch failed" });
+      const message = err instanceof DOMException && err.name === "AbortError"
+        ? "Request timed out. The GenLayer RPC may be slow — try again."
+        : err instanceof Error ? err.message : "Fetch failed";
+      setErrors({ _global: message });
       setContracts([]);
     } finally {
       setLoading(false);

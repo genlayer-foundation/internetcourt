@@ -13,6 +13,8 @@ async function rpcCall(
   method: string,
   params: unknown[]
 ): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const res = await fetch(GENLAYER_RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -22,8 +24,10 @@ async function rpcCall(
       params,
       id: 1,
     }),
+    signal: controller.signal,
     next: { revalidate: 30 },
   });
+  clearTimeout(timeout);
 
   if (!res.ok) {
     throw new Error(`GenLayer RPC error: ${res.status}`);
