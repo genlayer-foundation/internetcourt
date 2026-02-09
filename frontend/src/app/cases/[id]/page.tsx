@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS } from "@/lib/constants";
-import { formatAddress } from "@/lib/genlayer";
 import type { MoltContract, ContractStatus } from "@/lib/types";
 import { Loader2, AlertCircle, Copy, Check, ArrowLeft } from "lucide-react";
 import Link from "next/link";
