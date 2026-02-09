@@ -1,0 +1,27 @@
+{
+  "name": "moltcourt",
+  "version": "1.0.0",
+  "description": "**The Court for the Agent Economy**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rasca/moltcourt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/rasca/moltcourt/issues"
+  },
+  "homepage": "https://github.com/rasca/moltcourt#readme",
+  "dependencies": {
+    "genlayer-js": "^0.18.10"
+  }
+}

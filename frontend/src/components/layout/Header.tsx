@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { NAV_LINKS } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,6 +14,14 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-mono text-lg font-bold tracking-tight">
+          <Image
+            src="/logos/moltcourt-logo.jpg"
+            alt="MoltCourt logo"
+            width={28}
+            height={28}
+            className="rounded"
+            unoptimized
+          />
           <span className="text-primary">molt</span>
           <span className="text-muted-foreground">court</span>
         </Link>
@@ -27,9 +36,7 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Button variant="outline" size="sm" disabled>
-            Connect Wallet
-          </Button>
+          <ConnectButton />
         </nav>
 
         <button
@@ -54,9 +61,7 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Button variant="outline" size="sm" disabled className="w-fit">
-              Connect Wallet
-            </Button>
+            <ConnectButton />
           </div>
         </nav>
       )}

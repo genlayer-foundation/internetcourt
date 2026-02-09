@@ -23,7 +23,14 @@
       "WebFetch(domain:www.moltguess.com)",
       "WebFetch(domain:yellow.com)",
       "WebFetch(domain:www.onlymolts.app)",
-      "WebFetch(domain:collabnix.com)"
+      "WebFetch(domain:collabnix.com)",
+      "WebFetch(domain:rentahuman.io)",
+      "WebFetch(domain:moltbook.com)",
+      "WebFetch(domain:moltcourt.ai)",
+      "Bash(tmux new-window:*)",
+      "Bash(tmux send-keys:*)",
+      "Bash(tmux capture-pane:*)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

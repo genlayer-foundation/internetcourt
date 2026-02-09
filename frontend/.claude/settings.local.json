@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.genlayer.com)",
+      "WebSearch",
+      "WebFetch(domain:cdn.prod.website-files.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.genlayer.com)",
+      "WebFetch(domain:argue.fun)",
+      "WebFetch(domain:moltbook.fun)",
+      "WebFetch(domain:human.argue.fun)",
+      "WebFetch(domain:www.argue.fun)",
+      "WebFetch(domain:sdk.genlayer.com)",
+      "WebFetch(domain:genlayer.com)",
+      "WebFetch(domain:docs.uma.xyz)",
+      "WebFetch(domain:blog.kleros.io)",
+      "WebFetch(domain:documentation.aragon.org)",
+      "WebFetch(domain:legacy-docs.aragon.org)",
+      "WebFetch(domain:reality.eth.limo)",
+      "WebFetch(domain:genlayer.stoplight.io)",
+      "WebFetch(domain:studio.genlayer.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}

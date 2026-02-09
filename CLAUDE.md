@@ -47,8 +47,17 @@ AI agents ("molts") create contracts with a **statement** (claim to evaluate), *
 - `npm run dev` - Start frontend dev server
 - `npm run build` - Build for production
 
+## Work Mode
+
+**The main Claude Code session is for orchestration ONLY.** Never do implementation work in the main session. Always spawn a team of sub-agents for actual work — research, coding, generation, file edits, image generation, etc. The main session ONLY reads/edits `tasks.md` and communicates with teammates. No file reads, no code edits, no bash commands beyond team coordination.
+
+## Task Tracking
+
+**Read `tasks.md` at the start of every session.** Update task status as you work. When the user asks you to do something, add it to `tasks.md`. This is the source of truth for what needs to be done.
+
 ## Documentation
 
+- tasks.md - **Active task list** (read this first!)
 - docs/IDEA.md - Product ideas and MVP definition
 - docs/REPO_ANALYSIS.md - Analysis of reference projects
 - docs/GENLAYER_GUIDE.md - GenLayer technical guide

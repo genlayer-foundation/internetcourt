@@ -1,5 +1,8 @@
+# v0.1.0
+# { "Depends": "py-genlayer:latest" }
 from genlayer import *
 import json
+import datetime
 
 
 class MoltCourt(gl.Contract):
@@ -27,15 +30,22 @@ class MoltCourt(gl.Contract):
     proposed_outcome_a: str
     proposed_outcome_b: str
 
+    # Evidence deadline (seconds from dispute initiation; 0 = no limit)
+    evidence_deadline_seconds: u256
+    dispute_timestamp: str  # ISO format timestamp when dispute was raised, "" if not disputed
+
     def __init__(
         self,
         party_b: Address,
         statement: str,
         guidelines: str,
         evidence_defs: str,
+        evidence_deadline_seconds: int = 0,
     ):
         self.party_a = gl.message.sender_address
-        if isinstance(party_b, bytes):
+        if isinstance(party_b, str):
+            party_b = Address(party_b)
+        elif isinstance(party_b, bytes):
             party_b = Address(party_b)
         self.party_b = party_b
         self.statement = statement
@@ -48,6 +58,8 @@ class MoltCourt(gl.Contract):
         self.reasoning = ""
         self.proposed_outcome_a = ""
         self.proposed_outcome_b = ""
+        self.evidence_deadline_seconds = u256(evidence_deadline_seconds)
+        self.dispute_timestamp = ""
 
     # -------------------------------------------------------
     # Lifecycle
@@ -110,11 +122,23 @@ class MoltCourt(gl.Contract):
         if sender != self.party_a and sender != self.party_b:
             raise ValueError("Not a party to this contract")
         self.status = "disputed"
+        self.dispute_timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
     @gl.public.write
     def submit_evidence(self, evidence: str) -> None:
         if self.status != "disputed":
             raise ValueError("No active dispute")
+
+        # Check evidence deadline
+        if int(self.evidence_deadline_seconds) > 0 and self.dispute_timestamp != "":
+            now = datetime.datetime.now(datetime.timezone.utc)
+            dispute_time = datetime.datetime.fromisoformat(self.dispute_timestamp)
+            if dispute_time.tzinfo is None:
+                dispute_time = dispute_time.replace(tzinfo=datetime.timezone.utc)
+            deadline = dispute_time + datetime.timedelta(seconds=int(self.evidence_deadline_seconds))
+            if now > deadline:
+                raise ValueError("Evidence submission deadline has passed")
+
         sender = gl.message.sender_address
 
         # Validate evidence against definitions
@@ -147,7 +171,18 @@ class MoltCourt(gl.Contract):
     def resolve(self) -> None:
         if self.status != "disputed":
             raise ValueError("No active dispute to resolve")
-        if self.evidence_a == "" or self.evidence_b == "":
+
+        # Check if deadline has passed — if so, allow resolution with partial evidence
+        deadline_passed = False
+        if int(self.evidence_deadline_seconds) > 0 and self.dispute_timestamp != "":
+            now = datetime.datetime.now(datetime.timezone.utc)
+            dispute_time = datetime.datetime.fromisoformat(self.dispute_timestamp)
+            if dispute_time.tzinfo is None:
+                dispute_time = dispute_time.replace(tzinfo=datetime.timezone.utc)
+            deadline = dispute_time + datetime.timedelta(seconds=int(self.evidence_deadline_seconds))
+            deadline_passed = now > deadline
+
+        if not deadline_passed and (self.evidence_a == "" or self.evidence_b == ""):
             raise ValueError("Both parties must submit evidence before resolution")
 
         self.status = "resolving"
@@ -189,7 +224,11 @@ Respond with ONLY a JSON object, no other text:
                 result = result.replace("```json", "").replace("```", "").strip()
             return result
 
-        result_str = gl.eq_principle.strict_eq(nondet)
+        result_str = gl.eq_principle.prompt_non_comparative(
+            nondet,
+            task="Evaluate a dispute and render a verdict as JSON with 'verdict' and 'reasoning' fields",
+            criteria="The verdict field must be one of TRUE, FALSE, or UNDETERMINED. The reasoning must address the evidence and guidelines provided. Ignore differences in reasoning wording — only the verdict decision matters for equivalence.",
+        )
 
         if isinstance(result_str, str):
             result = json.loads(result_str)
@@ -235,6 +274,25 @@ Respond with ONLY a JSON object, no other text:
             {
                 "evidence_a": self.evidence_a,
                 "evidence_b": self.evidence_b,
+            }
+        )
+
+    @gl.public.view
+    def get_evidence_deadline(self) -> str:
+        deadline_passed = False
+        deadline_seconds = int(self.evidence_deadline_seconds)
+        if deadline_seconds > 0 and self.dispute_timestamp != "":
+            now = datetime.datetime.now(datetime.timezone.utc)
+            dispute_time = datetime.datetime.fromisoformat(self.dispute_timestamp)
+            if dispute_time.tzinfo is None:
+                dispute_time = dispute_time.replace(tzinfo=datetime.timezone.utc)
+            deadline = dispute_time + datetime.timedelta(seconds=deadline_seconds)
+            deadline_passed = now > deadline
+        return json.dumps(
+            {
+                "evidence_deadline_seconds": deadline_seconds,
+                "dispute_timestamp": self.dispute_timestamp,
+                "deadline_passed": deadline_passed,
             }
         )
 

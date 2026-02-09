@@ -1,0 +1,14 @@
+{
+  "deployer": {
+    "address": "0x6b774CC27C682ce3407BdD408D14e52Ea03E17F5",
+    "privateKey": "(generated)"
+  },
+  "party_a": {
+    "address": "0x6ecff4C33677b17255916757Efb843EafA74F4cc",
+    "privateKey": "(generated)"
+  },
+  "party_b": {
+    "address": "0xc09a4016242F13c3c5Bf1017384e37c74d1CBA63",
+    "privateKey": "(generated)"
+  }
+}

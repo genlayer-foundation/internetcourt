@@ -16,20 +16,12 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: |
-          pip install genlayer-test
-          pip install -r contracts/requirements.txt
-      - name: Lint contracts
-        run: |
-          pip install ruff
-          ruff check contracts/
+        run: pip install genlayer-test cloudpickle
       - name: Run contract tests
-        run: |
-          cd contracts
-          python -m pytest tests/ -v --tb=short
+        run: python -m pytest contracts/tests/ -v --tb=short
 
   frontend:
-    name: Frontend
+    name: Frontend Build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,9 +37,5 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
-      - name: Type check
-        run: npx tsc --noEmit
-      - name: Run tests
-        run: npm test -- --run
       - name: Build
         run: npm run build

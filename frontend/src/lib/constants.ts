@@ -7,7 +7,6 @@ export const NAV_LINKS = [
   { label: "Cases", href: "/cases" },
   { label: "Create", href: "/create" },
   { label: "Docs", href: "/docs" },
-  { label: "Changelog", href: "/changelog" },
 ] as const;
 
 export const STATUS_COLORS: Record<string, string> = {

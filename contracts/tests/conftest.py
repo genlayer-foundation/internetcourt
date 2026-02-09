@@ -17,6 +17,35 @@ BOB_BYTES = b'\x02' * 20
 CHARLIE_BYTES = b'\x03' * 20
 
 
+def _patch_prompt_non_comparative():
+    """Patch prompt_non_comparative to use strict_eq in direct test mode.
+
+    prompt_non_comparative uses ExecPromptTemplate gl_calls internally,
+    which the direct test WASI mock doesn't handle. Since tests mock LLM
+    responses to return identical results anyway, strict_eq gives the same
+    behavior. On studionet, the real prompt_non_comparative is used.
+    """
+    import genlayer.gl.eq_principle as eq_mod
+    import genlayer.gl.vm as vm_mod
+    from genlayer.gl._internal import _lazy_api
+    from genlayer.py.types import Lazy
+    import typing
+
+    @_lazy_api
+    def patched_prompt_non_comparative(
+        fn: typing.Callable[[], str], *, task: str, criteria: str
+    ) -> Lazy[str]:
+        def validator_fn(leaders_res: vm_mod.Result) -> bool:
+            my_res = vm_mod.spawn_sandbox(fn)
+            return my_res == leaders_res
+
+        return vm_mod.run_nondet_unsafe.lazy(fn, validator_fn)
+
+    eq_mod.prompt_non_comparative = patched_prompt_non_comparative
+    import genlayer.gl as gl_mod
+    gl_mod.eq_principle.prompt_non_comparative = patched_prompt_non_comparative
+
+
 @pytest.fixture
 def deploy_moltcourt(direct_vm, direct_deploy):
     """Deploy a MoltCourt contract with default params.
@@ -24,13 +53,6 @@ def deploy_moltcourt(direct_vm, direct_deploy):
     Returns (contract, alice_addr, bob_addr).
     The addresses are proper SDK Address types, created after the SDK is loaded.
     """
-    # direct_deploy loads the SDK, which makes genlayer importable
-    # We need to call it to trigger SDK setup. But we also need to pass
-    # Address objects as arguments. The trick: deploy_contract internally
-    # converts bytes to Address when setting up storage.
-    # So we let the contract __init__ receive the raw bytes and the storage
-    # layer will handle conversion.
-
     # Set sender first (as bytes - VMContext handles bytes ok)
     direct_vm.sender = ALICE_BYTES
 
@@ -41,6 +63,11 @@ def deploy_moltcourt(direct_vm, direct_deploy):
         SAMPLE_GUIDELINES,
         SAMPLE_EVIDENCE_DEFS,
     )
+
+    # Patch prompt_non_comparative for direct test mode (ExecPromptTemplate
+    # is not supported by the WASI mock). Must happen after direct_deploy
+    # loads the SDK.
+    _patch_prompt_non_comparative()
 
     # Now genlayer is loaded, get proper Address objects for pranking
     from genlayer import Address

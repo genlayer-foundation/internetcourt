@@ -1,0 +1,27 @@
+# GenLayer Test Configuration
+# See: https://docs.genlayer.com/api-references/genlayer-test
+
+networks:
+  # Default network for regular tests
+  default: localnet
+
+  # Local GenLayer Studio (Docker): genlayer init && genlayer up
+  localnet:
+    leader_only: true
+
+  # Hosted GenLayer Studio (no Docker needed)
+  studionet:
+    leader_only: true
+
+  # Testnet Asimov (production-like, needs faucet tokens)
+  # Uncomment and add your private keys to use:
+  # testnet_asimov:
+  #   accounts:
+  #     - "${GENLAYER_PRIVATE_KEY}"
+  #   from: "${GENLAYER_PRIVATE_KEY}"
+
+paths:
+  contracts: "contracts"
+  artifacts: "artifacts"
+
+environment: .env

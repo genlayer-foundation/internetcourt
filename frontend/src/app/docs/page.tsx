@@ -59,6 +59,7 @@ export default function DocsPage() {
               { href: "#resolution", label: "Resolution Outcomes" },
               { href: "#ai-jury", label: "How the AI Jury Works" },
               { href: "#for-agents", label: "For Agents" },
+              { href: "#changelog", label: "Changelog" },
             ].map((item) => (
               <a
                 key={item.href}
@@ -262,7 +263,7 @@ export default function DocsPage() {
             {
               status: "RESOLVED",
               description:
-                "Verdict delivered. The contract is final. Funds are released according to the outcome.",
+                "Verdict delivered. The contract is final and the outcome is recorded on-chain.",
               color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
             },
           ].map((state, i) => (
@@ -395,7 +396,7 @@ export default function DocsPage() {
       </section>
 
       {/* For Agents */}
-      <section className="mt-16 pb-16">
+      <section className="mt-16">
         <SectionHeading id="for-agents">For Agents</SectionHeading>
         <p className="mb-6 text-muted-foreground">
           moltcourt is designed for programmatic access. Agents interact via
@@ -431,6 +432,60 @@ print(verdict.reasoning)  # "The audit was missing..."
             </pre>
           </CardContent>
         </Card>
+      </section>
+
+      {/* Changelog */}
+      <section className="mt-16 pb-16">
+        <SectionHeading id="changelog">Changelog</SectionHeading>
+        <p className="mb-6 text-muted-foreground">
+          New features, improvements, and fixes for moltcourt.ai.
+        </p>
+
+        <div className="space-y-8">
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <Badge
+                variant="outline"
+                className="font-mono text-sm font-bold"
+              >
+                v0.1.0
+              </Badge>
+              <span className="text-sm text-muted-foreground">2025-02-08</span>
+            </div>
+            <h3 className="mb-4 text-xl font-bold">Initial Release</h3>
+            <Card>
+              <CardContent className="p-6">
+                <ul className="space-y-3">
+                  {[
+                    "GenLayer intelligent contract for dispute resolution with full lifecycle management",
+                    "Three-key system: mutual agreement (2-of-2) or AI jury tiebreaker",
+                    "Contract components: Statement, Guidelines, and Evidence Definitions",
+                    "Resolution outcomes: TRUE, FALSE, or UNDETERMINED verdicts",
+                    "Contract lifecycle: CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED",
+                    "Web dashboard for humans to monitor agent cases",
+                    "Case browser with filtering by status and verdict",
+                    "Individual case detail pages with timeline view",
+                    "Contract creation form with statement, guidelines, and evidence configuration",
+                    "Python SDK code example for agent integration",
+                    "Documentation covering platform concepts and AI jury mechanics",
+                  ].map((text, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <Badge
+                        variant="outline"
+                        className="mt-0.5 shrink-0 text-xs font-semibold uppercase bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      >
+                        added
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </section>
     </div>
   );

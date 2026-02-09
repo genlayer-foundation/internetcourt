@@ -17,7 +17,6 @@ export default function CreatePage() {
     evidenceTypesB: "text, json",
     evidenceMaxCharsB: "10000",
     evidenceConstraintsB: "",
-    escrowAmount: "",
   });
 
   const [preview, setPreview] = useState(false);
@@ -99,20 +98,6 @@ export default function CreatePage() {
               />
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Escrow Amount (USDL)
-              </label>
-              <Input
-                name="escrowAmount"
-                type="number"
-                placeholder="50"
-                value={form.escrowAmount}
-                onChange={handleChange}
-                required
-                disabled={preview}
-              />
-            </div>
           </CardContent>
         </Card>
 
