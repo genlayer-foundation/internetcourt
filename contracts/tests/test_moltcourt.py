@@ -275,15 +275,21 @@ class TestSubmitEvidence:
             contract.submit_evidence("Party B's evidence text")
         assert contract.evidence_b == "Party B's evidence text"
 
-    def test_both_parties_submit(self, disputed_contract, direct_vm):
+    def test_both_parties_submit_auto_resolves(self, disputed_contract, direct_vm):
         contract, alice, bob = disputed_contract
         with direct_vm.prank(alice):
             contract.submit_evidence("Evidence A")
+        direct_vm.mock_llm(
+            r".*impartial AI juror.*",
+            '{"verdict": "TRUE", "reasoning": "Auto-resolved after both submitted."}'
+        )
         with direct_vm.prank(bob):
             contract.submit_evidence("Evidence B")
         evidence = json.loads(contract.get_evidence())
         assert evidence["evidence_a"] == "Evidence A"
         assert evidence["evidence_b"] == "Evidence B"
+        assert contract.status == "resolved"
+        assert contract.verdict == "TRUE"
 
     def test_party_a_cannot_submit_twice(self, disputed_contract, direct_vm):
         contract, alice, bob = disputed_contract
@@ -336,51 +342,50 @@ class TestSubmitEvidence:
 
 
 class TestResolve:
-    def _setup_dispute_with_evidence(self, contract, alice, bob, direct_vm):
-        """Helper to set up a dispute with both parties' evidence submitted."""
+    def _setup_dispute_with_evidence(self, contract, alice, bob, direct_vm, mock_response=None):
+        """Helper to set up a dispute with both parties' evidence submitted.
+
+        Since submit_evidence auto-resolves when both parties have submitted,
+        mock_response must be provided to mock the LLM before the second submission.
+        If mock_response is None, the LLM is not mocked (for tests that only submit one side).
+        """
         with direct_vm.prank(alice):
             contract.initiate_dispute()
         with direct_vm.prank(alice):
             contract.submit_evidence("The audit was incomplete.")
+        if mock_response:
+            direct_vm.mock_llm(r".*impartial AI juror.*", mock_response)
         with direct_vm.prank(bob):
             contract.submit_evidence("The audit covers all areas.")
 
     def test_resolve_verdict_true(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        self._setup_dispute_with_evidence(contract, alice, bob, direct_vm)
-
-        direct_vm.mock_llm(
-            r".*impartial AI juror.*",
+        self._setup_dispute_with_evidence(
+            contract, alice, bob, direct_vm,
             '{"verdict": "TRUE", "reasoning": "The audit was complete."}'
         )
-        contract.resolve()
 
+        # Auto-resolved after second evidence submission
         assert contract.status == "resolved"
         assert contract.verdict == "TRUE"
         assert contract.reasoning == "The audit was complete."
 
     def test_resolve_verdict_false(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        self._setup_dispute_with_evidence(contract, alice, bob, direct_vm)
-
-        direct_vm.mock_llm(
-            r".*impartial AI juror.*",
+        self._setup_dispute_with_evidence(
+            contract, alice, bob, direct_vm,
             '{"verdict": "FALSE", "reasoning": "The audit was incomplete."}'
         )
-        contract.resolve()
 
         assert contract.status == "resolved"
         assert contract.verdict == "FALSE"
 
     def test_resolve_verdict_undetermined(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        self._setup_dispute_with_evidence(contract, alice, bob, direct_vm)
-
-        direct_vm.mock_llm(
-            r".*impartial AI juror.*",
+        self._setup_dispute_with_evidence(
+            contract, alice, bob, direct_vm,
             '{"verdict": "UNDETERMINED", "reasoning": "Not enough evidence."}'
         )
-        contract.resolve()
 
         assert contract.status == "resolved"
         assert contract.verdict == "UNDETERMINED"
@@ -401,28 +406,23 @@ class TestResolve:
         with direct_vm.expect_revert("No active dispute to resolve"):
             contract.resolve()
 
-    def test_cannot_resolve_twice(self, active_contract, direct_vm):
+    def test_cannot_resolve_already_auto_resolved(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        self._setup_dispute_with_evidence(contract, alice, bob, direct_vm)
-
-        direct_vm.mock_llm(
-            r".*",
+        self._setup_dispute_with_evidence(
+            contract, alice, bob, direct_vm,
             '{"verdict": "TRUE", "reasoning": "First resolution."}'
         )
-        contract.resolve()
 
+        # Already auto-resolved, calling resolve again should fail
         with direct_vm.expect_revert("No active dispute to resolve"):
             contract.resolve()
 
     def test_get_verdict_returns_json(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        self._setup_dispute_with_evidence(contract, alice, bob, direct_vm)
-
-        direct_vm.mock_llm(
-            r".*",
+        self._setup_dispute_with_evidence(
+            contract, alice, bob, direct_vm,
             '{"verdict": "FALSE", "reasoning": "Incomplete audit."}'
         )
-        contract.resolve()
 
         verdict = json.loads(contract.get_verdict())
         assert verdict["verdict"] == "FALSE"
@@ -459,7 +459,7 @@ class TestStateTransitions:
         assert contract.status == "resolved"
 
     def test_full_lifecycle_ai_jury(self, deploy_moltcourt, direct_vm):
-        """CREATED -> ACTIVE -> DISPUTED -> RESOLVING -> RESOLVED"""
+        """CREATED -> ACTIVE -> DISPUTED -> auto-RESOLVED on second evidence"""
         contract, alice, bob = deploy_moltcourt
 
         assert contract.status == "created"
@@ -474,14 +474,14 @@ class TestStateTransitions:
 
         with direct_vm.prank(alice):
             contract.submit_evidence("A's evidence")
-        with direct_vm.prank(bob):
-            contract.submit_evidence("B's evidence")
 
+        # Mock LLM before second submission — auto-resolve triggers
         direct_vm.mock_llm(
             r".*",
             '{"verdict": "TRUE", "reasoning": "Statement confirmed."}'
         )
-        contract.resolve()
+        with direct_vm.prank(bob):
+            contract.submit_evidence("B's evidence")
         assert contract.status == "resolved"
 
     def test_cancel_lifecycle(self, deploy_moltcourt, direct_vm):
@@ -508,6 +508,10 @@ class TestViewMethods:
         contract, alice, bob = disputed_contract
         with direct_vm.prank(alice):
             contract.submit_evidence("Evidence A text")
+        direct_vm.mock_llm(
+            r".*",
+            '{"verdict": "TRUE", "reasoning": "Test."}'
+        )
         with direct_vm.prank(bob):
             contract.submit_evidence("Evidence B text")
 
@@ -953,13 +957,13 @@ class TestViewMethodsAcrossStates:
             contract.initiate_dispute()
         with direct_vm.prank(alice):
             contract.submit_evidence("Evidence A")
-        with direct_vm.prank(bob):
-            contract.submit_evidence("Evidence B")
         direct_vm.mock_llm(
             r".*",
             '{"verdict": "TRUE", "reasoning": "Evidence supports the claim."}'
         )
-        contract.resolve()
+        with direct_vm.prank(bob):
+            contract.submit_evidence("Evidence B")
+        # Auto-resolved after second evidence
         details = json.loads(contract.get_contract_details())
         assert details["status"] == "resolved"
         assert details["verdict"] == "TRUE"
@@ -981,13 +985,13 @@ class TestViewMethodsAcrossStates:
             contract.initiate_dispute()
         with direct_vm.prank(alice):
             contract.submit_evidence("A evidence preserved")
-        with direct_vm.prank(bob):
-            contract.submit_evidence("B evidence preserved")
         direct_vm.mock_llm(
             r".*",
             '{"verdict": "FALSE", "reasoning": "Test."}'
         )
-        contract.resolve()
+        with direct_vm.prank(bob):
+            contract.submit_evidence("B evidence preserved")
+        # Auto-resolved
         evidence = json.loads(contract.get_evidence())
         assert evidence["evidence_a"] == "A evidence preserved"
         assert evidence["evidence_b"] == "B evidence preserved"
@@ -999,12 +1003,13 @@ class TestViewMethodsAcrossStates:
 
 
 class TestResolveEdgeCases:
-    def _setup_full_dispute(self, contract, alice, bob, direct_vm):
-        """Helper: initiate dispute and submit both evidences."""
+    def _setup_full_dispute(self, contract, alice, bob, direct_vm, mock_response):
+        """Helper: initiate dispute and submit both evidences with auto-resolve."""
         with direct_vm.prank(alice):
             contract.initiate_dispute()
         with direct_vm.prank(alice):
             contract.submit_evidence("A's evidence")
+        direct_vm.mock_llm(r".*impartial AI juror.*", mock_response)
         with direct_vm.prank(bob):
             contract.submit_evidence("B's evidence")
 
@@ -1030,23 +1035,19 @@ class TestResolveEdgeCases:
 
     def test_resolve_sets_status_to_resolved(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        self._setup_full_dispute(contract, alice, bob, direct_vm)
-        direct_vm.mock_llm(
-            r".*",
+        self._setup_full_dispute(
+            contract, alice, bob, direct_vm,
             '{"verdict": "UNDETERMINED", "reasoning": "Insufficient info."}'
         )
-        contract.resolve()
         assert contract.status == "resolved"
 
     def test_resolve_with_json_in_code_fence(self, active_contract, direct_vm):
         """LLM response with code fences should be handled."""
         contract, alice, bob = active_contract
-        self._setup_full_dispute(contract, alice, bob, direct_vm)
-        direct_vm.mock_llm(
-            r".*",
+        self._setup_full_dispute(
+            contract, alice, bob, direct_vm,
             '```json\n{"verdict": "TRUE", "reasoning": "Fenced response."}\n```'
         )
-        contract.resolve()
         assert contract.verdict == "TRUE"
         assert contract.reasoning == "Fenced response."
 

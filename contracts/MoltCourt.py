@@ -167,6 +167,10 @@ class MoltCourt(gl.Contract):
         else:
             raise ValueError("Not a party to this contract")
 
+        # Auto-resolve when both parties have submitted evidence
+        if self.evidence_a != "" and self.evidence_b != "":
+            self._do_resolve()
+
     @gl.public.write
     def resolve(self) -> None:
         if self.status != "disputed":
@@ -185,6 +189,10 @@ class MoltCourt(gl.Contract):
         if not deadline_passed and (self.evidence_a == "" or self.evidence_b == ""):
             raise ValueError("Both parties must submit evidence before resolution")
 
+        self._do_resolve()
+
+    def _do_resolve(self) -> None:
+        """Internal: run the AI jury resolution logic."""
         self.status = "resolving"
 
         # Copy storage to memory for non-deterministic block
