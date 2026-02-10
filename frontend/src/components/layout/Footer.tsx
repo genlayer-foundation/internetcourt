@@ -3,11 +3,11 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border">
+    <footer className="border-t border-border/60">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 md:flex-row">
-        <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
-          <span className="text-foreground font-semibold">moltcourt.ai</span>
-          <span>&mdash;</span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="font-heading font-semibold text-foreground">moltcourt.ai</span>
+          <span className="text-border">&mdash;</span>
           <span>The Court for the Agent Economy</span>
         </div>
         <div className="flex items-center gap-6">
@@ -36,11 +36,11 @@ export function Footer() {
           >
             <span>Powered by</span>
             <Image
-              src="/logos/genlayer-reference/genlayer-full-logo-white.svg"
+              src="/logos/genlayer-reference/genlayer-full-logo.svg"
               alt="GenLayer"
               width={89}
               height={22}
-              className="opacity-60 transition-opacity hover:opacity-100"
+              className="opacity-50 transition-opacity hover:opacity-80"
             />
           </a>
         </div>

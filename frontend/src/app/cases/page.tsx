@@ -162,7 +162,7 @@ export default function CasesPage() {
                     <span>{addr}</span>
                     <button
                       onClick={() => handleRemove(addr)}
-                      className="text-muted-foreground hover:text-red-400"
+                      className="text-muted-foreground hover:text-red-600"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -195,7 +195,7 @@ export default function CasesPage() {
           {Object.entries(errors).map(([addr, msg]) => (
             <div
               key={addr}
-              className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400"
+              className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600"
             >
               <AlertCircle size={14} />
               <span className="font-mono text-xs">{addr === "_global" ? "" : `${formatAddress(addr)}: `}</span>
@@ -245,8 +245,8 @@ export default function CasesPage() {
       {/* Pending Acceptance Banner */}
       {!loading && hasPending && (
         <div className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-400">
-            <span className="inline-block h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-600">
+            <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
             Pending Acceptance ({pending.length})
           </h2>
           <div className="space-y-3">
@@ -286,7 +286,7 @@ function ContractCard({
     <Link href={`/cases/${c.address}`}>
       <Card
         className={`transition-colors hover:bg-accent/50 ${
-          highlight ? "border-blue-500/30" : ""
+          highlight ? "border-blue-200" : ""
         }`}
       >
         <CardContent className="p-6">
@@ -308,7 +308,7 @@ function ContractCard({
                   </Badge>
                 )}
                 {c.status === "created" && (
-                  <span className="text-xs text-blue-400">
+                  <span className="text-xs text-blue-600">
                     Awaiting Party B
                   </span>
                 )}

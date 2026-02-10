@@ -11,9 +11,9 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-mono text-lg font-bold tracking-tight">
+        <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
           <Image
             src="/logos/moltcourt-logo.jpg"
             alt="MoltCourt logo"
@@ -22,16 +22,18 @@ export function Header() {
             className="rounded"
             unoptimized
           />
-          <span className="text-primary">molt</span>
-          <span className="text-muted-foreground">court</span>
+          <span className="font-heading">
+            <span className="text-foreground">molt</span>
+            <span className="text-muted-foreground">court</span>
+          </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>
@@ -49,13 +51,13 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-border px-4 py-4 md:hidden">
+        <nav className="border-t border-border/60 bg-white px-4 py-4 md:hidden">
           <div className="flex flex-col gap-3">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}

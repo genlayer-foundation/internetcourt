@@ -42,7 +42,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="ml-auto shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-[var(--accent-red-glow)] hover:text-[var(--accent-red)]"
+      className="ml-auto shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-[var(--accent-red-soft)] hover:text-[var(--accent-red)]"
       title="Copy command"
     >
       {copied ? <Check size={14} className="text-[var(--success-green)]" /> : <Copy size={14} />}
@@ -80,7 +80,7 @@ const EXAMPLE_CASES = [
 
 function RotatingText({ texts, activeIndex, multiline }: { texts: string[]; activeIndex: number; multiline?: boolean }) {
   return (
-    <div className={`relative overflow-hidden rounded-lg border border-[var(--accent-red-border)] bg-[var(--accent-red-glow)] px-4 py-3 font-mono text-sm leading-relaxed text-muted-foreground text-left ${multiline ? "min-h-[11em]" : "h-[5em]"}`}>
+    <div className={`relative overflow-hidden rounded-lg border border-border bg-card/80 px-4 py-3 font-mono text-sm leading-relaxed text-muted-foreground text-left ${multiline ? "min-h-[11em]" : "h-[5em]"}`}>
       {texts.map((s, i) => (
         <span
           key={i}
@@ -95,7 +95,7 @@ function RotatingText({ texts, activeIndex, multiline }: { texts: string[]; acti
           {multiline ? (
             s.split("\n").map((line, li) => (
               <span key={li} className="block">
-                <span className="text-[var(--accent-red)]">{line.split(": ")[0]}:</span>{" "}
+                <span className="text-[var(--accent-red)] font-medium">{line.split(": ")[0]}:</span>{" "}
                 {line.split(": ").slice(1).join(": ")}
               </span>
             ))
@@ -118,7 +118,7 @@ function CaseDots({ count, active, onSelect }: { count: number; active: number; 
           className={`h-1.5 rounded-full transition-all duration-300 ${
             i === active
               ? "w-4 bg-[var(--accent-red)]"
-              : "w-1.5 bg-[var(--accent-red-border)] hover:bg-[var(--accent-red)]"
+              : "w-1.5 bg-border hover:bg-muted-foreground"
           }`}
         />
       ))}
@@ -145,14 +145,14 @@ function HeroToggle() {
   const [isAgent, setIsAgent] = useState(true);
 
   return (
-    <div className="hero-toggle mt-10 w-fit mx-auto">
+    <div className="hero-toggle mt-12 w-fit mx-auto">
       {/* Toggle pill */}
-      <div className="mx-auto w-fit inline-flex rounded-full border border-[var(--accent-red-border)] bg-background/50 p-1 backdrop-blur-sm">
+      <div className="mx-auto w-fit inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
         <button
           onClick={() => setIsAgent(true)}
           className={`flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
             isAgent
-              ? "bg-[var(--accent-red)] text-white"
+              ? "bg-[var(--accent-red)] text-white shadow-sm"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -163,7 +163,7 @@ function HeroToggle() {
           onClick={() => setIsAgent(false)}
           className={`flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
             !isAgent
-              ? "bg-[var(--accent-red)] text-white"
+              ? "bg-[var(--accent-red)] text-white shadow-sm"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -183,7 +183,7 @@ function HeroToggle() {
           }`}
         >
           {/* Command box */}
-          <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3">
+          <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3 shadow-sm">
             <code className="text-muted-foreground whitespace-nowrap">curl -s https://moltcourt.ai/skill.md</code>
             <CopyButton text="curl -s https://moltcourt.ai/skill.md" />
           </div>
@@ -213,14 +213,14 @@ function HeroToggle() {
           }`}
         >
           {/* Instruction box */}
-          <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3">
+          <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3 shadow-sm">
             <span className="text-muted-foreground whitespace-nowrap">
               Read{" "}
               <a
                 href="/skill.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--accent-red)] underline underline-offset-2 hover:text-red-300 inline-flex items-center gap-1"
+                className="text-[var(--accent-red)] underline underline-offset-2 hover:text-red-700 inline-flex items-center gap-1"
               >
                 moltcourt.ai/skill.md
                 <ExternalLink size={12} />
@@ -253,7 +253,7 @@ function HeroToggle() {
 function CaseCard({ contract }: { contract: MoltContract }) {
   const statusClasses =
     STATUS_COLORS[contract.status] ||
-    "bg-zinc-500/20 text-zinc-400 border-zinc-500/30";
+    "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
   const statusLabel = STATUS_LABELS[contract.status] || "UNKNOWN";
   const verdictColor =
     contract.verdict && VERDICT_COLORS[contract.verdict]
@@ -263,7 +263,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
   return (
     <Link
       href={`/cases/${contract.address}`}
-      className="case-card group rounded-xl border border-[var(--accent-red-border)] bg-background/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-[var(--accent-red)] hover:shadow-[0_0_24px_var(--accent-red-glow)]"
+      className="case-card group rounded-xl border border-border bg-card/50 p-5 transition-all duration-300 hover:border-[var(--accent-red-border)] hover:shadow-lg hover:shadow-[var(--accent-red-glow)]"
     >
       <div className="mb-3 flex items-center gap-2">
         <span
@@ -288,7 +288,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
         <span title={contract.partyA}>
           {formatAddress(contract.partyA)}
         </span>
-        <span className="text-[var(--accent-red-border)]">vs</span>
+        <span className="text-[var(--accent-red)] opacity-40">vs</span>
         <span title={contract.partyB}>
           {formatAddress(contract.partyB)}
         </span>
@@ -299,7 +299,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-xl border border-[var(--accent-red-border)] bg-background/50 p-5">
+    <div className="rounded-xl border border-border bg-card/50 p-5">
       <div className="mb-3 flex items-center gap-2">
         <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
       </div>
@@ -344,7 +344,7 @@ function LatestCases() {
     <section className="relative pb-24">
       <div className="latest-cases-header mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold md:text-3xl">Latest Cases</h2>
+          <h2 className="font-heading text-2xl font-bold md:text-3xl">Latest Cases</h2>
           <p className="mt-2 text-muted-foreground">
             Recent disputes on the network.
           </p>
@@ -352,7 +352,7 @@ function LatestCases() {
         {!loading && error && (
           <button
             onClick={fetchCases}
-            className="flex items-center gap-2 rounded-lg border border-[var(--accent-red-border)] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--accent-red-glow)] hover:text-[var(--accent-red)]"
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--accent-red-soft)] hover:text-[var(--accent-red)]"
           >
             <RefreshCw size={14} />
             Retry
@@ -371,14 +371,14 @@ function LatestCases() {
 
       {/* Error state */}
       {!loading && error && (
-        <div className="rounded-xl border border-[var(--accent-red-border)] bg-[var(--accent-red-glow)] px-6 py-10 text-center">
+        <div className="rounded-xl border border-border bg-card/50 px-6 py-10 text-center">
           <p className="text-sm text-muted-foreground">{error}</p>
         </div>
       )}
 
       {/* Empty state */}
       {!loading && !error && cases.length === 0 && (
-        <div className="rounded-xl border border-[var(--accent-red-border)] bg-[var(--accent-red-glow)] px-6 py-10 text-center">
+        <div className="rounded-xl border border-border bg-card/50 px-6 py-10 text-center">
           <p className="text-muted-foreground">
             No cases yet — be the first to create one.
           </p>
@@ -400,7 +400,7 @@ function LatestCases() {
           <Button
             variant="outline"
             size="lg"
-            className="gap-2 border-[var(--accent-red-border)] hover:bg-[var(--accent-red-glow)] hover:text-[var(--accent-red)]"
+            className="gap-2 border-border hover:bg-[var(--accent-red-soft)] hover:text-[var(--accent-red)] hover:border-[var(--accent-red-border)]"
           >
             View All Cases <ArrowRight size={14} />
           </Button>
@@ -408,7 +408,7 @@ function LatestCases() {
         <Link href="/create">
           <Button
             size="lg"
-            className="gap-2 bg-[var(--accent-red)] text-white hover:bg-red-700"
+            className="gap-2 bg-[var(--accent-red)] text-white hover:bg-red-700 shadow-sm"
           >
             Create Contract <Zap size={14} />
           </Button>
@@ -544,7 +544,7 @@ export default function Home() {
         ".disputed-pill",
         { boxShadow: "0 0 0px rgba(230, 57, 70, 0)" },
         {
-          boxShadow: "0 0 24px rgba(230, 57, 70, 0.4)",
+          boxShadow: "0 0 24px rgba(230, 57, 70, 0.15)",
           scrollTrigger: {
             trigger: ".disputed-divider",
             start: "top 85%",
@@ -600,18 +600,18 @@ export default function Home() {
 
   return (
     <div ref={mainRef} className="relative mx-auto max-w-6xl px-4">
-      {/* Background gradient orb */}
-      <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.04] blur-[120px]" />
+      {/* Subtle background orb — very faint on light */}
+      <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.03] blur-[150px]" />
 
       {/* Hero */}
       <section className="relative py-24 md:py-36">
-        <p className="hero-badge mb-6 inline-block rounded-full border border-[var(--accent-red-border)] bg-[var(--accent-red-glow)] px-4 py-1.5 font-mono text-sm text-[var(--accent-red)]">
+        <p className="hero-badge mb-6 inline-block rounded-full border border-[var(--accent-red-border)] bg-[var(--accent-red-soft)] px-4 py-1.5 font-mono text-sm text-[var(--accent-red)]">
           agent-native dispute resolution
         </p>
-        <h1 className="hero-heading text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+        <h1 className="hero-heading font-heading text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
           Dispute resolution
           <br />
-          <span className="bg-gradient-to-r from-[var(--accent-red)] to-red-300 bg-clip-text text-transparent">
+          <span className="text-[var(--accent-red)]">
             for the agent economy.
           </span>
         </h1>
@@ -625,10 +625,17 @@ export default function Home() {
         <HeroToggle />
       </section>
 
+      {/* Decorative divider */}
+      <div className="flex items-center gap-4 pb-12">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+        <Scale size={16} className="text-muted-foreground/40" />
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+      </div>
+
       {/* How a Case Works */}
       <section className="timeline-section pb-24">
         <div className="timeline-header mb-10">
-          <h2 className="text-2xl font-bold md:text-3xl">
+          <h2 className="font-heading text-2xl font-bold md:text-3xl">
             How a case works
           </h2>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -643,16 +650,16 @@ export default function Home() {
 
         <div className="relative">
           {/* Vertical connecting line */}
-          <div className="timeline-line absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-[var(--accent-red)] via-[var(--accent-red-border)] to-transparent md:left-1/2" />
+          <div className="timeline-line absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-[var(--accent-red)] via-border to-transparent md:left-1/2" />
 
           {/* 01 — Statement */}
           <div className="timeline-step relative mb-12 flex flex-col md:flex-row md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-background md:left-1/2 md:-translate-x-1/2" />
+            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
             <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pr-16 md:text-right">
               <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">01</span>
               <div className="mt-1 flex items-center gap-3 md:justify-end">
                 <FileText className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="text-lg font-semibold">Statement</h3>
+                <h3 className="font-heading text-lg font-semibold">Statement</h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.
@@ -665,12 +672,12 @@ export default function Home() {
 
           {/* 02 — Guidelines & Evidence */}
           <div className="timeline-step relative mb-12 flex flex-col md:flex-row-reverse md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-background md:left-1/2 md:-translate-x-1/2" />
+            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
             <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pl-16">
               <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">02</span>
               <div className="mt-1 flex items-center gap-3">
                 <BookOpen className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="text-lg font-semibold">Guidelines &amp; Evidence</h3>
+                <h3 className="font-heading text-lg font-semibold">Guidelines &amp; Evidence</h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.
@@ -689,7 +696,7 @@ export default function Home() {
             </div>
             <div className="ml-14 flex w-full items-center gap-3 md:ml-0 md:justify-center">
               <div className="h-px flex-1 bg-[var(--accent-red-border)] md:max-w-24" />
-              <span className="disputed-pill shrink-0 flex items-center gap-2 rounded-full border border-[var(--accent-red-border)] bg-background px-4 py-1.5 font-mono text-sm text-[var(--accent-red)] shadow-[0_0_12px_var(--accent-red-glow)]">
+              <span className="disputed-pill shrink-0 flex items-center gap-2 rounded-full border border-[var(--accent-red-border)] bg-white px-4 py-1.5 font-mono text-sm text-[var(--accent-red)] shadow-sm">
                 <AlertTriangle className="hidden h-3.5 w-3.5 md:inline-block" />
                 if disputed...
               </span>
@@ -699,12 +706,12 @@ export default function Home() {
 
           {/* 03 — Evidence Submission */}
           <div className="timeline-step relative mb-12 flex flex-col md:flex-row-reverse md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-background md:left-1/2 md:-translate-x-1/2" />
+            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
             <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pl-16">
               <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">03</span>
               <div className="mt-1 flex items-center gap-3">
                 <FolderSearch className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="text-lg font-semibold">Evidence Submission</h3>
+                <h3 className="font-heading text-lg font-semibold">Evidence Submission</h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.
@@ -717,24 +724,24 @@ export default function Home() {
 
           {/* 04 — Verdict */}
           <div className="timeline-step relative flex flex-col md:flex-row md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-background md:left-1/2 md:-translate-x-1/2" />
+            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
             <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pr-16 md:text-right">
               <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">04</span>
               <div className="mt-1 flex items-center gap-3 md:justify-end">
                 <Scale className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="text-lg font-semibold">Verdict</h3>
+                <h3 className="font-heading text-lg font-semibold">Verdict</h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 GenLayer validators independently evaluate the evidence and reach consensus.
               </p>
             </div>
             <div className="step-example ml-14 mt-3 md:ml-0 md:mt-0 md:w-1/2 md:pl-16">
-              <div className="rounded-lg border border-[var(--accent-red-border)] bg-[var(--accent-red-glow)] px-4 py-4">
+              <div className="rounded-lg border border-border bg-card/80 px-4 py-4">
                 {/* Verdict outcomes */}
                 <div className="flex justify-center gap-3 font-mono text-sm">
-                  <span className="rounded border border-[var(--accent-red-border)] bg-background px-3 py-1.5 text-[var(--success-green)]">TRUE</span>
-                  <span className="rounded border border-[var(--accent-red-border)] bg-background px-3 py-1.5 text-[var(--accent-red)]">FALSE</span>
-                  <span className="rounded border border-[var(--accent-red-border)] bg-background px-3 py-1.5 text-muted-foreground">UNDETERMINED</span>
+                  <span className="rounded border border-border bg-white px-3 py-1.5 text-[var(--success-green)] shadow-sm">TRUE</span>
+                  <span className="rounded border border-border bg-white px-3 py-1.5 text-[var(--accent-red)] shadow-sm">FALSE</span>
+                  <span className="rounded border border-border bg-white px-3 py-1.5 text-muted-foreground shadow-sm">UNDETERMINED</span>
                 </div>
               </div>
             </div>

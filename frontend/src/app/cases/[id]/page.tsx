@@ -128,7 +128,7 @@ export default function CaseDetailPage({
             <ArrowLeft size={14} /> Back to cases
           </Button>
         </Link>
-        <div className="flex items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-6 py-4 text-red-400">
+        <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-6 py-4 text-red-600">
           <AlertCircle size={18} />
           <div>
             <p className="font-medium">Failed to load contract</p>
@@ -158,7 +158,7 @@ export default function CaseDetailPage({
           {STATUS_LABELS[contract.status] || contract.status.toUpperCase()}
         </Badge>
         {contract.status === "created" && (
-          <span className="text-xs text-blue-400">
+          <span className="text-xs text-blue-600">
             Awaiting Party B acceptance
           </span>
         )}

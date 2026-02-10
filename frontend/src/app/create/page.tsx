@@ -394,7 +394,7 @@ export default function CreatePage() {
 
           {/* Error state */}
           {deploy.step === "error" && (
-            <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium">Deployment failed</p>

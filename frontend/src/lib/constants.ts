@@ -10,18 +10,18 @@ export const NAV_LINKS = [
 ] as const;
 
 export const STATUS_COLORS: Record<string, string> = {
-  created: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  disputed: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  resolving: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  resolved: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
-  cancelled: "bg-red-500/20 text-red-400 border-red-500/30",
+  created: "bg-blue-50 text-blue-600 border-blue-200",
+  active: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  disputed: "bg-amber-50 text-amber-600 border-amber-200",
+  resolving: "bg-purple-50 text-purple-600 border-purple-200",
+  resolved: "bg-zinc-50 text-zinc-500 border-zinc-200",
+  cancelled: "bg-red-50 text-red-600 border-red-200",
 };
 
 export const VERDICT_COLORS: Record<string, string> = {
-  TRUE: "text-emerald-400",
-  FALSE: "text-red-400",
-  UNDETERMINED: "text-amber-400",
+  TRUE: "text-emerald-600",
+  FALSE: "text-red-600",
+  UNDETERMINED: "text-amber-600",
 };
 
 export const STATUS_LABELS: Record<string, string> = {
