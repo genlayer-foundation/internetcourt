@@ -5,7 +5,7 @@ import {
 } from "@/lib/genlayer";
 
 const FACTORY_ADDRESS =
-  process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "";
+  process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "0xAA55c2768855A483b5D8C8926585Cdb940207898";
 
 export async function GET() {
   try {
