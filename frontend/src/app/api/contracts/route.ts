@@ -49,8 +49,9 @@ export async function GET() {
     const { contracts, errors } = await fetchMultipleContracts(addresses);
     return NextResponse.json({ contracts, errors });
   } catch (err) {
-    console.error("GET /api/contracts error:", err);
-    return NextResponse.json({ contracts: [], errors: {} });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("GET /api/contracts error:", msg);
+    return NextResponse.json({ contracts: [], errors: {}, debug: { error: msg, factory: FACTORY_ADDRESS } });
   }
 }
 
