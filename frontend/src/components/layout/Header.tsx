@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { NAV_LINKS } from "@/lib/constants";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
@@ -9,18 +8,8 @@ export function Header() {
   return (
     <header className="relative z-50 pt-4 px-4">
       <div className="bg-[#f7f7f7] rounded-2xl max-w-[1200px] mx-auto px-3 py-2 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/logos/internetcourt-logo.jpg"
-            alt="Internet Court logo"
-            width={28}
-            height={28}
-            className="rounded"
-            unoptimized
-          />
-          <span className="font-heading text-lg font-bold tracking-tight text-[#dc2626] hidden sm:inline">
-            Internet Court
-          </span>
+        <Link href="/" className="flex items-center">
+          <img src="/logos/tic-logo-red.svg" alt="Internet Court" className="h-7" />
         </Link>
 
         <div className="flex items-center gap-6">

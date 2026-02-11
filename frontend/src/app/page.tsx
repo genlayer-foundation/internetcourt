@@ -567,6 +567,17 @@ export default function Home() {
       {/* Subtle background orb */}
       <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.03] blur-[150px]" />
 
+      {/* Background video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[1020px] max-w-none opacity-[0.05]"
+      >
+        <source src="/tic-bg-video.mp4" type="video/mp4" />
+      </video>
+
       {/* Hero */}
       <section className="relative py-24 md:py-36 text-center items-center flex flex-col">
         <h1 className="hero-heading font-heading text-5xl md:text-7xl lg:text-[96px] tracking-[-0.04em] leading-none">
