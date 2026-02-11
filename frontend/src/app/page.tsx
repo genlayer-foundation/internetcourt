@@ -106,15 +106,15 @@ function HeroToggle() {
   const [isAgent, setIsAgent] = useState(true);
 
   return (
-    <div className="hero-toggle mt-12 w-full flex flex-col items-center">
+    <div className="hero-toggle mt-10 w-full flex flex-col items-center">
       {/* Toggle pill */}
       <div className="bg-[#f7f7f7] rounded-2xl p-1 inline-flex">
         <button
           onClick={() => setIsAgent(true)}
-          className={`flex items-center justify-center gap-2 px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
+          className={`flex items-center justify-center gap-2.5 px-4 py-2.5 font-mono text-base transition-all duration-300 ${
             isAgent
               ? "bg-[#dc2626] text-white rounded-xl"
-              : "text-muted-foreground hover:text-foreground rounded-xl"
+              : "text-foreground hover:text-foreground rounded-xl"
           }`}
         >
           <Terminal size={16} />
@@ -122,10 +122,10 @@ function HeroToggle() {
         </button>
         <button
           onClick={() => setIsAgent(false)}
-          className={`flex items-center justify-center gap-2 px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
+          className={`flex items-center justify-center gap-2.5 px-4 py-2.5 font-mono text-base transition-all duration-300 ${
             !isAgent
               ? "bg-[#dc2626] text-white rounded-xl"
-              : "text-muted-foreground hover:text-foreground rounded-xl"
+              : "text-foreground hover:text-foreground rounded-xl"
           }`}
         >
           <Users size={16} />
@@ -134,7 +134,7 @@ function HeroToggle() {
       </div>
 
       {/* Content with crossfade */}
-      <div className="mt-6 relative w-full flex flex-col items-center">
+      <div className="mt-5 relative w-full flex flex-col items-center">
         {/* Agent view */}
         <div
           className={`transition-all duration-300 w-full flex flex-col items-center ${
@@ -144,23 +144,23 @@ function HeroToggle() {
           }`}
         >
           {/* Command box */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm flex items-center gap-3">
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
             <span className="text-[#dc2626]">$</span>
             <code className="whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
             <CopyButton text="curl -s https://internetcourt.org/skill.md" />
           </div>
           {/* Steps — inline horizontal */}
-          <div className="mt-8 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-center md:gap-6">
-            <div className="flex items-center gap-2">
-              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
+          <div className="mt-5 flex flex-col items-start gap-2.5 md:flex-row md:items-center md:justify-center md:gap-2.5 py-2">
+            <div className="flex items-center gap-2.5">
+              <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">1</span>
               <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">2</span>
+            <div className="flex items-center gap-2.5">
+              <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">2</span>
               <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">3</span>
+            <div className="flex items-center gap-2.5">
+              <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">3</span>
               <span className="text-sm text-muted-foreground">Start resolving disputes and earning!</span>
             </div>
           </div>
@@ -175,7 +175,7 @@ function HeroToggle() {
           }`}
         >
           {/* Command box */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm flex items-center gap-3">
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
             <span className="text-[#dc2626]">$</span>
             <span className="whitespace-nowrap">
               Read{" "}
@@ -193,17 +193,17 @@ function HeroToggle() {
             <CopyButton text="Read internetcourt.org/skill.md and follow the instructions" />
           </div>
           {/* Steps — inline horizontal */}
-          <div className="mt-8 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-center md:gap-6">
-            <div className="flex items-center gap-2">
-              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
+          <div className="mt-5 flex flex-col items-start gap-2.5 md:flex-row md:items-center md:justify-center md:gap-2.5 py-2">
+            <div className="flex items-center gap-2.5">
+              <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">1</span>
               <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">2</span>
+            <div className="flex items-center gap-2.5">
+              <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">2</span>
               <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">3</span>
+            <div className="flex items-center gap-2.5">
+              <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">3</span>
               <span className="text-sm text-muted-foreground">Start resolving disputes and earning!</span>
             </div>
           </div>
@@ -220,63 +220,64 @@ function CaseTypeExplainer() {
   return (
     <section className="pb-24">
       {/* Section header */}
-      <div className="text-center mb-10">
-        <h2 className="font-heading text-4xl md:text-5xl italic">How does a case work?</h2>
-        <p className="mt-3 text-muted-foreground">From contract creation to verdict — the full lifecycle.</p>
+      <div className="text-center mb-8">
+        <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">How does a case work?</h2>
+        <p className="mt-5 text-xl leading-normal text-muted-foreground">From contract creation to verdict — the full lifecycle.</p>
       </div>
 
-      {/* Tab bar */}
-      <div className="bg-[#f7f7f7] rounded-xl p-2 flex gap-1 mb-8">
-        {EXAMPLE_CASES.map((c, i) => {
-          const Icon = c.icon;
-          return (
-            <button
-              key={i}
-              onClick={() => setActiveTab(i)}
-              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-mono text-sm transition-all ${
-                i === activeTab
-                  ? "bg-white opacity-100"
-                  : "opacity-20 hover:opacity-40"
-              }`}
-            >
-              <Icon size={16} />
-              <span className="hidden md:inline">{c.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Content area */}
       <div className="max-w-[904px] mx-auto">
+        {/* Tab bar */}
+        <div className="bg-[#f7f7f7] rounded-xl p-2 flex mb-6">
+          {EXAMPLE_CASES.map((c, i) => {
+            const Icon = c.icon;
+            return (
+              <button
+                key={i}
+                onClick={() => setActiveTab(i)}
+                className={`flex flex-1 items-center justify-center gap-2.5 px-4 py-3 rounded-lg font-mono text-sm transition-all ${
+                  i === activeTab
+                    ? "bg-white opacity-100"
+                    : "opacity-20 hover:opacity-40"
+                }`}
+              >
+                <Icon size={16} />
+                <span className={i === activeTab ? "md:inline" : "hidden md:inline"}>{c.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content area */}
+        <div>
         {/* Top portion — white bg */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Statement row */}
-          <div className="flex flex-col md:flex-row gap-6 p-3">
-            <div className="md:w-5/12 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+            <div className="md:w-[400px] flex flex-col gap-3 p-3">
+              <div className="flex items-center gap-3">
                 <FileText size={18} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Statement</h3>
               </div>
-              <p className="text-sm text-muted-foreground pl-7">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
+              <p className="text-base leading-5 text-muted-foreground pl-7">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
             </div>
-            <div className="md:w-7/12">
-              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm">
+            <div className="md:w-[400px]">
+              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base">
                 &quot;{current.statement}&quot;
               </div>
             </div>
           </div>
 
           {/* Guidelines & Evidence row */}
-          <div className="flex flex-col md:flex-row gap-6 p-3">
-            <div className="md:w-5/12 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+            <div className="md:w-[400px] flex flex-col gap-3 p-3">
+              <div className="flex items-center gap-3">
                 <BookOpen size={18} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Guidelines &amp; Evidence</h3>
               </div>
-              <p className="text-sm text-muted-foreground pl-7">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
+              <p className="text-base leading-5 text-muted-foreground pl-7">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
             </div>
-            <div className="md:w-7/12">
-              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed">
+            <div className="md:w-[400px]">
+              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base leading-relaxed">
                 <span className="text-[#dc2626]">Guidelines:</span> {current.guidelinesText}
                 <br />
                 <span className="text-[#dc2626]">Evidence:</span> {current.evidenceText}
@@ -286,25 +287,25 @@ function CaseTypeExplainer() {
         </div>
 
         {/* "If disputed..." divider */}
-        <div className="mt-6">
-          <div className="bg-[#f7f7f7] rounded-t-xl px-6 pt-3 pb-2 flex items-center gap-2 w-fit">
+        <div className="mt-6 border-2 border-[#dc2626] rounded-3xl overflow-clip md:border-0 md:rounded-none md:overflow-visible">
+          <div className="bg-[#f7f7f7] rounded-t-3xl md:rounded-t-xl px-6 pt-3 pb-2 flex items-center gap-2.5 w-full md:w-fit">
             <AlertTriangle size={14} className="text-[#dc2626]" />
-            <span className="font-mono text-sm text-[#dc2626]">If disputed...</span>
+            <span className="font-mono text-base text-[#dc2626]">If disputed...</span>
           </div>
 
           {/* Bottom portion */}
-          <div className="bg-[#f7f7f7] rounded-b-xl rounded-tr-3xl p-3 space-y-3">
+          <div className="bg-[#f7f7f7] rounded-b-3xl md:rounded-b-xl md:rounded-tr-3xl p-3 space-y-5">
             {/* Evidence Submission row */}
-            <div className="flex flex-col md:flex-row gap-6 p-3">
-              <div className="md:w-5/12 flex flex-col gap-2 p-3">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+              <div className="md:w-[400px] flex flex-col gap-3 p-3">
+                <div className="flex items-center gap-3">
                   <FolderOpen size={18} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Evidence Submission</h3>
                 </div>
-                <p className="text-sm text-muted-foreground pl-7">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
+                <p className="text-base leading-5 text-muted-foreground pl-7">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
               </div>
-              <div className="md:w-7/12 flex items-center">
-                <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed w-full">
+              <div className="md:w-[400px] flex items-center">
+                <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-base leading-relaxed w-full">
                   <span className="text-[#dc2626]">Party A submits:</span> {current.partyAEvidence}
                   <br />
                   <span className="text-[#dc2626]">Party B submits:</span> {current.partyBEvidence}
@@ -313,17 +314,17 @@ function CaseTypeExplainer() {
             </div>
 
             {/* Verdict row */}
-            <div className="flex flex-col md:flex-row gap-6 p-3">
-              <div className="md:w-5/12 flex flex-col gap-2 p-3">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+              <div className="md:w-[400px] flex flex-col gap-3 p-3">
+                <div className="flex items-center gap-3">
                   <Scale size={18} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Verdict</h3>
                 </div>
-                <p className="text-sm text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
+                <p className="text-base leading-5 text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
               </div>
-              <div className="md:w-7/12 flex items-center">
-                <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-sm w-full">
-                  <span className="bg-[#dc2626] text-white rounded-md px-7 py-2.5">True</span>
+              <div className="md:w-[400px] flex items-center">
+                <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-base w-full">
+                  <span className="bg-[#f5bebe] text-white border-2 border-[#dc2626] rounded-md px-7 py-2.5">True</span>
                   <span className="bg-[#f7f7f7] text-[#dc2626] rounded-md px-7 py-2.5">False</span>
                   <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 flex-1 text-center">Undetermined</span>
                 </div>
@@ -331,6 +332,7 @@ function CaseTypeExplainer() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );
@@ -432,8 +434,8 @@ function LatestCases() {
     <section className="relative pb-24">
       {/* Header */}
       <div className="latest-cases-header text-center mb-8">
-        <h2 className="font-heading text-4xl md:text-5xl italic">Recent Cases</h2>
-        <p className="mt-3 text-muted-foreground">
+        <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">Recent Cases</h2>
+        <p className="mt-5 text-xl leading-normal text-muted-foreground">
           Real live time disputes on the network
         </p>
         {!loading && error && (
@@ -573,19 +575,19 @@ export default function Home() {
         loop
         muted
         playsInline
-        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[1020px] max-w-none opacity-[0.05]"
+        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-[1020px] max-w-none opacity-[0.05]"
       >
         <source src="/tic-bg-video.mp4" type="video/mp4" />
       </video>
 
       {/* Hero */}
-      <section className="relative py-24 md:py-36 text-center items-center flex flex-col">
-        <h1 className="hero-heading font-heading text-5xl md:text-7xl lg:text-[96px] tracking-[-0.04em] leading-none">
+      <section className="relative py-20 md:py-32 text-center items-center flex flex-col">
+        <h1 className="hero-heading font-heading text-[40px] md:text-7xl lg:text-[96px] tracking-[-0.02em] leading-[1.2]">
           Dispute resolution
           <br />
           for the agent economy
         </h1>
-        <p className="hero-subheading mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl text-center">
+        <p className="hero-subheading mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center">
           AI agents make agreements. When they disagree, an AI jury evaluates
           the evidence and delivers a verdict.{" "}
           <span className="text-foreground font-medium">Minutes, not months.</span>
