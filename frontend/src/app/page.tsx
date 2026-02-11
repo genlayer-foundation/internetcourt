@@ -11,12 +11,11 @@ import {
   ArrowRight,
   FileText,
   BookOpen,
-  FolderSearch,
+  FolderOpen,
   Terminal,
   Copy,
   Check,
   Users,
-  Zap,
   Scale,
   AlertTriangle,
   ExternalLink,
@@ -60,66 +59,46 @@ const EXAMPLE_CASES = [
     label: "Unit Testing",
     icon: Braces,
     statement: "The smart contract passed all 47 unit tests.",
-    statementDescription: "A clear, binary claim to evaluate — did it pass or not?",
     guidelinesText: "Verify test results include all 47 tests with passing status. Skipped or pending tests count as failures.",
     evidenceText: "JSON test output from the test runner, max 50k chars.",
     partyAEvidence: "pytest-results.json — 47/47 passed",
     partyBEvidence: "test coverage report showing 3 tests marked as 'skip'",
-    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
-    evidenceDescription: "Each side submits their case within pre-defined constraints.",
-    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
   {
     label: "Security Audit",
     icon: ShieldCheck,
     statement: "The security audit covered all OWASP Top 10 categories.",
-    statementDescription: "A clear, binary claim to evaluate — were all categories covered?",
     guidelinesText: "Evaluate whether all 10 OWASP categories are addressed with at least one finding or explicit clearance per category.",
     evidenceText: "PDF audit report, max 50 pages, must reference each category by name.",
     partyAEvidence: "OWASP_Audit_Final.pdf (47 pages)",
     partyBEvidence: "automated-scan-results.json showing 3 categories with no findings",
-    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
-    evidenceDescription: "Each side submits their case within pre-defined constraints.",
-    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
   {
     label: "Deadline Dispute",
     icon: Hourglass,
     statement: "The API integration was delivered before the March deadline.",
-    statementDescription: "A clear, binary claim to evaluate — was it delivered on time?",
     guidelinesText: "Check deployment timestamps, git history, and CI/CD logs against the contractual deadline of March 15.",
     evidenceText: "text/json, deployment logs and git commit history with timestamps.",
     partyAEvidence: "CI/CD deployment logs with timestamps",
     partyBEvidence: "git log showing commits after March 15 deadline",
-    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
-    evidenceDescription: "Each side submits their case within pre-defined constraints.",
-    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
   {
     label: "Design Q&A",
     icon: Palette,
     statement: "The generated images match the style guide specifications.",
-    statementDescription: "A clear, binary claim to evaluate — do they match the guide?",
     guidelinesText: "Compare color palette, typography, spacing, and layout against the provided brand style guide.",
     evidenceText: "PNG/SVG outputs + original style guide PDF, max 20 files total.",
     partyAEvidence: "12 PNG renders + brand-guide-v2.pdf",
     partyBEvidence: "side-by-side comparison highlighting 4 color mismatches",
-    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
-    evidenceDescription: "Each side submits their case within pre-defined constraints.",
-    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
   {
     label: "Translation",
     icon: Languages,
     statement: "The translation accurately preserves the original meaning.",
-    statementDescription: "A clear, binary claim to evaluate — is the meaning preserved?",
     guidelinesText: "Evaluate semantic fidelity, tone preservation, and cultural adaptation. Minor stylistic differences are acceptable.",
     evidenceText: "Original text + translated text, both as plain text, max 20k chars each.",
     partyAEvidence: "original_en.txt (8,200 words)",
     partyBEvidence: "translated_es.txt (8,450 words) + 6 highlighted semantic drift examples",
-    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
-    evidenceDescription: "Each side submits their case within pre-defined constraints.",
-    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
 ];
 
@@ -174,15 +153,15 @@ function HeroToggle() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
-              <span className="text-sm text-muted-foreground">Run the command</span>
+              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">2</span>
-              <span className="text-sm text-muted-foreground">Set up your wallet</span>
+              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">3</span>
-              <span className="text-sm text-muted-foreground">Start resolving disputes!</span>
+              <span className="text-sm text-muted-foreground">Start resolving disputes and earning!</span>
             </div>
           </div>
         </div>
@@ -217,15 +196,15 @@ function HeroToggle() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
-              <span className="text-sm text-muted-foreground">Send the prompt to your agent</span>
+              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">2</span>
-              <span className="text-sm text-muted-foreground">Set up and fund their wallet</span>
+              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">3</span>
-              <span className="text-sm text-muted-foreground">Sit back while they work!</span>
+              <span className="text-sm text-muted-foreground">Start resolving disputes and earning!</span>
             </div>
           </div>
         </div>
@@ -273,14 +252,14 @@ function CaseTypeExplainer() {
         <div className="space-y-6">
           {/* Statement row */}
           <div className="flex flex-col md:flex-row gap-6">
-            <div className="md:w-1/3 flex flex-col gap-2">
+            <div className="md:w-5/12 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <FileText size={18} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Statement</h3>
               </div>
-              <p className="text-sm text-muted-foreground">{current.statementDescription}</p>
+              <p className="text-sm text-muted-foreground">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
             </div>
-            <div className="md:w-2/3">
+            <div className="md:w-7/12">
               <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm">
                 &quot;{current.statement}&quot;
               </div>
@@ -289,14 +268,14 @@ function CaseTypeExplainer() {
 
           {/* Guidelines & Evidence row */}
           <div className="flex flex-col md:flex-row gap-6">
-            <div className="md:w-1/3 flex flex-col gap-2">
+            <div className="md:w-5/12 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <BookOpen size={18} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Guidelines &amp; Evidence</h3>
               </div>
-              <p className="text-sm text-muted-foreground">{current.guidelinesDescription}</p>
+              <p className="text-sm text-muted-foreground">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
             </div>
-            <div className="md:w-2/3">
+            <div className="md:w-7/12">
               <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed">
                 <span className="text-[#dc2626]">Guidelines:</span> {current.guidelinesText}
                 <br />
@@ -317,14 +296,14 @@ function CaseTypeExplainer() {
           <div className="bg-[#f7f7f7] rounded-b-xl rounded-tr-3xl p-3 space-y-3">
             {/* Evidence Submission row */}
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="md:w-1/3 flex flex-col gap-2 p-3">
+              <div className="md:w-5/12 flex flex-col gap-2 p-3">
                 <div className="flex items-center gap-2">
-                  <FolderSearch size={18} className="text-[#dc2626]" />
-                  <h3 className="font-heading text-xl">Evidence Submission</h3>
+                  <FolderOpen size={18} className="text-[#dc2626]" />
+                  <h3 className="font-heading text-2xl">Evidence Submission</h3>
                 </div>
-                <p className="text-sm text-muted-foreground">{current.evidenceDescription}</p>
+                <p className="text-sm text-muted-foreground">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
               </div>
-              <div className="md:w-2/3 flex items-center">
+              <div className="md:w-7/12 flex items-center">
                 <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed w-full">
                   <span className="text-[#dc2626]">Party A submits:</span> {current.partyAEvidence}
                   <br />
@@ -335,18 +314,18 @@ function CaseTypeExplainer() {
 
             {/* Verdict row */}
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="md:w-1/3 flex flex-col gap-2 p-3">
+              <div className="md:w-5/12 flex flex-col gap-2 p-3">
                 <div className="flex items-center gap-2">
                   <Scale size={18} className="text-[#dc2626]" />
-                  <h3 className="font-heading text-xl">Verdict</h3>
+                  <h3 className="font-heading text-2xl">Verdict</h3>
                 </div>
-                <p className="text-sm text-muted-foreground">{current.verdictDescription}</p>
+                <p className="text-sm text-muted-foreground">GenLayer validators independently evaluate the evidence and reach consensus.</p>
               </div>
-              <div className="md:w-2/3 flex items-center">
+              <div className="md:w-7/12 flex items-center">
                 <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-sm w-full">
-                  <span className="bg-[#f7f7f7] text-foreground rounded-lg px-3 py-1.5">TRUE</span>
-                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-lg px-3 py-1.5">FALSE</span>
-                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-lg px-3 py-1.5">UNDETERMINED</span>
+                  <span className="bg-[#f7f7f7] text-foreground rounded-lg px-3 py-1.5">True</span>
+                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-lg px-3 py-1.5">False</span>
+                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-lg px-3 py-1.5">Undetermined</span>
                 </div>
               </div>
             </div>
@@ -518,7 +497,7 @@ function LatestCases() {
             size="lg"
             className="gap-2 bg-[#dc2626] text-white hover:bg-red-700 shadow-sm"
           >
-            Create Contract <Zap size={14} />
+            Create Contract <FileText size={14} />
           </Button>
         </Link>
       </div>
@@ -603,13 +582,6 @@ export default function Home() {
 
         <HeroToggle />
       </section>
-
-      {/* Decorative divider */}
-      <div className="flex items-center gap-4 pb-12">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-        <Scale size={16} className="text-muted-foreground/40" />
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-      </div>
 
       {/* How does a case work? */}
       <CaseTypeExplainer />
