@@ -3,17 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { NAV_LINKS } from "@/lib/constants";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
+    <header className="relative z-50 pt-4 px-4">
+      <div className="bg-[#f7f7f7] rounded-2xl max-w-[1200px] mx-auto px-3 py-2 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/logos/internetcourt-logo.jpg"
             alt="Internet Court logo"
@@ -22,9 +18,8 @@ export function Header() {
             className="rounded"
             unoptimized
           />
-          <span className="font-heading">
-            <span className="text-foreground">internet</span>
-            <span className="text-muted-foreground">court</span>
+          <span className="font-heading text-lg font-bold tracking-tight text-[#dc2626] hidden sm:inline">
+            Internet Court
           </span>
         </Link>
 
@@ -33,40 +28,17 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="font-mono text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="bg-white rounded-[10px] px-4 py-2.5">
           <ConnectButton />
-        </nav>
-
-        <button
-          className="md:hidden text-muted-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        </div>
       </div>
-
-      {mobileOpen && (
-        <nav className="border-t border-border/60 bg-white px-4 py-4 md:hidden">
-          <div className="flex flex-col gap-3">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <ConnectButton />
-          </div>
-        </nav>
-      )}
     </header>
   );
 }

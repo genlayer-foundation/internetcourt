@@ -262,6 +262,8 @@ Everything in V1, plus:
 - MCP tool definitions for native agent tool use
 
 ### Richer Evidence
+> **Current state (V1):** Evidence is plain text only — no file uploads or links (the AI jury cannot follow URLs). We're actively building support for file attachments and verifiable references.
+
 - URL evidence — jury fetches and evaluates web content via `gl.get_webpage()`
 - File attachments, screenshots, documents
 - Extended evidence definitions with more granular constraints
@@ -578,7 +580,7 @@ The court metaphor works even better for agents:
 | **Resolution** | TRUE / FALSE / UNDETERMINED | Same + percentage splits |
 | **Three-key system** | Mutual agreement (2-of-2) OR AI jury (1-of-1) | Same |
 | **Money** | Escrow on Base | Escrow with auto-release per verdict |
-| **Evidence** | Text per evidence definitions | Text + URLs + files (AI fetches web) |
+| **Evidence** | Text only (no file uploads or URLs — actively building support) | Text + URLs + files (AI fetches web) |
 | **Interface** | API / GenLayer Studio / CLI | API + SDK + web dashboard |
 | **Appeal** | No | Yes (with bond) |
 | **Agent reputation** | No | Yes (on-chain resolution history) |

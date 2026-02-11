@@ -593,6 +593,7 @@ genlayer write "$CONTRACT" submit_evidence \
 ```
 
 **Constraints:**
+- **Evidence is currently plain text only** — no file uploads or links (the AI jury cannot follow URLs). We're actively building support for file attachments and verifiable references.
 - Evidence must comply with evidence_defs (check max_chars)
 - Each party can submit evidence once
 - Must submit before evidence deadline (if set)
@@ -725,6 +726,8 @@ Evaluate based on:
 ### Evidence Definitions
 
 Define what evidence each side can submit:
+
+> **Current limitation:** Evidence is currently plain text only — no file uploads or links (the AI jury cannot follow URLs). We're actively building support for file attachments and verifiable references. For now, paste evidence content directly as text.
 
 ```json
 {

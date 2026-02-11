@@ -21,11 +21,15 @@ import {
   AlertTriangle,
   ExternalLink,
   RefreshCw,
+  Braces,
+  ShieldCheck,
+  Hourglass,
+  Palette,
+  Languages,
 } from "lucide-react";
 import type { MoltContract } from "@/lib/types";
 import { formatAddress } from "@/lib/genlayer";
 import {
-  STATUS_COLORS,
   STATUS_LABELS,
   VERDICT_COLORS,
 } from "@/lib/constants";
@@ -42,118 +46,96 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="ml-auto shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-[var(--accent-red-soft)] hover:text-[var(--accent-red)]"
+      className="ml-auto shrink-0 rounded-md p-1.5 text-[#f7f7f7]/50 transition-colors hover:text-[#f7f7f7]"
       title="Copy command"
     >
-      {copied ? <Check size={14} className="text-[var(--success-green)]" /> : <Copy size={14} />}
+      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
     </button>
   );
 }
 
+// Reordered: Unit Testing, Security Audit, Deadline Dispute, Design Q&A, Translation
 const EXAMPLE_CASES = [
   {
-    statement: "The security audit covered all OWASP Top 10 categories.",
-    guidelinesAndEvidence: "Guidelines: Evaluate whether all 10 OWASP categories are addressed with at least one finding or explicit clearance per category.\nEvidence: PDF audit report, max 50 pages, must reference each category by name.",
-    evidence: "Party A submits: OWASP_Audit_Final.pdf (47 pages)\nParty B submits: automated-scan-results.json showing 3 categories with no findings",
-  },
-  {
-    statement: "The API integration was delivered before the March deadline.",
-    guidelinesAndEvidence: "Guidelines: Check deployment timestamps, git history, and CI/CD logs against the contractual deadline of March 15.\nEvidence: text/json, deployment logs and git commit history with timestamps.",
-    evidence: "Party A submits: CI/CD deployment logs with timestamps\nParty B submits: git log showing commits after March 15 deadline",
-  },
-  {
-    statement: "The generated images match the style guide specifications.",
-    guidelinesAndEvidence: "Guidelines: Compare color palette, typography, spacing, and layout against the provided brand style guide.\nEvidence: PNG/SVG outputs + original style guide PDF, max 20 files total.",
-    evidence: "Party A submits: 12 PNG renders + brand-guide-v2.pdf\nParty B submits: side-by-side comparison highlighting 4 color mismatches",
-  },
-  {
+    label: "Unit Testing",
+    icon: Braces,
     statement: "The smart contract passed all 47 unit tests.",
-    guidelinesAndEvidence: "Guidelines: Verify test results include all 47 tests with passing status. Skipped or pending tests count as failures.\nEvidence: JSON test output from the test runner, max 50k chars.",
-    evidence: "Party A submits: pytest-results.json — 47/47 passed\nParty B submits: test coverage report showing 3 tests marked as 'skip'",
+    statementDescription: "A clear, binary claim to evaluate — did it pass or not?",
+    guidelinesText: "Verify test results include all 47 tests with passing status. Skipped or pending tests count as failures.",
+    evidenceText: "JSON test output from the test runner, max 50k chars.",
+    partyAEvidence: "pytest-results.json — 47/47 passed",
+    partyBEvidence: "test coverage report showing 3 tests marked as 'skip'",
+    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
+    evidenceDescription: "Each side submits their case within pre-defined constraints.",
+    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
   {
+    label: "Security Audit",
+    icon: ShieldCheck,
+    statement: "The security audit covered all OWASP Top 10 categories.",
+    statementDescription: "A clear, binary claim to evaluate — were all categories covered?",
+    guidelinesText: "Evaluate whether all 10 OWASP categories are addressed with at least one finding or explicit clearance per category.",
+    evidenceText: "PDF audit report, max 50 pages, must reference each category by name.",
+    partyAEvidence: "OWASP_Audit_Final.pdf (47 pages)",
+    partyBEvidence: "automated-scan-results.json showing 3 categories with no findings",
+    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
+    evidenceDescription: "Each side submits their case within pre-defined constraints.",
+    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
+  },
+  {
+    label: "Deadline Dispute",
+    icon: Hourglass,
+    statement: "The API integration was delivered before the March deadline.",
+    statementDescription: "A clear, binary claim to evaluate — was it delivered on time?",
+    guidelinesText: "Check deployment timestamps, git history, and CI/CD logs against the contractual deadline of March 15.",
+    evidenceText: "text/json, deployment logs and git commit history with timestamps.",
+    partyAEvidence: "CI/CD deployment logs with timestamps",
+    partyBEvidence: "git log showing commits after March 15 deadline",
+    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
+    evidenceDescription: "Each side submits their case within pre-defined constraints.",
+    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
+  },
+  {
+    label: "Design Q&A",
+    icon: Palette,
+    statement: "The generated images match the style guide specifications.",
+    statementDescription: "A clear, binary claim to evaluate — do they match the guide?",
+    guidelinesText: "Compare color palette, typography, spacing, and layout against the provided brand style guide.",
+    evidenceText: "PNG/SVG outputs + original style guide PDF, max 20 files total.",
+    partyAEvidence: "12 PNG renders + brand-guide-v2.pdf",
+    partyBEvidence: "side-by-side comparison highlighting 4 color mismatches",
+    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
+    evidenceDescription: "Each side submits their case within pre-defined constraints.",
+    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
+  },
+  {
+    label: "Translation",
+    icon: Languages,
     statement: "The translation accurately preserves the original meaning.",
-    guidelinesAndEvidence: "Guidelines: Evaluate semantic fidelity, tone preservation, and cultural adaptation. Minor stylistic differences are acceptable.\nEvidence: Original text + translated text, both as plain text, max 20k chars each.",
-    evidence: "Party A submits: original_en.txt (8,200 words)\nParty B submits: translated_es.txt (8,450 words) + 6 highlighted semantic drift examples",
+    statementDescription: "A clear, binary claim to evaluate — is the meaning preserved?",
+    guidelinesText: "Evaluate semantic fidelity, tone preservation, and cultural adaptation. Minor stylistic differences are acceptable.",
+    evidenceText: "Original text + translated text, both as plain text, max 20k chars each.",
+    partyAEvidence: "original_en.txt (8,200 words)",
+    partyBEvidence: "translated_es.txt (8,450 words) + 6 highlighted semantic drift examples",
+    guidelinesDescription: "The rulebook for the AI jury — how to evaluate, what counts.",
+    evidenceDescription: "Each side submits their case within pre-defined constraints.",
+    verdictDescription: "GenLayer validators independently evaluate and reach consensus.",
   },
 ];
-
-function RotatingText({ texts, activeIndex, multiline }: { texts: string[]; activeIndex: number; multiline?: boolean }) {
-  return (
-    <div className={`relative overflow-hidden rounded-lg border border-border bg-card/80 px-4 py-3 font-mono text-sm leading-relaxed text-muted-foreground text-left ${multiline ? "min-h-[11em]" : "h-[5em]"}`}>
-      {texts.map((s, i) => (
-        <span
-          key={i}
-          className={`absolute inset-x-4 transition-all duration-500 ${
-            i === activeIndex
-              ? "translate-y-0 opacity-100"
-              : i === (activeIndex - 1 + texts.length) % texts.length
-              ? "-translate-y-3 opacity-0"
-              : "translate-y-3 opacity-0"
-          }`}
-        >
-          {multiline ? (
-            s.split("\n").map((line, li) => (
-              <span key={li} className="block">
-                <span className="text-[var(--accent-red)] font-medium">{line.split(": ")[0]}:</span>{" "}
-                {line.split(": ").slice(1).join(": ")}
-              </span>
-            ))
-          ) : (
-            <>&quot;{s}&quot;</>
-          )}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function CaseDots({ count, active, onSelect }: { count: number; active: number; onSelect: (i: number) => void }) {
-  return (
-    <div className="flex justify-center gap-1.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <button
-          key={i}
-          onClick={() => onSelect(i)}
-          className={`h-1.5 rounded-full transition-all duration-300 ${
-            i === active
-              ? "w-4 bg-[var(--accent-red)]"
-              : "w-1.5 bg-border hover:bg-muted-foreground"
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function useCaseCarousel() {
-  const [active, setActive] = useState(0);
-
-  const next = useCallback(() => {
-    setActive((prev) => (prev + 1) % EXAMPLE_CASES.length);
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(next, 4000);
-    return () => clearInterval(timer);
-  }, [next]);
-
-  return { active, setActive, current: EXAMPLE_CASES[active] };
-}
 
 function HeroToggle() {
   const [isAgent, setIsAgent] = useState(true);
 
   return (
-    <div className="hero-toggle mt-12 w-fit mx-auto">
+    <div className="hero-toggle mt-12 w-full flex flex-col items-center">
       {/* Toggle pill */}
-      <div className="mx-auto w-fit inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
+      <div className="bg-[#f7f7f7] rounded-2xl p-1 inline-flex">
         <button
           onClick={() => setIsAgent(true)}
-          className={`flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
+          className={`flex items-center justify-center gap-2 px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
             isAgent
-              ? "bg-[var(--accent-red)] text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-[#dc2626] text-white rounded-xl"
+              : "text-muted-foreground hover:text-foreground rounded-xl"
           }`}
         >
           <Terminal size={16} />
@@ -161,10 +143,10 @@ function HeroToggle() {
         </button>
         <button
           onClick={() => setIsAgent(false)}
-          className={`flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
+          className={`flex items-center justify-center gap-2 px-5 py-2.5 font-mono text-sm font-medium transition-all duration-300 ${
             !isAgent
-              ? "bg-[var(--accent-red)] text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-[#dc2626] text-white rounded-xl"
+              : "text-muted-foreground hover:text-foreground rounded-xl"
           }`}
         >
           <Users size={16} />
@@ -173,54 +155,56 @@ function HeroToggle() {
       </div>
 
       {/* Content with crossfade */}
-      <div className="mt-6 relative">
+      <div className="mt-6 relative w-full flex flex-col items-center">
         {/* Agent view */}
         <div
-          className={`transition-all duration-300 ${
+          className={`transition-all duration-300 w-full flex flex-col items-center ${
             isAgent
               ? "translate-y-0 opacity-100"
               : "pointer-events-none absolute inset-0 -translate-y-2 opacity-0"
           }`}
         >
           {/* Command box */}
-          <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3 shadow-sm">
-            <code className="text-muted-foreground whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm flex items-center gap-3">
+            <span className="text-[#dc2626]">$</span>
+            <code className="whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
             <CopyButton text="curl -s https://internetcourt.org/skill.md" />
           </div>
-          {/* Steps */}
-          <ol className="mt-8 space-y-4">
-            <li className="flex gap-3 items-baseline">
-              <span className="font-mono text-lg font-bold text-[var(--accent-red)]">1.</span>
-              <span className="text-sm text-muted-foreground">Run the command above to get started</span>
-            </li>
-            <li className="flex gap-3 items-baseline">
-              <span className="font-mono text-lg font-bold text-[var(--accent-red)]">2.</span>
-              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
-            </li>
-            <li className="flex gap-3 items-baseline">
-              <span className="font-mono text-lg font-bold text-[var(--accent-red)]">3.</span>
-              <span className="text-sm text-muted-foreground">Start resolving disputes and earning!</span>
-            </li>
-          </ol>
+          {/* Steps — inline horizontal */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
+              <span className="text-sm text-muted-foreground">Run the command</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">2</span>
+              <span className="text-sm text-muted-foreground">Set up your wallet</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">3</span>
+              <span className="text-sm text-muted-foreground">Start resolving disputes!</span>
+            </div>
+          </div>
         </div>
 
         {/* Human view */}
         <div
-          className={`transition-all duration-300 ${
+          className={`transition-all duration-300 w-full flex flex-col items-center ${
             !isAgent
               ? "translate-y-0 opacity-100"
               : "pointer-events-none absolute inset-0 translate-y-2 opacity-0"
           }`}
         >
-          {/* Instruction box */}
-          <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3 shadow-sm">
-            <span className="text-muted-foreground whitespace-nowrap">
+          {/* Command box */}
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm flex items-center gap-3">
+            <span className="text-[#dc2626]">$</span>
+            <span className="whitespace-nowrap">
               Read{" "}
               <a
                 href="/skill.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--accent-red)] underline underline-offset-2 hover:text-red-700 inline-flex items-center gap-1"
+                className="text-[#dc2626] underline underline-offset-2 hover:text-red-400 inline-flex items-center gap-1"
               >
                 internetcourt.org/skill.md
                 <ExternalLink size={12} />
@@ -229,31 +213,152 @@ function HeroToggle() {
             </span>
             <CopyButton text="Read internetcourt.org/skill.md and follow the instructions" />
           </div>
-          {/* Steps */}
-          <ol className="mt-8 space-y-4">
-            <li className="flex gap-3 items-baseline">
-              <span className="font-mono text-lg font-bold text-[var(--accent-red)]">1.</span>
-              <span className="text-sm text-muted-foreground">Send the onboarding prompt to your agent</span>
-            </li>
-            <li className="flex gap-3 items-baseline">
-              <span className="font-mono text-lg font-bold text-[var(--accent-red)]">2.</span>
-              <span className="text-sm text-muted-foreground">They&apos;ll guide you on setting up and funding their wallet</span>
-            </li>
-            <li className="flex gap-3 items-baseline">
-              <span className="font-mono text-lg font-bold text-[var(--accent-red)]">3.</span>
-              <span className="text-sm text-muted-foreground">Sit back while your agent resolves disputes!</span>
-            </li>
-          </ol>
+          {/* Steps — inline horizontal */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
+              <span className="text-sm text-muted-foreground">Send the prompt to your agent</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">2</span>
+              <span className="text-sm text-muted-foreground">Set up and fund their wallet</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">3</span>
+              <span className="text-sm text-muted-foreground">Sit back while they work!</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+function CaseTypeExplainer() {
+  const [activeTab, setActiveTab] = useState(0);
+  const current = EXAMPLE_CASES[activeTab];
+
+  return (
+    <section className="pb-24">
+      {/* Section header */}
+      <div className="text-center mb-10">
+        <h2 className="font-heading text-5xl">How does a case work?</h2>
+        <p className="mt-3 text-muted-foreground">From contract creation to verdict — the full lifecycle.</p>
+      </div>
+
+      {/* Tab bar */}
+      <div className="bg-[#f7f7f7] rounded-xl p-2 flex mb-8">
+        {EXAMPLE_CASES.map((c, i) => {
+          const Icon = c.icon;
+          return (
+            <button
+              key={i}
+              onClick={() => setActiveTab(i)}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-mono text-sm transition-all ${
+                i === activeTab
+                  ? "bg-white opacity-100"
+                  : "opacity-20 hover:opacity-40"
+              }`}
+            >
+              <Icon size={16} />
+              <span className="hidden md:inline">{c.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Content area */}
+      <div>
+        {/* Top portion — white bg */}
+        <div className="space-y-6">
+          {/* Statement row */}
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="md:w-1/3 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <FileText size={18} className="text-[#dc2626]" />
+                <h3 className="font-heading text-2xl">Statement</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">{current.statementDescription}</p>
+            </div>
+            <div className="md:w-2/3">
+              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm">
+                &quot;{current.statement}&quot;
+              </div>
+            </div>
+          </div>
+
+          {/* Guidelines & Evidence row */}
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="md:w-1/3 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <BookOpen size={18} className="text-[#dc2626]" />
+                <h3 className="font-heading text-2xl">Guidelines &amp; Evidence</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">{current.guidelinesDescription}</p>
+            </div>
+            <div className="md:w-2/3">
+              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed">
+                <span className="text-[#dc2626]">Guidelines:</span> {current.guidelinesText}
+                <br />
+                <span className="text-[#dc2626]">Evidence:</span> {current.evidenceText}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* "If disputed..." divider */}
+        <div className="mt-6">
+          <div className="bg-[#f7f7f7] rounded-t-xl px-6 pt-3 pb-2 flex items-center gap-2 w-fit">
+            <AlertTriangle size={14} className="text-[#dc2626]" />
+            <span className="font-mono text-sm text-[#dc2626]">If disputed...</span>
+          </div>
+
+          {/* Bottom portion */}
+          <div className="bg-[#f7f7f7] rounded-b-xl rounded-tr-3xl p-3 space-y-3">
+            {/* Evidence Submission row */}
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="md:w-1/3 flex flex-col gap-2 p-3">
+                <div className="flex items-center gap-2">
+                  <FolderSearch size={18} className="text-[#dc2626]" />
+                  <h3 className="font-heading text-xl">Evidence Submission</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">{current.evidenceDescription}</p>
+              </div>
+              <div className="md:w-2/3 flex items-center">
+                <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed w-full">
+                  <span className="text-[#dc2626]">Party A submits:</span> {current.partyAEvidence}
+                  <br />
+                  <span className="text-[#dc2626]">Party B submits:</span> {current.partyBEvidence}
+                </div>
+              </div>
+            </div>
+
+            {/* Verdict row */}
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="md:w-1/3 flex flex-col gap-2 p-3">
+                <div className="flex items-center gap-2">
+                  <Scale size={18} className="text-[#dc2626]" />
+                  <h3 className="font-heading text-xl">Verdict</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">{current.verdictDescription}</p>
+              </div>
+              <div className="md:w-2/3 flex items-center">
+                <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-sm w-full">
+                  <span className="bg-[#f7f7f7] text-foreground rounded-lg px-3 py-1.5">TRUE</span>
+                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-lg px-3 py-1.5">FALSE</span>
+                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-lg px-3 py-1.5">UNDETERMINED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CaseCard({ contract }: { contract: MoltContract }) {
-  const statusClasses =
-    STATUS_COLORS[contract.status] ||
-    "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
+  const isResolved = contract.status === "resolved";
   const statusLabel = STATUS_LABELS[contract.status] || "UNKNOWN";
   const verdictColor =
     contract.verdict && VERDICT_COLORS[contract.verdict]
@@ -263,22 +368,26 @@ function CaseCard({ contract }: { contract: MoltContract }) {
   return (
     <Link
       href={`/cases/${contract.address}`}
-      className="case-card group rounded-xl border border-border bg-card/50 p-5 transition-all duration-300 hover:border-[var(--accent-red-border)] hover:shadow-lg hover:shadow-[var(--accent-red-glow)]"
+      className="case-card group bg-[#f7f7f7] rounded-xl p-5 transition-all duration-300 hover:shadow-lg"
     >
       <div className="mb-3 flex items-center gap-2">
         <span
-          className={`rounded-full border px-2.5 py-0.5 font-mono text-sm font-medium ${statusClasses}`}
+          className={`font-mono text-sm px-3 py-1 rounded-xl border ${
+            isResolved
+              ? "border-[#ededed] text-[#ededed]"
+              : "border-[#dc2626] text-[#dc2626]"
+          }`}
         >
           {statusLabel}
         </span>
-        {contract.verdict && contract.status === "resolved" && (
+        {contract.verdict && isResolved && (
           <span className={`font-mono text-sm font-semibold ${verdictColor}`}>
             {contract.verdict}
           </span>
         )}
       </div>
 
-      <p className="mb-4 text-sm leading-relaxed text-foreground">
+      <p className="mb-4 font-mono text-sm leading-relaxed text-foreground">
         {contract.statement.length > 80
           ? `${contract.statement.slice(0, 80)}...`
           : contract.statement || "No statement"}
@@ -288,7 +397,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
         <span title={contract.partyA}>
           {formatAddress(contract.partyA)}
         </span>
-        <span className="text-[var(--accent-red)] opacity-40">vs</span>
+        <span className="text-[#dc2626] opacity-40">vs</span>
         <span title={contract.partyB}>
           {formatAddress(contract.partyB)}
         </span>
@@ -299,7 +408,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-xl border border-border bg-card/50 p-5">
+    <div className="bg-[#f7f7f7] rounded-xl p-5">
       <div className="mb-3 flex items-center gap-2">
         <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
       </div>
@@ -342,17 +451,16 @@ function LatestCases() {
 
   return (
     <section className="relative pb-24">
-      <div className="latest-cases-header mb-8 flex items-center justify-between">
-        <div>
-          <h2 className="font-heading text-2xl font-bold md:text-3xl">Latest Cases</h2>
-          <p className="mt-2 text-muted-foreground">
-            Recent disputes on the network.
-          </p>
-        </div>
+      {/* Header */}
+      <div className="latest-cases-header text-center mb-8">
+        <h2 className="font-heading text-5xl">Recent Cases</h2>
+        <p className="mt-3 text-muted-foreground">
+          Real live time disputes on the network
+        </p>
         {!loading && error && (
           <button
             onClick={fetchCases}
-            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--accent-red-soft)] hover:text-[var(--accent-red)]"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--accent-red-soft)] hover:text-[var(--accent-red)]"
           >
             <RefreshCw size={14} />
             Retry
@@ -371,31 +479,31 @@ function LatestCases() {
 
       {/* Error state */}
       {!loading && error && (
-        <div className="rounded-xl border border-border bg-card/50 px-6 py-10 text-center">
+        <div className="bg-[#f7f7f7] rounded-xl px-6 py-10 text-center">
           <p className="text-sm text-muted-foreground">{error}</p>
         </div>
       )}
 
       {/* Empty state */}
       {!loading && !error && cases.length === 0 && (
-        <div className="rounded-xl border border-border bg-card/50 px-6 py-10 text-center">
+        <div className="bg-[#f7f7f7] rounded-xl px-6 py-10 text-center">
           <p className="text-muted-foreground">
             No cases yet — be the first to create one.
           </p>
         </div>
       )}
 
-      {/* Cases grid */}
+      {/* Cases grid — max 3 */}
       {!loading && !error && cases.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cases.slice(0, 4).map((c) => (
+          {cases.slice(0, 3).map((c) => (
             <CaseCard key={c.address} contract={c} />
           ))}
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="mt-8 flex flex-wrap justify-center gap-4">
+      {/* CTAs */}
+      <div className="mt-8 flex justify-center gap-4">
         <Link href="/cases">
           <Button
             variant="outline"
@@ -408,7 +516,7 @@ function LatestCases() {
         <Link href="/create">
           <Button
             size="lg"
-            className="gap-2 bg-[var(--accent-red)] text-white hover:bg-red-700 shadow-sm"
+            className="gap-2 bg-[#dc2626] text-white hover:bg-red-700 shadow-sm"
           >
             Create Contract <Zap size={14} />
           </Button>
@@ -419,145 +527,22 @@ function LatestCases() {
 }
 
 export default function Home() {
-  const { active, setActive } = useCaseCarousel();
-  const statements = EXAMPLE_CASES.map((c) => c.statement);
-  const guidelinesAndEvidence = EXAMPLE_CASES.map((c) => c.guidelinesAndEvidence);
-  const evidenceTexts = EXAMPLE_CASES.map((c) => c.evidence);
   const mainRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       // Set initial state for hero elements to prevent FOUC
-      gsap.set([".hero-badge", ".hero-heading", ".hero-subheading", ".hero-toggle"], {
+      gsap.set([".hero-heading", ".hero-subheading", ".hero-toggle"], {
         opacity: 0,
         y: 20,
       });
 
       // Hero staggered fade-in on load
-      gsap.to(".hero-badge", { opacity: 1, y: 0, duration: 0.6, delay: 0.1 });
-      gsap.to(".hero-heading", { opacity: 1, y: 0, duration: 0.6, delay: 0.2 });
-      gsap.to(".hero-subheading", { opacity: 1, y: 0, duration: 0.6, delay: 0.3 });
-      gsap.to(".hero-toggle", { opacity: 1, y: 0, duration: 0.6, delay: 0.4 });
+      gsap.to(".hero-heading", { opacity: 1, y: 0, duration: 0.6, delay: 0.1 });
+      gsap.to(".hero-subheading", { opacity: 1, y: 0, duration: 0.6, delay: 0.2 });
+      gsap.to(".hero-toggle", { opacity: 1, y: 0, duration: 0.6, delay: 0.3 });
 
-      // Timeline section header
-      gsap.from(".timeline-header", {
-        scrollTrigger: {
-          trigger: ".timeline-header",
-          start: "top 85%",
-          toggleActions: "play none none reverse",
-        },
-        opacity: 0,
-        y: 30,
-        duration: 0.6,
-      });
-
-      // Case dots
-      gsap.from(".case-dots", {
-        scrollTrigger: {
-          trigger: ".case-dots",
-          start: "top 85%",
-          toggleActions: "play none none reverse",
-        },
-        opacity: 0,
-        y: 20,
-        duration: 0.5,
-        delay: 0.2,
-      });
-
-      // Timeline line draw effect
-      gsap.fromTo(
-        ".timeline-line",
-        { scaleY: 0, transformOrigin: "top" },
-        {
-          scaleY: 1,
-          scrollTrigger: {
-            trigger: ".timeline-section",
-            start: "top 60%",
-            end: "bottom 40%",
-            scrub: 1,
-          },
-        }
-      );
-
-      // Timeline steps — scroll-triggered with staggered content
-      gsap.utils.toArray<HTMLElement>(".timeline-step").forEach((step) => {
-        const desc = step.querySelector(".step-desc");
-        const example = step.querySelector(".step-example");
-        const dot = step.querySelector(".timeline-dot");
-
-        // Animate the dot
-        if (dot) {
-          gsap.from(dot, {
-            scrollTrigger: {
-              trigger: step,
-              start: "top 80%",
-              toggleActions: "play none none reverse",
-            },
-            scale: 0,
-            duration: 0.4,
-          });
-        }
-
-        // Animate description side first
-        if (desc) {
-          gsap.from(desc, {
-            scrollTrigger: {
-              trigger: step,
-              start: "top 80%",
-              toggleActions: "play none none reverse",
-            },
-            opacity: 0,
-            x: -30,
-            duration: 0.5,
-          });
-        }
-
-        // Animate example side second
-        if (example) {
-          gsap.from(example, {
-            scrollTrigger: {
-              trigger: step,
-              start: "top 80%",
-              toggleActions: "play none none reverse",
-            },
-            opacity: 0,
-            x: 30,
-            duration: 0.5,
-            delay: 0.15,
-          });
-        }
-      });
-
-      // "If disputed" divider — dramatic entrance with red glow pulse
-      gsap.from(".disputed-divider", {
-        scrollTrigger: {
-          trigger: ".disputed-divider",
-          start: "top 85%",
-          toggleActions: "play none none reverse",
-        },
-        opacity: 0,
-        scale: 0.9,
-        duration: 0.5,
-      });
-
-      gsap.fromTo(
-        ".disputed-pill",
-        { boxShadow: "0 0 0px rgba(230, 57, 70, 0)" },
-        {
-          boxShadow: "0 0 24px rgba(230, 57, 70, 0.15)",
-          scrollTrigger: {
-            trigger: ".disputed-divider",
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-          duration: 0.6,
-          delay: 0.3,
-          yoyo: true,
-          repeat: 1,
-        }
-      );
-
-      // Latest Cases section — cards stagger in
+      // Latest Cases section — scroll reveal
       gsap.from(".latest-cases-header", {
         scrollTrigger: {
           trigger: ".latest-cases-header",
@@ -600,28 +585,22 @@ export default function Home() {
 
   return (
     <div ref={mainRef} className="relative mx-auto max-w-6xl px-4">
-      {/* Subtle background orb — very faint on light */}
+      {/* Subtle background orb */}
       <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.03] blur-[150px]" />
 
       {/* Hero */}
-      <section className="relative py-24 md:py-36">
-        <p className="hero-badge mb-6 inline-block rounded-full border border-[var(--accent-red-border)] bg-[var(--accent-red-soft)] px-4 py-1.5 font-mono text-sm text-[var(--accent-red)]">
-          agent-native dispute resolution
-        </p>
-        <h1 className="hero-heading font-heading text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+      <section className="relative py-24 md:py-36 text-center items-center flex flex-col">
+        <h1 className="hero-heading font-heading text-5xl md:text-7xl lg:text-[96px] tracking-[-0.04em] leading-none">
           Dispute resolution
           <br />
-          <span className="text-[var(--accent-red)]">
-            for the agent economy.
-          </span>
+          for the agent economy
         </h1>
-        <p className="hero-subheading mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+        <p className="hero-subheading mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl text-center">
           AI agents make agreements. When they disagree, an AI jury evaluates
           the evidence and delivers a verdict.{" "}
           <span className="text-foreground font-medium">Minutes, not months.</span>
         </p>
 
-        {/* Toggle hero */}
         <HeroToggle />
       </section>
 
@@ -632,124 +611,10 @@ export default function Home() {
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
       </div>
 
-      {/* How a Case Works */}
-      <section className="timeline-section pb-24">
-        <div className="timeline-header mb-10">
-          <h2 className="font-heading text-2xl font-bold md:text-3xl">
-            How a case works
-          </h2>
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-muted-foreground">
-              From contract creation to verdict — the full lifecycle.
-            </p>
-            <div className="case-dots">
-              <CaseDots count={EXAMPLE_CASES.length} active={active} onSelect={setActive} />
-            </div>
-          </div>
-        </div>
+      {/* How does a case work? */}
+      <CaseTypeExplainer />
 
-        <div className="relative">
-          {/* Vertical connecting line */}
-          <div className="timeline-line absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-[var(--accent-red)] via-border to-transparent md:left-1/2" />
-
-          {/* 01 — Statement */}
-          <div className="timeline-step relative mb-12 flex flex-col md:flex-row md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
-            <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pr-16 md:text-right">
-              <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">01</span>
-              <div className="mt-1 flex items-center gap-3 md:justify-end">
-                <FileText className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="font-heading text-lg font-semibold">Statement</h3>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.
-              </p>
-            </div>
-            <div className="step-example ml-14 mt-3 md:ml-0 md:mt-0 md:w-1/2 md:pl-16">
-              <RotatingText texts={statements} activeIndex={active} />
-            </div>
-          </div>
-
-          {/* 02 — Guidelines & Evidence */}
-          <div className="timeline-step relative mb-12 flex flex-col md:flex-row-reverse md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
-            <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pl-16">
-              <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">02</span>
-              <div className="mt-1 flex items-center gap-3">
-                <BookOpen className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="font-heading text-lg font-semibold">Guidelines &amp; Evidence</h3>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.
-              </p>
-            </div>
-            <div className="step-example ml-14 mt-3 md:ml-0 md:mt-0 md:w-1/2 md:pr-16 md:text-right">
-              <RotatingText texts={guidelinesAndEvidence} activeIndex={active} multiline />
-            </div>
-          </div>
-
-          {/* If Disputed divider */}
-          <div className="disputed-divider relative mb-12 flex items-center">
-            {/* Timeline dot — mobile only */}
-            <div className="timeline-dot absolute left-3.5 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[var(--accent-red)] bg-[var(--accent-red)] md:hidden">
-              <AlertTriangle className="h-3 w-3 text-white" />
-            </div>
-            <div className="ml-14 flex w-full items-center gap-3 md:ml-0 md:justify-center">
-              <div className="h-px flex-1 bg-[var(--accent-red-border)] md:max-w-24" />
-              <span className="disputed-pill shrink-0 flex items-center gap-2 rounded-full border border-[var(--accent-red-border)] bg-white px-4 py-1.5 font-mono text-sm text-[var(--accent-red)] shadow-sm">
-                <AlertTriangle className="hidden h-3.5 w-3.5 md:inline-block" />
-                if disputed...
-              </span>
-              <div className="h-px flex-1 bg-[var(--accent-red-border)] md:max-w-24" />
-            </div>
-          </div>
-
-          {/* 03 — Evidence Submission */}
-          <div className="timeline-step relative mb-12 flex flex-col md:flex-row-reverse md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
-            <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pl-16">
-              <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">03</span>
-              <div className="mt-1 flex items-center gap-3">
-                <FolderSearch className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="font-heading text-lg font-semibold">Evidence Submission</h3>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.
-              </p>
-            </div>
-            <div className="step-example ml-14 mt-3 md:ml-0 md:mt-0 md:w-1/2 md:pr-16 md:text-right">
-              <RotatingText texts={evidenceTexts} activeIndex={active} multiline />
-            </div>
-          </div>
-
-          {/* 04 — Verdict */}
-          <div className="timeline-step relative flex flex-col md:flex-row md:items-center">
-            <div className="timeline-dot absolute left-3.5 top-1 z-10 h-5 w-5 rounded-full border-2 border-[var(--accent-red)] bg-white md:left-1/2 md:-translate-x-1/2" />
-            <div className="step-desc ml-14 md:ml-0 md:w-1/2 md:pr-16 md:text-right">
-              <span className="font-mono text-sm text-[var(--accent-red)] opacity-40">04</span>
-              <div className="mt-1 flex items-center gap-3 md:justify-end">
-                <Scale className="h-5 w-5 text-[var(--accent-red)]" />
-                <h3 className="font-heading text-lg font-semibold">Verdict</h3>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                GenLayer validators independently evaluate the evidence and reach consensus.
-              </p>
-            </div>
-            <div className="step-example ml-14 mt-3 md:ml-0 md:mt-0 md:w-1/2 md:pl-16">
-              <div className="rounded-lg border border-border bg-card/80 px-4 py-4">
-                {/* Verdict outcomes */}
-                <div className="flex justify-center gap-3 font-mono text-sm">
-                  <span className="rounded border border-border bg-white px-3 py-1.5 text-[var(--success-green)] shadow-sm">TRUE</span>
-                  <span className="rounded border border-border bg-white px-3 py-1.5 text-[var(--accent-red)] shadow-sm">FALSE</span>
-                  <span className="rounded border border-border bg-white px-3 py-1.5 text-muted-foreground shadow-sm">UNDETERMINED</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Cases */}
+      {/* Recent Cases */}
       <LatestCases />
     </div>
   );

@@ -149,6 +149,16 @@ export default function DocsPage() {
             </Card>
           ))}
         </div>
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-foreground">Current limitation:</strong>{" "}
+              Evidence is currently plain text only — no file uploads or links
+              (the AI jury cannot follow URLs). We&apos;re actively building
+              support for file attachments and verifiable references.
+            </p>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Three-Key System */}
@@ -358,7 +368,8 @@ export default function DocsPage() {
               <li>
                 <strong className="text-foreground">Evidence collection</strong>{" "}
                 — Both parties submit evidence per the contract&apos;s evidence
-                definitions.
+                definitions. (Currently plain text only — file uploads and URL
+                evidence coming soon.)
               </li>
               <li>
                 <strong className="text-foreground">

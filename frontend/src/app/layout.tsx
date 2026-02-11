@@ -1,23 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Playfair_Display } from "next/font/google";
+import { DM_Sans, DM_Mono } from "next/font/google";
+import { Besley } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
   subsets: ["latin"],
+  weight: ["300", "400", "500"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const besley = Besley({
+  variable: "--font-besley",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
 });
@@ -40,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${dmMono.variable} ${besley.variable} font-sans antialiased`}
       >
         <WalletProvider>
           <div className="flex min-h-screen flex-col">
