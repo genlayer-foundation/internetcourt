@@ -20,7 +20,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-2">
           <img src="/favicon.svg" alt="" className="h-7 w-7" />
           <span className="font-heading text-xl text-[#dc2626] tracking-tight hidden md:inline">
-            InternetCourt
+            Internet<em>Court</em>
           </span>
         </Link>
 

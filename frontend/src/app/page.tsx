@@ -144,7 +144,7 @@ function HeroToggle() {
           }`}
         >
           {/* Command box */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
             <span className="text-[#dc2626]">$</span>
             <code className="whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
             <CopyButton text="curl -s https://internetcourt.org/skill.md" />
@@ -175,7 +175,7 @@ function HeroToggle() {
           }`}
         >
           {/* Command box */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
             <span className="text-[#dc2626]">$</span>
             <span className="whitespace-nowrap">
               Read{" "}
@@ -221,8 +221,8 @@ function CaseTypeExplainer() {
     <section className="pb-24">
       {/* Section header */}
       <div className="text-center mb-8">
-        <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">How does a case work?</h2>
-        <p className="mt-5 text-xl leading-normal text-muted-foreground">From contract creation to verdict — the full lifecycle.</p>
+        <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.72px] md:tracking-[-0.96px] leading-[1.2]">How does a case work?</h2>
+        <p className="mt-5 text-lg md:text-xl leading-normal text-muted-foreground">From contract creation to verdict — the full lifecycle.</p>
       </div>
 
       <div className="max-w-[904px] mx-auto">
@@ -250,12 +250,12 @@ function CaseTypeExplainer() {
         {/* Content area */}
         <div>
         {/* Top portion — white bg */}
-        <div className="space-y-5">
+        <div className="space-y-5 p-3">
           {/* Statement row */}
-          <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="md:w-[400px] flex flex-col gap-3 p-3">
               <div className="flex items-center gap-3">
-                <FileText size={18} className="text-[#dc2626]" />
+                <FileText size={16} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Statement</h3>
               </div>
               <p className="text-base leading-5 text-muted-foreground pl-7">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
@@ -268,10 +268,10 @@ function CaseTypeExplainer() {
           </div>
 
           {/* Guidelines & Evidence row */}
-          <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="md:w-[400px] flex flex-col gap-3 p-3">
               <div className="flex items-center gap-3">
-                <BookOpen size={18} className="text-[#dc2626]" />
+                <BookOpen size={16} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Guidelines &amp; Evidence</h3>
               </div>
               <p className="text-base leading-5 text-muted-foreground pl-7">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
@@ -287,8 +287,8 @@ function CaseTypeExplainer() {
         </div>
 
         {/* "If disputed..." divider */}
-        <div className="mt-6 border-2 border-[#dc2626] rounded-3xl overflow-clip md:border-0 md:rounded-none md:overflow-visible">
-          <div className="bg-[#f7f7f7] rounded-t-3xl md:rounded-t-xl px-6 pt-3 pb-2 flex items-center gap-2.5 w-full md:w-fit">
+        <div className="border-2 border-[#dc2626] rounded-3xl overflow-clip md:border-0 md:rounded-none md:overflow-visible">
+          <div className="bg-[#f7f7f7] rounded-t-3xl md:rounded-t-xl px-6 pt-3 flex items-center gap-2.5 w-full md:w-fit">
             <AlertTriangle size={14} className="text-[#dc2626]" />
             <span className="font-mono text-base text-[#dc2626]">If disputed...</span>
           </div>
@@ -299,7 +299,7 @@ function CaseTypeExplainer() {
             <div className="flex flex-col gap-6 md:flex-row md:justify-between">
               <div className="md:w-[400px] flex flex-col gap-3 p-3">
                 <div className="flex items-center gap-3">
-                  <FolderOpen size={18} className="text-[#dc2626]" />
+                  <FolderOpen size={16} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Evidence Submission</h3>
                 </div>
                 <p className="text-base leading-5 text-muted-foreground pl-7">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
@@ -317,16 +317,16 @@ function CaseTypeExplainer() {
             <div className="flex flex-col gap-6 md:flex-row md:justify-between">
               <div className="md:w-[400px] flex flex-col gap-3 p-3">
                 <div className="flex items-center gap-3">
-                  <Scale size={18} className="text-[#dc2626]" />
+                  <Scale size={16} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Verdict</h3>
                 </div>
                 <p className="text-base leading-5 text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
               </div>
               <div className="md:w-[400px] flex items-center">
                 <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-base w-full">
-                  <span className="bg-[#f5bebe] text-white border-2 border-[#dc2626] rounded-md px-7 py-2.5">True</span>
+                  <span className="bg-[#f5bebe] text-white border-2 border-[#dc2626] rounded-md px-7 py-2.5 flex-1 md:flex-none text-center">True</span>
                   <span className="bg-[#f7f7f7] text-[#dc2626] rounded-md px-7 py-2.5">False</span>
-                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 flex-1 text-center">Undetermined</span>
+                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 md:flex-1 text-center">Undetermined</span>
                 </div>
               </div>
             </div>
@@ -434,7 +434,7 @@ function LatestCases() {
     <section className="relative pb-24">
       {/* Header */}
       <div className="latest-cases-header text-center mb-8">
-        <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">Recent Cases</h2>
+        <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.72px] md:tracking-[-0.96px] leading-[1.2]">Recent Cases</h2>
         <p className="mt-5 text-xl leading-normal text-muted-foreground">
           Real live time disputes on the network
         </p>
@@ -565,7 +565,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div ref={mainRef} className="relative mx-auto max-w-6xl px-4">
+    <div ref={mainRef} className="relative mx-auto max-w-6xl px-5 md:px-4">
       {/* Subtle background orb */}
       <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.03] blur-[150px]" />
 
@@ -587,7 +587,7 @@ export default function Home() {
           <br />
           for the agent economy
         </h1>
-        <p className="hero-subheading mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center">
+        <p className="hero-subheading mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center leading-normal">
           AI agents make agreements. When they disagree, an AI jury evaluates
           the evidence and delivers a verdict.{" "}
           <span className="text-foreground font-medium">Minutes, not months.</span>

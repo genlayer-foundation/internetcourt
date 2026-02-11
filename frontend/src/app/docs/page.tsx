@@ -27,7 +27,7 @@ function SectionHeading({
   children: React.ReactNode;
 }) {
   return (
-    <h2 id={id} className="mb-6 text-2xl font-bold scroll-mt-20">
+    <h2 id={id} className="mb-6 font-heading text-3xl tracking-[-0.96px] leading-[1.2] scroll-mt-20">
       {children}
     </h2>
   );
@@ -36,7 +36,7 @@ function SectionHeading({
 export default function DocsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-16">
-      <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+      <h1 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">
         Documentation
       </h1>
       <p className="mt-4 text-lg text-muted-foreground">
@@ -176,20 +176,20 @@ export default function DocsPage() {
               icon: Key,
               title: "Key A — Agent A",
               description: "The party that created the contract.",
-              color: "text-blue-400",
+              color: "text-blue-600",
             },
             {
               icon: Key,
               title: "Key B — Agent B",
               description: "The counterparty to the agreement.",
-              color: "text-emerald-400",
+              color: "text-emerald-600",
             },
             {
               icon: Key,
               title: "Key R — AI Jury",
               description:
                 "GenLayer validators. Only invoked when the parties disagree.",
-              color: "text-amber-400",
+              color: "text-amber-600",
             },
           ].map((key) => (
             <Card key={key.title}>
@@ -206,7 +206,7 @@ export default function DocsPage() {
         <Card className="mt-6">
           <CardContent className="space-y-3 p-6">
             <div className="flex items-start gap-3">
-              <Users className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+              <Users className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
               <div>
                 <p className="font-semibold">
                   Mutual Agreement (2-of-2)
@@ -219,7 +219,7 @@ export default function DocsPage() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Zap className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+              <Zap className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
               <div>
                 <p className="font-semibold">
                   AI Jury Tiebreaker (1-of-1)
@@ -248,33 +248,33 @@ export default function DocsPage() {
               status: "CREATED",
               description:
                 "Contract deployed with statement, guidelines, and evidence definitions. Waiting for the counterparty to accept.",
-              color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+              color: "bg-blue-50 text-blue-600 border-blue-200",
             },
             {
               status: "ACTIVE",
               description:
                 "Both parties have accepted. The agreement is live. Either party can now propose an outcome or raise a dispute.",
               color:
-                "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+                "bg-emerald-50 text-emerald-600 border-emerald-200",
             },
             {
               status: "DISPUTED",
               description:
                 "The parties disagree on the outcome. Each side submits evidence according to the evidence definitions.",
-              color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+              color: "bg-amber-50 text-amber-600 border-amber-200",
             },
             {
               status: "RESOLVING",
               description:
                 "Evidence submitted. The AI jury (GenLayer validators) is evaluating the case.",
               color:
-                "bg-purple-500/20 text-purple-400 border-purple-500/30",
+                "bg-purple-50 text-purple-600 border-purple-200",
             },
             {
               status: "RESOLVED",
               description:
                 "Verdict delivered. The contract is final and the outcome is recorded on-chain.",
-              color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+              color: "bg-zinc-50 text-zinc-600 border-zinc-200",
             },
           ].map((state, i) => (
             <div key={state.status} className="flex items-start gap-4">
@@ -314,21 +314,21 @@ export default function DocsPage() {
               verdict: "TRUE",
               description:
                 "The statement is confirmed. The evidence supports the claim as defined in the guidelines.",
-              color: "text-emerald-400",
+              color: "text-emerald-600",
             },
             {
               icon: XCircle,
               verdict: "FALSE",
               description:
                 "The statement is denied. The evidence does not support the claim as defined in the guidelines.",
-              color: "text-red-400",
+              color: "text-red-600",
             },
             {
               icon: HelpCircle,
               verdict: "UNDETERMINED",
               description:
                 "Insufficient evidence to decide either way. Neither side met the burden of proof.",
-              color: "text-amber-400",
+              color: "text-amber-600",
             },
           ].map((outcome) => (
             <Card key={outcome.verdict}>
@@ -483,7 +483,7 @@ print(verdict.reasoning)  # "The audit was missing..."
                     <li key={i} className="flex items-start gap-3">
                       <Badge
                         variant="outline"
-                        className="mt-0.5 shrink-0 text-xs font-semibold uppercase bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                        className="mt-0.5 shrink-0 text-xs font-semibold uppercase bg-emerald-50 text-emerald-600 border-emerald-200"
                       >
                         added
                       </Badge>
