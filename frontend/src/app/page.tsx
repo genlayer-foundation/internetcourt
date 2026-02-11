@@ -150,7 +150,7 @@ function HeroToggle() {
             <CopyButton text="curl -s https://internetcourt.org/skill.md" />
           </div>
           {/* Steps — inline horizontal */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+          <div className="mt-8 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-center md:gap-6">
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
               <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
@@ -193,7 +193,7 @@ function HeroToggle() {
             <CopyButton text="Read internetcourt.org/skill.md and follow the instructions" />
           </div>
           {/* Steps — inline horizontal */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+          <div className="mt-8 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-center md:gap-6">
             <div className="flex items-center gap-2">
               <span className="border border-[#dc2626] rounded text-sm w-4 h-4 flex items-center justify-center text-[#dc2626] font-mono">1</span>
               <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
@@ -221,19 +221,19 @@ function CaseTypeExplainer() {
     <section className="pb-24">
       {/* Section header */}
       <div className="text-center mb-10">
-        <h2 className="font-heading text-5xl">How does a case work?</h2>
+        <h2 className="font-heading text-4xl md:text-5xl italic">How does a case work?</h2>
         <p className="mt-3 text-muted-foreground">From contract creation to verdict — the full lifecycle.</p>
       </div>
 
       {/* Tab bar */}
-      <div className="bg-[#f7f7f7] rounded-xl p-2 flex mb-8">
+      <div className="bg-[#f7f7f7] rounded-xl p-2 flex gap-1 mb-8">
         {EXAMPLE_CASES.map((c, i) => {
           const Icon = c.icon;
           return (
             <button
               key={i}
               onClick={() => setActiveTab(i)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-mono text-sm transition-all ${
+              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-mono text-sm transition-all ${
                 i === activeTab
                   ? "bg-white opacity-100"
                   : "opacity-20 hover:opacity-40"
@@ -247,17 +247,17 @@ function CaseTypeExplainer() {
       </div>
 
       {/* Content area */}
-      <div>
+      <div className="max-w-[904px] mx-auto">
         {/* Top portion — white bg */}
         <div className="space-y-6">
           {/* Statement row */}
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col md:flex-row gap-6 p-3">
             <div className="md:w-5/12 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <FileText size={18} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Statement</h3>
               </div>
-              <p className="text-sm text-muted-foreground">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
+              <p className="text-sm text-muted-foreground pl-7">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
             </div>
             <div className="md:w-7/12">
               <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm">
@@ -267,13 +267,13 @@ function CaseTypeExplainer() {
           </div>
 
           {/* Guidelines & Evidence row */}
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col md:flex-row gap-6 p-3">
             <div className="md:w-5/12 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <BookOpen size={18} className="text-[#dc2626]" />
                 <h3 className="font-heading text-2xl">Guidelines &amp; Evidence</h3>
               </div>
-              <p className="text-sm text-muted-foreground">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
+              <p className="text-sm text-muted-foreground pl-7">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
             </div>
             <div className="md:w-7/12">
               <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed">
@@ -295,13 +295,13 @@ function CaseTypeExplainer() {
           {/* Bottom portion */}
           <div className="bg-[#f7f7f7] rounded-b-xl rounded-tr-3xl p-3 space-y-3">
             {/* Evidence Submission row */}
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col md:flex-row gap-6 p-3">
               <div className="md:w-5/12 flex flex-col gap-2 p-3">
                 <div className="flex items-center gap-2">
                   <FolderOpen size={18} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Evidence Submission</h3>
                 </div>
-                <p className="text-sm text-muted-foreground">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
+                <p className="text-sm text-muted-foreground pl-7">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
               </div>
               <div className="md:w-7/12 flex items-center">
                 <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-sm leading-relaxed w-full">
@@ -313,19 +313,19 @@ function CaseTypeExplainer() {
             </div>
 
             {/* Verdict row */}
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col md:flex-row gap-6 p-3">
               <div className="md:w-5/12 flex flex-col gap-2 p-3">
                 <div className="flex items-center gap-2">
                   <Scale size={18} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Verdict</h3>
                 </div>
-                <p className="text-sm text-muted-foreground">GenLayer validators independently evaluate the evidence and reach consensus.</p>
+                <p className="text-sm text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
               </div>
               <div className="md:w-7/12 flex items-center">
                 <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-sm w-full">
-                  <span className="bg-[#f7f7f7] text-foreground rounded-lg px-3 py-1.5">True</span>
-                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-lg px-3 py-1.5">False</span>
-                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-lg px-3 py-1.5">Undetermined</span>
+                  <span className="bg-[#dc2626] text-white rounded-md px-7 py-2.5">True</span>
+                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-md px-7 py-2.5">False</span>
+                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 flex-1 text-center">Undetermined</span>
                 </div>
               </div>
             </div>
@@ -432,7 +432,7 @@ function LatestCases() {
     <section className="relative pb-24">
       {/* Header */}
       <div className="latest-cases-header text-center mb-8">
-        <h2 className="font-heading text-5xl">Recent Cases</h2>
+        <h2 className="font-heading text-4xl md:text-5xl italic">Recent Cases</h2>
         <p className="mt-3 text-muted-foreground">
           Real live time disputes on the network
         </p>
