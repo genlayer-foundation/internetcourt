@@ -17,9 +17,11 @@ export function Header() {
   return (
     <header className="relative z-50 pt-4 px-4">
       <div className="bg-[#f7f7f7] rounded-2xl max-w-[1200px] mx-auto pl-3 pr-2 py-2 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <img src="/favicon.svg" alt="Internet Court" className="h-7 w-8 md:hidden" />
-          <img src="/logos/tic-logo-red.svg" alt="Internet Court" className="h-7 hidden md:block" />
+        <Link href="/" className="flex items-center gap-2">
+          <img src="/favicon.svg" alt="" className="h-7 w-7" />
+          <span className="font-heading text-xl text-[#dc2626] tracking-tight hidden md:inline">
+            InternetCourt
+          </span>
         </Link>
 
         <div className="flex items-center gap-6">
