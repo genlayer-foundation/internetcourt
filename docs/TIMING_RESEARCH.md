@@ -1,6 +1,6 @@
 # Dispute Resolution Timing Research
 
-Research on timing patterns in dispute resolution protocols, with recommendations for MoltCourt.
+Research on timing patterns in dispute resolution protocols, with recommendations for InternetCourt.
 
 ## 1. Protocol Research Summary
 
@@ -142,7 +142,7 @@ Reality.eth is a crowd-sourced verification system; SafeSnap enables on-chain ex
 | ICC | 30 days to respond | 6 months from terms of reference | N/A |
 | LCIA | 28 days to respond | 3 months from last submission | 14 days for emergency decision |
 
-**Key takeaways for MoltCourt:**
+**Key takeaways for InternetCourt:**
 - Even "fast" commercial arbitration operates on weeks-to-months timescales.
 - Emergency provisions exist (14 days LCIA) for urgent matters.
 - Response periods (28-30 days) ensure parties have adequate time to prepare.
@@ -169,7 +169,7 @@ Reality.eth is a crowd-sourced verification system; SafeSnap enables on-chain ex
 
 ---
 
-## 3. Current MoltCourt Timing State
+## 3. Current InternetCourt Timing State
 
 ### Existing Parameters
 
@@ -264,7 +264,7 @@ CANCELLED               │                      │
 
 ### Phase 1: `min_dispute_period_seconds` + `activation_timestamp` (HIGH priority)
 
-**Changes to `MoltCourt.py`:**
+**Changes to `InternetCourt.py`:**
 
 1. Add new storage fields:
    ```python
@@ -300,7 +300,7 @@ CANCELLED               │                      │
 
 ### Phase 2: `resolution_timeout_seconds` (MEDIUM priority)
 
-**Changes to `MoltCourt.py`:**
+**Changes to `InternetCourt.py`:**
 
 1. Add storage field:
    ```python
@@ -330,7 +330,7 @@ CANCELLED               │                      │
 
 ## 7. Factory Considerations
 
-Should `MoltCourtFactory.py` enforce timing minimums?
+Should `InternetCourtFactory.py` enforce timing minimums?
 
 **Recommendation: Yes, with protocol-level defaults and minimums.**
 
@@ -364,7 +364,7 @@ A: Yes. If both parties agree, they can resolve at any time. The cooling-off per
 
 ### AI Agent Considerations
 
-MoltCourt's primary users are AI agents. Timing implications:
+InternetCourt's primary users are AI agents. Timing implications:
 - **Agents operate 24/7** — unlike human jurors, no need for "busy lives" accommodation.
 - **Agents act fast** — 1-day minimum dispute period may be more than needed for pure agent-to-agent disputes.
 - **But agents can be adversarial** — timing protections prevent flash-dispute attacks.
@@ -393,4 +393,4 @@ This ensures existing contracts and tests continue to work unchanged.
 
 5. **Should `evidence_deadline_seconds` be renamed to `evidence_window_seconds` for clarity?** It's a duration, not an absolute deadline. Low priority but would improve API clarity.
 
-6. **Time source reliability in GenLayer:** The contract uses `datetime.datetime.now(datetime.timezone.utc)` — is this reliable across validators? If validators have clock skew, timing checks could produce inconsistent results across the non-deterministic execution. This is a GenLayer platform question, not a MoltCourt question, but worth investigating.
+6. **Time source reliability in GenLayer:** The contract uses `datetime.datetime.now(datetime.timezone.utc)` — is this reliable across validators? If validators have clock skew, timing checks could produce inconsistent results across the non-deterministic execution. This is a GenLayer platform question, not a InternetCourt question, but worth investigating.

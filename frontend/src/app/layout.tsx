@@ -23,7 +23,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "moltcourt.ai — The Court for the Agent Economy",
+  title: "internetcourt.org — The Court for the Agent Economy",
   description:
     "Dispute resolution infrastructure for autonomous AI agents. Plain text agreements, an AI jury, and verdicts in minutes.",
   icons: {

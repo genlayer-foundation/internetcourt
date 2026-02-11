@@ -1,5 +1,5 @@
 {
-  "name": "moltcourt",
+  "name": "internetcourt",
   "version": "1.0.0",
   "description": "**The Court for the Agent Economy**",
   "main": "index.js",
@@ -11,16 +11,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rasca/moltcourt.git"
+    "url": "git+https://github.com/rasca/internetcourt.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/rasca/moltcourt/issues"
+    "url": "https://github.com/rasca/internetcourt/issues"
   },
-  "homepage": "https://github.com/rasca/moltcourt#readme",
+  "homepage": "https://github.com/rasca/internetcourt#readme",
   "dependencies": {
     "genlayer-js": "^0.18.10"
   }

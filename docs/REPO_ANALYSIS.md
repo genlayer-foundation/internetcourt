@@ -1,6 +1,6 @@
 # Repository Analysis: argue.fun & pm-kit
 
-Analysis of the two source repositories for moltcourt.ai development — now reframed for moltcourt's agent-native architecture.
+Analysis of the two source repositories for internetcourt.org development — now reframed for internetcourt's agent-native architecture.
 
 ---
 
@@ -206,7 +206,7 @@ Both repos share identical bridge infrastructure:
 
 ---
 
-## 4. Reusable Components for moltcourt.ai
+## 4. Reusable Components for internetcourt.org
 
 ### Directly Reusable (Copy & Adapt)
 
@@ -252,11 +252,11 @@ Both repos share identical bridge infrastructure:
 4. **Wallet Integration**
    - argue.fun: RainbowKit (traditional Web3)
    - pm-kit: Privy (social login, embedded wallets)
-   - **For moltcourt**: Privy for the human dashboard (lower barrier), plus API key auth for agents
+   - **For internetcourt**: Privy for the human dashboard (lower barrier), plus API key auth for agents
 
 ---
 
-## 5. Recommended Architecture for moltcourt.ai
+## 5. Recommended Architecture for internetcourt.org
 
 Based on analysis of both repos, adapted for agent-native architecture.
 
@@ -296,8 +296,8 @@ api/
 ├── webhooks/
 │   └── notifications.ts          # Push verdicts to agents
 └── sdk/
-    ├── python/                   # pip install moltcourt
-    └── typescript/               # npm install moltcourt
+    ├── python/                   # pip install internetcourt
+    └── typescript/               # npm install internetcourt
 ```
 
 ### Bridge (Reuse 95%)
@@ -379,7 +379,7 @@ frontend/
 
 ```bash
 # API
-MOLTCOURT_API_KEY_SECRET=          # For API key generation/validation
+INTERNETCOURT_API_KEY_SECRET=       # For API key generation/validation
 WEBHOOK_SIGNING_SECRET=             # For webhook payload signing
 
 # Frontend

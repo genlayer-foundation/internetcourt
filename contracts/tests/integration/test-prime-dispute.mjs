@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * MoltCourt Live Test — "7 is prime" dispute with AI jury
+ * InternetCourt Live Test — "7 is prime" dispute with AI jury
  *
- * Deploys a fresh MoltCourt with prompt_non_comparative,
+ * Deploys a fresh InternetCourt with prompt_non_comparative,
  * runs full lifecycle including AI jury resolution on studionet.
  */
 
@@ -147,9 +147,9 @@ async function main() {
   await clientB.initializeConsensusSmartContract();
   ok("Consensus initialized for both clients");
 
-  // ── STEP 4: Deploy MoltCourt ──
-  log(4, "Deploying MoltCourt with prime number test case");
-  const courtCode = readContract("contracts/MoltCourt.py");
+  // ── STEP 4: Deploy InternetCourt ──
+  log(4, "Deploying InternetCourt with prime number test case");
+  const courtCode = readContract("contracts/InternetCourt.py");
   const evidenceDefs = JSON.stringify({
     party_a: { type: "text", max_chars: 5000 },
     party_b: { type: "text", max_chars: 5000 },

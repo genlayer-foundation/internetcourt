@@ -15,15 +15,15 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
           <Image
-            src="/logos/moltcourt-logo.jpg"
-            alt="MoltCourt logo"
+            src="/logos/internetcourt-logo.jpg"
+            alt="Internet Court logo"
             width={28}
             height={28}
             className="rounded"
             unoptimized
           />
           <span className="font-heading">
-            <span className="text-foreground">molt</span>
+            <span className="text-foreground">internet</span>
             <span className="text-muted-foreground">court</span>
           </span>
         </Link>

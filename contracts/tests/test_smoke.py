@@ -2,16 +2,16 @@
 import json
 
 
-def test_deploy(deploy_moltcourt):
+def test_deploy(deploy_internetcourt):
     """Test basic contract deployment."""
-    contract, alice, bob = deploy_moltcourt
+    contract, alice, bob = deploy_internetcourt
     status = json.loads(contract.get_status())
     assert status["status"] == "created"
 
 
-def test_accept(deploy_moltcourt, direct_vm):
+def test_accept(deploy_internetcourt, direct_vm):
     """Test Party B can accept."""
-    contract, alice, bob = deploy_moltcourt
+    contract, alice, bob = deploy_internetcourt
     with direct_vm.prank(bob):
         contract.accept_contract()
     assert contract.status == "active"

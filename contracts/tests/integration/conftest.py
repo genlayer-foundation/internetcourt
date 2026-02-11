@@ -7,7 +7,7 @@ Prerequisites:
 
 Usage:
     # Run integration tests against local GenLayer Studio:
-    cd /path/to/moltcourt
+    cd /path/to/internetcourt
     gltest contracts/tests/integration/ -m integration --network localnet -v
 
     # Run against studionet (shared hosted environment):
@@ -53,12 +53,12 @@ def test_accounts():
 
 
 @pytest.fixture(scope="session")
-def moltcourt_factory():
-    """Get a ContractFactory for MoltCourt.py."""
-    return get_contract_factory(contract_file_path="contracts/MoltCourt.py")
+def internetcourt_factory():
+    """Get a ContractFactory for InternetCourt.py."""
+    return get_contract_factory(contract_file_path="contracts/InternetCourt.py")
 
 
 @pytest.fixture(scope="session")
 def factory_contract_factory():
-    """Get a ContractFactory for MoltCourtFactory.py."""
-    return get_contract_factory(contract_file_path="contracts/MoltCourtFactory.py")
+    """Get a ContractFactory for InternetCourtFactory.py."""
+    return get_contract_factory(contract_file_path="contracts/InternetCourtFactory.py")

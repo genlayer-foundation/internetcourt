@@ -1,4 +1,4 @@
-const STORAGE_KEY = "moltcourt:tracked-contracts";
+const STORAGE_KEY = "internetcourt:tracked-contracts";
 
 export function getTrackedAddresses(): string[] {
   if (typeof window === "undefined") return [];

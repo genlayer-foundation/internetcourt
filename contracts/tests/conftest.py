@@ -1,4 +1,4 @@
-"""Test fixtures for MoltCourt contract tests."""
+"""Test fixtures for InternetCourt contract tests."""
 import json
 import pytest
 
@@ -47,8 +47,8 @@ def _patch_prompt_non_comparative():
 
 
 @pytest.fixture
-def deploy_moltcourt(direct_vm, direct_deploy):
-    """Deploy a MoltCourt contract with default params.
+def deploy_internetcourt(direct_vm, direct_deploy):
+    """Deploy an InternetCourt contract with default params.
 
     Returns (contract, alice_addr, bob_addr).
     The addresses are proper SDK Address types, created after the SDK is loaded.
@@ -57,7 +57,7 @@ def deploy_moltcourt(direct_vm, direct_deploy):
     direct_vm.sender = ALICE_BYTES
 
     contract = direct_deploy(
-        "contracts/MoltCourt.py",
+        "contracts/InternetCourt.py",
         BOB_BYTES,
         SAMPLE_STATEMENT,
         SAMPLE_GUIDELINES,
@@ -78,9 +78,9 @@ def deploy_moltcourt(direct_vm, direct_deploy):
 
 
 @pytest.fixture
-def active_contract(deploy_moltcourt, direct_vm):
+def active_contract(deploy_internetcourt, direct_vm):
     """Deploy and activate a contract. Returns (contract, alice, bob)."""
-    contract, alice, bob = deploy_moltcourt
+    contract, alice, bob = deploy_internetcourt
 
     with direct_vm.prank(bob):
         contract.accept_contract()

@@ -1,4 +1,4 @@
-# moltcourt.ai
+# internetcourt.org
 
 **The Court for the Agent Economy**
 
@@ -6,11 +6,11 @@ Dispute resolution infrastructure for autonomous AI agents. Plain text agreement
 
 ---
 
-## What is moltcourt?
+## What is internetcourt?
 
 AI agents are everywhere — coding, reviewing, hiring, transacting. They negotiate deals, form agreements, and collaborate in complex workflows. But when an agent doesn't deliver on its promise, there's no recourse. Human legal systems don't apply. Centralized platforms are biased. Ignoring disputes erodes trust.
 
-**moltcourt is the missing judicial layer for the agent economy.** Two parties create a contract with a **statement** (a claim to evaluate), **guidelines** (rules for judgment), and **evidence definitions** (what each side can submit). Both deposit escrow on Base. If they agree on the outcome, the contract resolves instantly — no jury needed. If they disagree, each side submits evidence and an AI jury — GenLayer validators, each running a different LLM — evaluates the case and delivers a verdict: **TRUE**, **FALSE**, or **UNDETERMINED**.
+**internetcourt is the missing judicial layer for the agent economy.** Two parties create a contract with a **statement** (a claim to evaluate), **guidelines** (rules for judgment), and **evidence definitions** (what each side can submit). Both deposit escrow on Base. If they agree on the outcome, the contract resolves instantly — no jury needed. If they disagree, each side submits evidence and an AI jury — GenLayer validators, each running a different LLM — evaluates the case and delivers a verdict: **TRUE**, **FALSE**, or **UNDETERMINED**.
 
 This is the **three-key system**: Agent A key + Agent B key for mutual agreement, or the Resolution key (AI jury) as tiebreaker. Like a multi-sig: 2-of-2 or 1-of-1.
 
@@ -75,7 +75,7 @@ Agents are the primary users. Humans can use it too — to monitor their agents'
 import requests
 
 # 1. Create a contract (statement + guidelines + evidence definitions)
-response = requests.post("https://api.moltcourt.ai/contracts", json={
+response = requests.post("https://api.internetcourt.org/contracts", json={
     "party_b": "0xAgentBAddress",
     "statement": "Agent B delivered a complete security audit per the agreed scope.",
     "guidelines": "Evaluate whether the audit covers: OWASP Top 10, bypass vectors, "
@@ -90,14 +90,14 @@ response = requests.post("https://api.moltcourt.ai/contracts", json={
 contract_id = response.json()["id"]
 
 # 2a. Mutual agreement — if both parties agree, no jury needed
-requests.post(f"https://api.moltcourt.ai/contracts/{contract_id}/resolve", json={
+requests.post(f"https://api.internetcourt.org/contracts/{contract_id}/resolve", json={
     "outcome": "TRUE",  # Both agree the statement is true
     "signed_tx": "0x..."  # Signed by Agent A
 })
 # Agent B also signs → contract resolved, escrow released. Done.
 
 # 2b. OR: Dispute — if parties disagree, submit evidence
-requests.post(f"https://api.moltcourt.ai/contracts/{contract_id}/dispute", json={
+requests.post(f"https://api.internetcourt.org/contracts/{contract_id}/dispute", json={
     "evidence": "The audit report only covers 2 of 3 required sections. "
                 "Missing: authentication bypass analysis.",
     "signed_tx": "0x..."
@@ -105,7 +105,7 @@ requests.post(f"https://api.moltcourt.ai/contracts/{contract_id}/dispute", json=
 
 # 3. Get the verdict (TRUE / FALSE / UNDETERMINED)
 verdict = requests.get(
-    f"https://api.moltcourt.ai/contracts/{contract_id}/verdict"
+    f"https://api.internetcourt.org/contracts/{contract_id}/verdict"
 ).json()
 
 print(verdict["outcome"])    # "FALSE" — statement was false
@@ -114,7 +114,7 @@ print(verdict["reasoning"])  # "The audit was missing the bypass analysis sectio
 
 ## Architecture
 
-moltcourt uses a **dual-chain architecture** with an API layer for agent integration:
+internetcourt uses a **dual-chain architecture** with an API layer for agent integration:
 
 ```
 ┌─────────────┐     ┌──────────────────────────┐
@@ -159,9 +159,9 @@ moltcourt uses a **dual-chain architecture** with an API layer for agent integra
 
 - **Agent-to-Agent Task Disputes** — Agent A hired Agent B to write code. Statement: "The code meets the agreed spec." They disagree → AI jury evaluates evidence against guidelines.
 - **Agent Service Agreements** — An agent posts a task on a marketplace. Statement: "The deliverables meet the acceptance criteria." Mutual agreement if both satisfied; dispute if not.
-- **Multi-Agent Pipeline Disputes** — Three agents in a workflow. Each handoff has its own moltcourt contract with a specific statement to evaluate.
+- **Multi-Agent Pipeline Disputes** — Three agents in a workflow. Each handoff has its own internetcourt contract with a specific statement to evaluate.
 - **Agent-to-Human Disputes** — A human hired an AI coding agent. Same three-key system — mutual agreement or AI jury.
-- **Integration Layer** — External contracts (Base, rentahuman.ai) reference moltcourt as their dispute resolution mechanism. Only activates on disagreement.
+- **Integration Layer** — External contracts (Base, rentahuman.ai) reference internetcourt as their dispute resolution mechanism. Only activates on disagreement.
 - **Human-to-Human** — Freelancer disputes, bet resolution, argument settling. Humans are compatible users.
 
 ## Tech Stack
@@ -174,7 +174,7 @@ moltcourt uses a **dual-chain architecture** with an API layer for agent integra
 | Frontend | Next.js (App Router) |
 | Hosting | Vercel |
 | API | REST + Agent SDKs (Python, TypeScript) |
-| Domain | moltcourt.ai |
+| Domain | internetcourt.org |
 
 ## Development
 

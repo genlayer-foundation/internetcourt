@@ -1,4 +1,4 @@
-# moltcourt.ai - Idea Document
+# internetcourt.org - Idea Document
 
 > Dispute resolution infrastructure for the AI agent economy, built on GenLayer intelligent contracts.
 
@@ -14,29 +14,29 @@ AI agents are proliferating. They hire each other (rentahuman.ai), write code, r
 
 But when things go wrong — when Agent A hires Agent B and disagrees with the output, when a pipeline breaks down and agents blame each other, when a human disputes an AI agent's work — there's **no infrastructure for resolution.**
 
-moltcourt is that infrastructure. The court system for the agent economy.
+internetcourt is that infrastructure. The court system for the agent economy.
 
 ---
 
 ## Concrete Use Cases
 
 ### 1. Agent-to-Agent Task Disputes ("Did the agent deliver what was agreed?")
-A coding agent (Agent A) hires a code review agent (Agent B) to audit a module. They agree via moltcourt: "Review must cover security vulnerabilities, performance issues, and code quality. Deliver within 24 hours." Agent B delivers a review that only covers code quality, skipping security and performance. Agent A disputes. The AI jury evaluates the agreement terms against the delivered review. Verdict in minutes, not human-hours.
+A coding agent (Agent A) hires a code review agent (Agent B) to audit a module. They agree via internetcourt: "Review must cover security vulnerabilities, performance issues, and code quality. Deliver within 24 hours." Agent B delivers a review that only covers code quality, skipping security and performance. Agent A disputes. The AI jury evaluates the agreement terms against the delivered review. Verdict in minutes, not human-hours.
 
 ### 2. Agent Service Agreement (rentahuman.ai-style)
-An AI agent posts a task on a service marketplace: "Collect data from 50 restaurant menus in downtown SF, deliver as structured JSON." A worker (human or agent) accepts. The requester agent claims the data is incomplete — only 38 restaurants covered. The worker argues 12 restaurants were permanently closed and shouldn't count. They take it to moltcourt. The AI jury fetches current data, evaluates the agreement language, and rules.
+An AI agent posts a task on a service marketplace: "Collect data from 50 restaurant menus in downtown SF, deliver as structured JSON." A worker (human or agent) accepts. The requester agent claims the data is incomplete — only 38 restaurants covered. The worker argues 12 restaurants were permanently closed and shouldn't count. They take it to internetcourt. The AI jury fetches current data, evaluates the agreement language, and rules.
 
 ### 3. Agent-to-Human Disputes ("I hired an AI and it didn't deliver")
-A startup founder hires an AI writing agent to produce 10 blog posts per month. The agent delivers, but the founder claims the quality is "too generic" and refuses to pay. The agent's operator disputes. moltcourt evaluates: did the agreement specify quality standards? Did the deliverables meet those standards? The AI jury reads the posts, evaluates against the agreement terms, and rules.
+A startup founder hires an AI writing agent to produce 10 blog posts per month. The agent delivers, but the founder claims the quality is "too generic" and refuses to pay. The agent's operator disputes. internetcourt evaluates: did the agreement specify quality standards? Did the deliverables meet those standards? The AI jury reads the posts, evaluates against the agreement terms, and rules.
 
 ### 4. Multi-Agent Pipeline Disputes ("Who broke the chain?")
-A three-agent pipeline processes customer support tickets: Agent A triages, Agent B drafts responses, Agent C reviews for quality. Agent C rejects Agent B's responses as "off-brand." Agent B says Agent A's triage data was wrong, causing bad drafts. All three agents have different views on who's responsible. moltcourt evaluates the handoff agreements between each pair and rules on responsibility.
+A three-agent pipeline processes customer support tickets: Agent A triages, Agent B drafts responses, Agent C reviews for quality. Agent C rejects Agent B's responses as "off-brand." Agent B says Agent A's triage data was wrong, causing bad drafts. All three agents have different views on who's responsible. internetcourt evaluates the handoff agreements between each pair and rules on responsibility.
 
 ### 5. Bet Resolution Between Agents ("Who was right about the prediction?")
-Two prediction agents disagree on a market outcome. They formalize their bet on moltcourt: "ETH will hit $10k by July 2026." Each agent stakes tokens. When the date arrives, the AI jury checks the price history and resolves. No centralized oracle needed — GenLayer validators fetch and verify the data independently.
+Two prediction agents disagree on a market outcome. They formalize their bet on internetcourt: "ETH will hit $10k by July 2026." Each agent stakes tokens. When the date arrives, the AI jury checks the price history and resolves. No centralized oracle needed — GenLayer validators fetch and verify the data independently.
 
 ### 6. Human-to-Human Disputes (Still Supported)
-Two humans can still use moltcourt directly. Freelancer disputes, bet resolution, argument settling — all the original use cases work. Humans are compatible users, just not the primary audience.
+Two humans can still use internetcourt directly. Freelancer disputes, bet resolution, argument settling — all the original use cases work. Humans are compatible users, just not the primary audience.
 
 ---
 
@@ -64,7 +64,7 @@ A GenLayer intelligent contract implementing the **three-key system**:
 from genlayer import *
 import json
 
-class MoltCourt(gl.Contract):
+class InternetCourt(gl.Contract):
     # Three components
     statement: str         # Claim to evaluate (true/false)
     guidelines: str        # Instructions for AI jury evaluation
@@ -161,7 +161,7 @@ class MoltCourt(gl.Contract):
         self.status = "resolving"
 
         prompt = f"""
-You are an impartial AI juror in the MoltCourt dispute resolution system.
+You are an impartial AI juror in the InternetCourt dispute resolution system.
 Evaluate the following statement based on the guidelines and evidence.
 
 ## Statement to Evaluate
@@ -212,7 +212,7 @@ Respond ONLY with JSON:
 ```
 PHASE 1: Creation & Deployment
 
-1. CREATE      -> Agent A deploys MoltCourt contract via API with:
+1. CREATE      -> Agent A deploys InternetCourt contract via API with:
                    - Statement (claim to evaluate)
                    - Guidelines (rules for AI jury)
                    - Evidence definitions (what each side can submit)
@@ -257,7 +257,7 @@ Everything in V1, plus:
 - On UNDETERMINED: configurable behavior (return, additional round, etc.)
 
 ### Agent SDK
-- Python SDK for agent integration (pip install moltcourt)
+- Python SDK for agent integration (pip install internetcourt)
 - TypeScript SDK for JS-based agents
 - MCP tool definitions for native agent tool use
 
@@ -322,7 +322,7 @@ def resolve_with_split(self):
 
 ## Contract Format (Statement + Guidelines + Evidence Definitions)
 
-Every moltcourt contract has three components. This is the definitive format.
+Every internetcourt contract has three components. This is the definitive format.
 
 ### Example: Agent-to-Agent Code Review
 
@@ -500,7 +500,7 @@ Every moltcourt contract has three components. This is the definitive format.
 2. **API-native**: Agents need APIs, not UIs. Build the API first, add the human dashboard later.
 3. **Statement format is perfect**: Agents can generate precise statements and guidelines programmatically.
 4. **Agents are always online**: Unlike humans, agents can respond to disputes immediately — faster resolution cycles.
-5. **Differentiation**: Kleros/Aragon are for humans. moltcourt is for the agent economy.
+5. **Differentiation**: Kleros/Aragon are for humans. internetcourt is for the agent economy.
 
 ### The V1 Pitch
 > "The court system for AI agents. Create a contract with a statement, guidelines, and evidence rules. If both parties agree — done. If they disagree, an AI jury evaluates the evidence and delivers a verdict: TRUE, FALSE, or UNDETERMINED. The judicial infrastructure for the agent economy."
@@ -546,11 +546,11 @@ V3 (Month 1):  Agent reputation marketplace, prediction oracle mode,
 
 ## Name and Brand
 
-"moltcourt" -> "molt" (to shed/transform) + "court" (legal arbitration)
+"internetcourt" -> "molt" (to shed/transform) + "court" (legal arbitration)
 
 **Reframed for the agent economy:**
 
-A **"molt"** is an AI agent that uses moltcourt — an agent that believes in accountability, backs its agreements with escrow, and submits to AI arbitration when things go wrong.
+A **"molt"** is an AI agent that uses internetcourt — an agent that believes in accountability, backs its agreements with escrow, and submits to AI arbitration when things go wrong.
 
 Tagline options:
 - "The Court for the Agent Economy"

@@ -1,6 +1,6 @@
-# moltcourt.ai — Implementation Plan
+# internetcourt.org — Implementation Plan
 
-> Actionable implementation plan for building moltcourt.ai: dispute resolution infrastructure for the AI agent economy.
+> Actionable implementation plan for building internetcourt.org: dispute resolution infrastructure for the AI agent economy.
 
 **Timeline:** 3 weeks
 **Target:** GenLayer Testnet Bradbury + Base Sepolia + Vercel
@@ -11,15 +11,15 @@
 
 The core product — an AI jury that evaluates disputes between agents (or humans) and renders verdicts.
 
-### 1.1 MoltCourt Intelligent Contract
+### 1.1 InternetCourt Intelligent Contract
 
-**File:** `contracts/MoltCourt.py`
+**File:** `contracts/InternetCourt.py`
 
 The single GenLayer intelligent contract that handles the full dispute lifecycle. Each deployment represents one agreement between two parties.
 
 **Contract state:**
 ```python
-class MoltCourt(gl.Contract):
+class InternetCourt(gl.Contract):
     # Parties
     party_a: Address              # Creator
     party_b: Address              # Acceptor
@@ -77,7 +77,7 @@ def resolve(self) -> None:
     evidence_b = gl.storage.copy_to_memory(self.evidence_b)
 
     def nondet():
-        prompt = f"""You are an impartial AI juror in MoltCourt, a dispute resolution
+        prompt = f"""You are an impartial AI juror in InternetCourt, a dispute resolution
 system for the agent economy. The parties may be AI agents, humans, or a mix.
 
 ## Statement to Evaluate
@@ -149,7 +149,7 @@ def mutual_resolve(self, verdict: str) -> None:
 
 ### 1.2 Contract Tests
 
-**File:** `contracts/tests/test_moltcourt.py`
+**File:** `contracts/tests/test_internetcourt.py`
 
 ```python
 # Test cases to implement:
@@ -232,16 +232,16 @@ ACCOUNT_PRIVATE_KEY_2=
 
 ### 1.4 Deploy to GenLayer Testnet Bradbury
 
-**File:** `contracts/deploy/deploy_moltcourt.py`
+**File:** `contracts/deploy/deploy_internetcourt.py`
 
-Deployment script that deploys the MoltCourt contract with sample agreement data for testing.
+Deployment script that deploys the InternetCourt contract with sample agreement data for testing.
 
 ### Definition of Done — Phase 1
-- [ ] `contracts/MoltCourt.py` — Full contract with all methods
-- [ ] `contracts/tests/test_moltcourt.py` — 15+ test cases passing in direct mode
+- [ ] `contracts/InternetCourt.py` — Full contract with all methods
+- [ ] `contracts/tests/test_internetcourt.py` — 15+ test cases passing in direct mode
 - [ ] `contracts/tests/conftest.py` — Test fixtures and LLM mocks
 - [ ] `gltest.config.yaml` — Test configuration
-- [ ] `contracts/deploy/deploy_moltcourt.py` — Deployment script
+- [ ] `contracts/deploy/deploy_internetcourt.py` — Deployment script
 - [ ] Contract deployed to GenLayer Testnet Bradbury
 - [ ] Full dispute lifecycle tested end-to-end (deploy -> activate -> dispute -> evidence -> resolve -> verdict)
 
@@ -261,10 +261,10 @@ contracts/solidity/
 ├── tsconfig.json
 ├── .env.example
 ├── contracts/
-│   ├── MoltCourtFactory.sol
+│   ├── InternetCourtFactory.sol
 │   ├── Agreement.sol
 │   ├── interfaces/
-│   │   └── IMoltCourtFactory.sol
+│   │   └── IInternetCourtFactory.sol
 │   └── mocks/
 │       └── MockUSDL.sol
 ├── scripts/
@@ -273,7 +273,7 @@ contracts/solidity/
 │   └── interact.ts
 └── test/
     ├── Agreement.test.ts
-    └── MoltCourtFactory.test.ts
+    └── InternetCourtFactory.test.ts
 ```
 
 **Dependencies:**
@@ -348,9 +348,9 @@ enum Status { CREATED, ACTIVE, DISPUTED, RESOLVING, RESOLVED, CANCELLED }
 - Evidence defs: 5,000 bytes max
 - Evidence per side: 50,000 bytes max (~12.5k LLM tokens)
 
-### 2.3 MoltCourtFactory.sol — Factory + Bridge Receiver
+### 2.3 InternetCourtFactory.sol — Factory + Bridge Receiver
 
-**File:** `contracts/solidity/contracts/MoltCourtFactory.sol`
+**File:** `contracts/solidity/contracts/InternetCourtFactory.sol`
 
 Adapted from `arguedotfun/contracts/contracts/DebateFactoryCOFI.sol`.
 
@@ -481,7 +481,7 @@ class CourtVerdict(gl.Contract):
         s, g, ea, eb = statement, guidelines, evidence_a, evidence_b
 
         def nondet():
-            prompt = f"""..."""  # Same prompt as MoltCourt.py resolve()
+            prompt = f"""..."""  # Same prompt as InternetCourt.py resolve()
             return gl.nondet.exec_prompt(prompt, response_format='json')
 
         result = gl.eq_principle.prompt_non_comparative(
@@ -502,7 +502,7 @@ class CourtVerdict(gl.Contract):
 **Reference:** Direct reuse of bridge infrastructure from `arguedotfun/bridge/`:
 - `BridgeSender.py` — reuse unchanged
 - `BridgeForwarder.sol` — reuse unchanged
-- `BridgeReceiver.sol` — reuse unchanged, configure to point to MoltCourtFactory
+- `BridgeReceiver.sol` — reuse unchanged, configure to point to InternetCourtFactory
 - `EvmToGenLayer.ts` — adapt event name and data encoding
 - `GenLayerToEvm.ts` — reuse mostly unchanged
 
@@ -552,10 +552,10 @@ describe("Agreement", () => {
 });
 ```
 
-**File:** `contracts/solidity/test/MoltCourtFactory.test.ts`
+**File:** `contracts/solidity/test/InternetCourtFactory.test.ts`
 
 ```typescript
-describe("MoltCourtFactory", () => {
+describe("InternetCourtFactory", () => {
     it("should create agreement and track in active array")
     it("should move agreement between status arrays")
     it("should process bridge message and set resolution")
@@ -572,7 +572,7 @@ describe("MoltCourtFactory", () => {
 
 ```typescript
 // 1. Deploy MockUSDL
-// 2. Deploy MoltCourtFactory(usdlAddress, protocolFeeBps, feeRecipient)
+// 2. Deploy InternetCourtFactory(usdlAddress, protocolFeeBps, feeRecipient)
 // 3. Deploy BridgeReceiver(factoryAddress)
 // 4. Configure factory.setBridgeReceiver(bridgeReceiverAddress)
 // 5. Log all deployed addresses
@@ -581,7 +581,7 @@ describe("MoltCourtFactory", () => {
 
 ### Definition of Done — Phase 2
 - [ ] `contracts/solidity/contracts/Agreement.sol` — Full agreement contract with escrow
-- [ ] `contracts/solidity/contracts/MoltCourtFactory.sol` — Factory with bridge receiver
+- [ ] `contracts/solidity/contracts/InternetCourtFactory.sol` — Factory with bridge receiver
 - [ ] `contracts/solidity/contracts/mocks/MockUSDL.sol` — Test token
 - [ ] `contracts/solidity/test/` — 20+ Hardhat tests passing
 - [ ] `bridge/smart-contracts/` — Bridge contracts deployed
@@ -768,8 +768,8 @@ Agents register webhook URLs to receive push notifications for state changes.
 
 Webhooks are signed with HMAC-SHA256 so agents can verify authenticity:
 ```
-X-MoltCourt-Signature: sha256=abc123...
-X-MoltCourt-Timestamp: 1707570000
+X-InternetCourt-Signature: sha256=abc123...
+X-InternetCourt-Timestamp: 1707570000
 ```
 
 ### 3.6 Contract Interaction Layer
@@ -1017,7 +1017,7 @@ NEXT_PUBLIC_USDL_ADDRESS=
 NEXT_PUBLIC_BASE_SEPOLIA_RPC=
 NEXT_PUBLIC_GENLAYER_RPC=
 NEXT_PUBLIC_GENLAYER_CONTRACT=
-MOLTCOURT_API_KEY_SECRET=
+INTERNETCOURT_API_KEY_SECRET=
 WEBHOOK_SIGNING_SECRET=
 ```
 
@@ -1030,7 +1030,7 @@ WEBHOOK_SIGNING_SECRET=
 - [ ] Base chain read/write integration
 - [ ] GenLayer read integration (verdict status)
 - [ ] Responsive design (mobile-friendly)
-- [ ] Deployed to Vercel at moltcourt.ai
+- [ ] Deployed to Vercel at internetcourt.org
 - [ ] All pages loading and interactive
 
 ---
@@ -1044,9 +1044,9 @@ SDK, documentation, integration examples, and production deployment.
 **Files:**
 ```
 sdk/python/
-├── moltcourt/
+├── internetcourt/
 │   ├── __init__.py
-│   ├── client.py                  # MoltCourt client class
+│   ├── client.py                  # InternetCourt client class
 │   ├── types.py                   # Data types (Agreement, Verdict, etc.)
 │   ├── auth.py                    # API key + wallet signing
 │   └── webhooks.py                # Webhook server helper
@@ -1061,9 +1061,9 @@ sdk/python/
 
 **Usage:**
 ```python
-from moltcourt import MoltCourt
+from internetcourt import InternetCourt
 
-court = MoltCourt(api_key="mc_live_xxx")
+court = InternetCourt(api_key="mc_live_xxx")
 
 # Create agreement
 agreement = court.create_agreement(
@@ -1098,7 +1098,7 @@ def handle_verdict(event):
 sdk/typescript/
 ├── src/
 │   ├── index.ts
-│   ├── client.ts                  # MoltCourt client class
+│   ├── client.ts                  # InternetCourt client class
 │   ├── types.ts                   # TypeScript types
 │   └── auth.ts                    # API key + wallet signing
 ├── package.json
@@ -1111,9 +1111,9 @@ sdk/typescript/
 
 **Usage:**
 ```typescript
-import { MoltCourt } from 'moltcourt';
+import { InternetCourt } from 'internetcourt';
 
-const court = new MoltCourt({ apiKey: 'mc_live_xxx' });
+const court = new InternetCourt({ apiKey: 'mc_live_xxx' });
 
 const agreement = await court.createAgreement({
     partyB: '0xAgentB...',
@@ -1132,13 +1132,13 @@ console.log(verdict.winner, verdict.reasoning);
 
 ```python
 """
-Example: How an AI agent on rentahuman.ai would use moltcourt
+Example: How an AI agent on rentahuman.ai would use internetcourt
 to create a dispute-resolvable task agreement with a human worker.
 """
 
-from moltcourt import MoltCourt
+from internetcourt import InternetCourt
 
-court = MoltCourt(api_key="mc_live_xxx")
+court = InternetCourt(api_key="mc_live_xxx")
 
 # Agent creates agreement for a physical task
 agreement = court.create_agreement(
@@ -1189,13 +1189,13 @@ Interactive API documentation page with:
 
 ```
 # GenLayer
-- [ ] MoltCourt.py deployed to Testnet Bradbury
+- [ ] InternetCourt.py deployed to Testnet Bradbury
 - [ ] BridgeSender.py deployed to GenLayer
 - [ ] Contract addresses recorded
 
 # Base Sepolia
 - [ ] MockUSDL deployed
-- [ ] MoltCourtFactory deployed
+- [ ] InternetCourtFactory deployed
 - [ ] BridgeReceiver deployed
 - [ ] Bridge peers configured
 - [ ] Contracts verified on BaseScan
@@ -1210,7 +1210,7 @@ Interactive API documentation page with:
 
 # Frontend + API
 - [ ] Deployed to Vercel
-- [ ] Custom domain: moltcourt.ai
+- [ ] Custom domain: internetcourt.org
 - [ ] Environment variables configured
 - [ ] API endpoints responding
 - [ ] Webhook delivery working
@@ -1233,13 +1233,13 @@ Interactive API documentation page with:
 ```
 
 ### Definition of Done — Phase 5
-- [ ] Python SDK (`moltcourt`) with examples
-- [ ] TypeScript SDK (`moltcourt`) with examples
+- [ ] Python SDK (`internetcourt`) with examples
+- [ ] TypeScript SDK (`internetcourt`) with examples
 - [ ] rentahuman.ai integration example
 - [ ] API documentation page
 - [ ] All components deployed to production (testnets)
 - [ ] Full end-to-end flow working: SDK -> API -> Base -> Bridge -> GenLayer -> Bridge -> Base -> Webhook -> SDK
-- [ ] Domain configured: moltcourt.ai
+- [ ] Domain configured: internetcourt.org
 
 ---
 
@@ -1250,10 +1250,10 @@ All files to create, organized by phase:
 ### Phase 1 — GenLayer Contract
 | File | Purpose |
 |------|---------|
-| `contracts/MoltCourt.py` | Main intelligent contract |
-| `contracts/tests/test_moltcourt.py` | Contract tests |
+| `contracts/InternetCourt.py` | Main intelligent contract |
+| `contracts/tests/test_internetcourt.py` | Contract tests |
 | `contracts/tests/conftest.py` | Test fixtures + LLM mocks |
-| `contracts/deploy/deploy_moltcourt.py` | Deployment script |
+| `contracts/deploy/deploy_internetcourt.py` | Deployment script |
 | `gltest.config.yaml` | Test configuration |
 | `contracts/.env.example` | Environment template |
 
@@ -1261,11 +1261,11 @@ All files to create, organized by phase:
 | File | Purpose |
 |------|---------|
 | `contracts/solidity/contracts/Agreement.sol` | Individual agreement |
-| `contracts/solidity/contracts/MoltCourtFactory.sol` | Factory + bridge |
-| `contracts/solidity/contracts/interfaces/IMoltCourtFactory.sol` | Interface |
+| `contracts/solidity/contracts/InternetCourtFactory.sol` | Factory + bridge |
+| `contracts/solidity/contracts/interfaces/IInternetCourtFactory.sol` | Interface |
 | `contracts/solidity/contracts/mocks/MockUSDL.sol` | Test token |
 | `contracts/solidity/test/Agreement.test.ts` | Agreement tests |
-| `contracts/solidity/test/MoltCourtFactory.test.ts` | Factory tests |
+| `contracts/solidity/test/InternetCourtFactory.test.ts` | Factory tests |
 | `contracts/solidity/scripts/deploy.ts` | Deployment script |
 | `contracts/solidity/scripts/configure-bridge.ts` | Bridge config |
 | `contracts/solidity/hardhat.config.ts` | Hardhat config |
@@ -1336,11 +1336,11 @@ All files to create, organized by phase:
 ### Phase 5 — SDK + Launch
 | File | Purpose |
 |------|---------|
-| `sdk/python/moltcourt/__init__.py` | Package init |
-| `sdk/python/moltcourt/client.py` | Python client |
-| `sdk/python/moltcourt/types.py` | Data types |
-| `sdk/python/moltcourt/auth.py` | Auth helpers |
-| `sdk/python/moltcourt/webhooks.py` | Webhook helpers |
+| `sdk/python/internetcourt/__init__.py` | Package init |
+| `sdk/python/internetcourt/client.py` | Python client |
+| `sdk/python/internetcourt/types.py` | Data types |
+| `sdk/python/internetcourt/auth.py` | Auth helpers |
+| `sdk/python/internetcourt/webhooks.py` | Webhook helpers |
 | `sdk/python/setup.py` | Package setup |
 | `sdk/python/examples/create_agreement.py` | Example |
 | `sdk/python/examples/dispute_flow.py` | Example |
@@ -1367,9 +1367,9 @@ BASE_SEPOLIA_RPC_URL=                   # Base Sepolia RPC
 BASESCAN_API_KEY=                       # Contract verification
 
 # === Contract Addresses (after deployment) ===
-NEXT_PUBLIC_FACTORY_ADDRESS=            # MoltCourtFactory on Base Sepolia
+NEXT_PUBLIC_FACTORY_ADDRESS=            # InternetCourtFactory on Base Sepolia
 NEXT_PUBLIC_USDL_ADDRESS=              # MockUSDL on Base Sepolia
-NEXT_PUBLIC_GENLAYER_CONTRACT=         # MoltCourt on GenLayer
+NEXT_PUBLIC_GENLAYER_CONTRACT=         # InternetCourt on GenLayer
 BRIDGE_RECEIVER_ADDRESS=               # BridgeReceiver on Base Sepolia
 BRIDGE_FORWARDER_ADDRESS=              # BridgeForwarder on zkSync
 BRIDGE_SENDER_ADDRESS=                 # BridgeSender on GenLayer
@@ -1384,7 +1384,7 @@ NEXT_PUBLIC_BASE_SEPOLIA_RPC=         # Public RPC for frontend
 NEXT_PUBLIC_GENLAYER_RPC=             # Public RPC for frontend
 
 # === API ===
-MOLTCOURT_API_KEY_SECRET=             # API key generation secret
+INTERNETCOURT_API_KEY_SECRET=             # API key generation secret
 WEBHOOK_SIGNING_SECRET=                # Webhook HMAC signing
 ```
 

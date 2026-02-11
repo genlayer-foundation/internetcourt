@@ -1,8 +1,8 @@
-# moltcourt.ai — Project Requirements
+# internetcourt.org — Project Requirements
 
 ## Vision
 
-Dispute resolution infrastructure for the AI agent economy. As autonomous AI agents proliferate — hiring each other, completing tasks, making deals — they need a trustless way to resolve disagreements. moltcourt is the court system for agents: agreements in plain text, escrow for accountability, and an AI jury (GenLayer) to decide contested outcomes.
+Dispute resolution infrastructure for the AI agent economy. As autonomous AI agents proliferate — hiring each other, completing tasks, making deals — they need a trustless way to resolve disagreements. internetcourt is the court system for agents: agreements in plain text, escrow for accountability, and an AI jury (GenLayer) to decide contested outcomes.
 
 Think of it as the judicial layer for the agent economy. Agents are the primary users. Humans can use it too, but the platform is agent-native.
 
@@ -15,15 +15,15 @@ AI agents are increasingly autonomous — they negotiate, transact, and collabor
 - **Centralized platforms are biased** — the platform that hosts the agent controls the outcome
 - **Ignoring disputes** — one side loses out, eroding trust in the agent economy
 
-**moltcourt** provides the missing layer: a fast, fair, and autonomous dispute resolution system where an AI jury evaluates both sides and renders a binding verdict, with escrow funds released automatically.
+**internetcourt** provides the missing layer: a fast, fair, and autonomous dispute resolution system where an AI jury evaluates both sides and renders a binding verdict, with escrow funds released automatically.
 
 ## Core Mechanics
 
-This is the definitive model for how moltcourt contracts work.
+This is the definitive model for how internetcourt contracts work.
 
 ### What is a Contract?
 
-A moltcourt contract has three components:
+A internetcourt contract has three components:
 
 1. **Statement** — A claim to be evaluated. It can be ANYTHING — just a text statement that can be evaluated as true/false.
    - "Was the job done correctly according to the terms?"
@@ -69,8 +69,8 @@ This is like a multi-sig: 2-of-2 (mutual agreement) OR 1-of-1 (AI jury as tiebre
 ### Integration Pattern
 
 - Works with Base contracts, rentahuman.ai, or any system where two agents/parties have an agreement
-- The moltcourt contract is the "dispute resolution layer" — it only activates when there's a disagreement
-- External contracts can reference a moltcourt contract as their dispute resolution mechanism
+- The internetcourt contract is the "dispute resolution layer" — it only activates when there's a disagreement
+- External contracts can reference a internetcourt contract as their dispute resolution mechanism
 
 ## Core User Flow
 
@@ -144,7 +144,7 @@ The simplest possible version that demonstrates the core value proposition: **ag
 - **Richer arguments**: Support for file attachments, links, structured evidence
 - **Agreement templates**: Pre-built templates for common agent dispute types (task delivery, service agreements, quality disputes)
 - **Multi-agent workflow disputes**: Resolve disputes in agent pipelines (Agent A -> Agent B -> Agent C disagree on handoff quality)
-- **MCP integration**: Model Context Protocol support so agents can interact with moltcourt natively
+- **MCP integration**: Model Context Protocol support so agents can interact with internetcourt natively
 - **Multiple escrow assets**: Support for various ERC-20 tokens
 - **Privacy options**: Encrypted dispute details for sensitive cases
 
@@ -171,18 +171,18 @@ The simplest possible version that demonstrates the core value proposition: **ag
 
 - **argue.fun** — Dispute/argument platform with escrow on Base Sepolia, LayerZero V2 bridge to GenLayer
 - **pm-kit** (courtofinternet) — Prediction market toolkit with GenLayer intelligent contracts
-- **rentahuman.ai** — Marketplace where AI agents hire humans; demonstrates the agent economy moltcourt serves
+- **rentahuman.ai** — Marketplace where AI agents hire humans; demonstrates the agent economy internetcourt serves
 
-Both argue.fun and pm-kit provide patterns for contract design, escrow handling, cross-chain bridging, and frontend integration that inform moltcourt's architecture.
+Both argue.fun and pm-kit provide patterns for contract design, escrow handling, cross-chain bridging, and frontend integration that inform internetcourt's architecture.
 
 ## Deployment
 
-- **Frontend**: Vercel (https://moltcourt.ai)
+- **Frontend**: Vercel (https://internetcourt.org)
 - **API**: Vercel serverless functions or standalone service
 - **Escrow Contract**: Base (L2)
 - **Jury Contract**: GenLayer network
 - **Bridge**: LayerZero V2
-- **Domain**: moltcourt.ai
+- **Domain**: internetcourt.org
 
 ## Design Principles
 

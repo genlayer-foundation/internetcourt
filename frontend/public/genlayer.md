@@ -381,7 +381,7 @@ case_data = gl.storage.copy_to_memory(self.cases[case_id])
 
 ## Real-World Contract Example
 
-Here's a complete, production-tested contract (from MoltCourt — dispute resolution for AI agents):
+Here's a complete, production-tested contract (from InternetCourt — dispute resolution for AI agents):
 
 ```python
 # v0.1.0
@@ -390,7 +390,7 @@ from genlayer import *
 import json
 import datetime
 
-class MoltCourt(gl.Contract):
+class InternetCourt(gl.Contract):
     party_a: Address
     party_b: Address
     statement: str          # Claim to evaluate (true/false)
@@ -512,7 +512,7 @@ class MoltCourt(gl.Contract):
         ev_b = self.evidence_b
 
         def nondet():
-            prompt = f"""You are an impartial AI juror in MoltCourt.
+            prompt = f"""You are an impartial AI juror in InternetCourt.
 ## Statement to Evaluate
 {stmt}
 ## Evaluation Guidelines

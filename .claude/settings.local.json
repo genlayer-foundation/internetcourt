@@ -26,11 +26,12 @@
       "WebFetch(domain:collabnix.com)",
       "WebFetch(domain:rentahuman.io)",
       "WebFetch(domain:moltbook.com)",
-      "WebFetch(domain:moltcourt.ai)",
+      "WebFetch(domain:internetcourt.org)",
       "Bash(tmux new-window:*)",
       "Bash(tmux send-keys:*)",
       "Bash(tmux capture-pane:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(tmux list-panes:*)"
     ]
   }
 }

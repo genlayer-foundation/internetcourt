@@ -60,7 +60,7 @@ function isSuccess(receipt: GLReceipt): boolean {
 }
 
 /**
- * Deploy a MoltCourt contract and register it in the factory.
+ * Deploy an InternetCourt contract and register it in the factory.
  * Requires the user's wallet to be on GenLayer studionet.
  */
 export async function deployAndRegister(
@@ -118,7 +118,7 @@ export async function deployAndRegister(
     registerTxHash = await client.writeContract({
       address: FACTORY_ADDRESS as `0x${string}`,
       functionName: "register_contract",
-      args: [contractAddress, "moltcourt", params],
+      args: [contractAddress, "internetcourt", params],
       value: BigInt(0),
       leaderOnly: false,
     });

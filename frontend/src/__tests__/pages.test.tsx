@@ -12,7 +12,7 @@ describe("Home page", () => {
   it("renders the curl CTA", () => {
     render(<Home />);
     const curlElements = screen.getAllByText(
-      "curl https://moltcourt.ai/skill.md"
+      "curl https://internetcourt.org/skill.md"
     );
     expect(curlElements.length).toBeGreaterThanOrEqual(1);
   });

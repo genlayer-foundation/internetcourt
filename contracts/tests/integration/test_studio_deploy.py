@@ -1,4 +1,4 @@
-"""Integration tests: Deploy MoltCourt contracts to GenLayer Studio.
+"""Integration tests: Deploy InternetCourt contracts to GenLayer Studio.
 
 This file tests full contract deployment and interaction against a real
 GenLayer network (localnet via Docker, or studionet hosted).
@@ -12,14 +12,14 @@ Prerequisites:
 
 How to run:
     # Local GenLayer Studio (default):
-    cd /path/to/moltcourt
+    cd /path/to/internetcourt
     gltest contracts/tests/integration/ -m integration -v -s
 
     # Against studionet:
     gltest contracts/tests/integration/ -m integration --network studionet -v -s
 
     # Single test:
-    gltest contracts/tests/integration/test_studio_deploy.py::test_deploy_moltcourt -m integration -v -s
+    gltest contracts/tests/integration/test_studio_deploy.py::test_deploy_internetcourt -m integration -v -s
 
 Notes:
     - These tests are SLOW (~30-120s per write transaction)
@@ -29,8 +29,8 @@ Notes:
     - Transactions wait for ACCEPTED status by default (not FINALIZED)
 
 What's tested:
-    - MoltCourt contract deployment with constructor args
-    - MoltCourtFactory contract deployment
+    - InternetCourt contract deployment with constructor args
+    - InternetCourtFactory contract deployment
     - Full dispute lifecycle: create -> accept -> dispute -> evidence -> resolve
     - Mutual agreement (2-of-2) happy path
     - Factory registration and querying
@@ -59,25 +59,25 @@ SAMPLE_EVIDENCE_DEFS = json.dumps({
 
 
 # ---------------------------------------------------------------------------
-# MoltCourt deployment
+# InternetCourt deployment
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
-class TestMoltCourtDeploy:
-    """Test deploying MoltCourt contracts to a real GenLayer network."""
+class TestInternetCourtDeploy:
+    """Test deploying InternetCourt contracts to a real GenLayer network."""
 
-    def test_deploy_moltcourt(self, moltcourt_factory, test_accounts):
-        """Deploy a MoltCourt contract and verify it exists on-chain."""
+    def test_deploy_internetcourt(self, internetcourt_factory, test_accounts):
+        """Deploy an InternetCourt contract and verify it exists on-chain."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
-        print(f"\n--- Deploying MoltCourt contract ---")
+        print(f"\n--- Deploying InternetCourt contract ---")
         print(f"  Deployer (Alice): {alice.address}")
         print(f"  Party B (Bob):    {bob.address}")
         print(f"  Statement:        {SAMPLE_STATEMENT[:60]}...")
 
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -94,12 +94,12 @@ class TestMoltCourtDeploy:
         assert status["statement"] == SAMPLE_STATEMENT
         print("  PASSED: Contract deployed and readable")
 
-    def test_deploy_and_read_details(self, moltcourt_factory, test_accounts):
+    def test_deploy_and_read_details(self, internetcourt_factory, test_accounts):
         """Deploy and read all contract details."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -127,7 +127,7 @@ class TestMoltCourtDeploy:
 class TestMutualAgreement:
     """Test the 2-of-2 mutual agreement path (no jury needed)."""
 
-    def test_mutual_agreement_true(self, moltcourt_factory, test_accounts):
+    def test_mutual_agreement_true(self, internetcourt_factory, test_accounts):
         """Both parties agree TRUE — resolved without AI jury."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
@@ -135,7 +135,7 @@ class TestMutualAgreement:
         print(f"\n--- Mutual Agreement: both propose TRUE ---")
 
         # Deploy
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -172,14 +172,14 @@ class TestMutualAgreement:
         assert "mutual agreement" in verdict["reasoning"].lower()
         print("  PASSED: Resolved by mutual agreement (TRUE)")
 
-    def test_mutual_agreement_false(self, moltcourt_factory, test_accounts):
+    def test_mutual_agreement_false(self, internetcourt_factory, test_accounts):
         """Both parties agree FALSE — resolved without AI jury."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
         print(f"\n--- Mutual Agreement: both propose FALSE ---")
 
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -218,7 +218,7 @@ class TestDisputeLifecycle:
     This test may take several minutes.
     """
 
-    def test_dispute_with_evidence(self, moltcourt_factory, test_accounts):
+    def test_dispute_with_evidence(self, internetcourt_factory, test_accounts):
         """Full lifecycle: deploy -> accept -> dispute -> evidence -> resolve."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
@@ -226,7 +226,7 @@ class TestDisputeLifecycle:
         print(f"\n--- Full Dispute Lifecycle ---")
 
         # 1. Deploy
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -300,14 +300,14 @@ class TestDisputeLifecycle:
             print("  This may be expected if validators lack LLM access or timed out")
             pytest.skip(f"resolve() exception: {e}")
 
-    def test_dispute_requires_both_evidence(self, moltcourt_factory, test_accounts):
+    def test_dispute_requires_both_evidence(self, internetcourt_factory, test_accounts):
         """Verify that resolution fails if only one party submitted evidence."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
         print(f"\n--- Dispute: require both evidence ---")
 
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -338,7 +338,7 @@ class TestDisputeLifecycle:
 class TestAccessControl:
     """Test that access control works on-chain (not just in unit tests)."""
 
-    def test_only_party_b_can_accept(self, moltcourt_factory, test_accounts):
+    def test_only_party_b_can_accept(self, internetcourt_factory, test_accounts):
         """Charlie (not party B) cannot accept the contract."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
@@ -346,7 +346,7 @@ class TestAccessControl:
 
         print(f"\n--- Access Control: only party B can accept ---")
 
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -356,14 +356,14 @@ class TestAccessControl:
         assert tx_execution_failed(tx), "Charlie should not be able to accept"
         print("  PASSED: Charlie correctly rejected")
 
-    def test_only_creator_can_cancel(self, moltcourt_factory, test_accounts):
+    def test_only_creator_can_cancel(self, internetcourt_factory, test_accounts):
         """Only the creator (Alice) can cancel."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
         print(f"\n--- Access Control: only creator can cancel ---")
 
-        contract = moltcourt_factory.deploy(
+        contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
@@ -383,19 +383,19 @@ class TestAccessControl:
 
 
 # ---------------------------------------------------------------------------
-# MoltCourtFactory deployment
+# InternetCourtFactory deployment
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
 class TestFactoryDeploy:
-    """Test deploying and using the MoltCourtFactory contract."""
+    """Test deploying and using the InternetCourtFactory contract."""
 
     def test_deploy_factory(self, factory_contract_factory, test_accounts):
         """Deploy the factory contract."""
         owner = test_accounts["factory_owner"]
 
-        print(f"\n--- Deploying MoltCourtFactory ---")
+        print(f"\n--- Deploying InternetCourtFactory ---")
         print(f"  Owner: {owner.address}")
 
         factory = factory_contract_factory.deploy(
@@ -421,9 +421,9 @@ class TestFactoryDeploy:
         print("  PASSED: Factory deployed and readable")
 
     def test_register_type_and_contract(
-        self, moltcourt_factory, factory_contract_factory, test_accounts
+        self, internetcourt_factory, factory_contract_factory, test_accounts
     ):
-        """Register a type, deploy a MoltCourt, register it in the factory."""
+        """Register a type, deploy a InternetCourt, register it in the factory."""
         owner = test_accounts["factory_owner"]
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
@@ -435,25 +435,25 @@ class TestFactoryDeploy:
         print(f"  Factory at: {factory.address}")
 
         # Register type
-        tx = factory.register_type(args=["moltcourt"]).transact()
+        tx = factory.register_type(args=["internetcourt"]).transact()
         assert tx_execution_succeeded(tx), f"register_type failed: {tx}"
-        print("  Registered type 'moltcourt'")
+        print("  Registered type 'internetcourt'")
 
-        is_registered = factory.is_type_registered(args=["moltcourt"]).call()
+        is_registered = factory.is_type_registered(args=["internetcourt"]).call()
         assert is_registered == "true"
 
-        # Deploy a MoltCourt
-        mc = moltcourt_factory.deploy(
+        # Deploy a InternetCourt
+        mc = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
             account=alice,
         )
-        print(f"  MoltCourt at: {mc.address}")
+        print(f"  InternetCourt at: {mc.address}")
 
         # Register it in the factory (alice registers her contract)
         alice_factory = factory.connect(alice)
         params = json.dumps({"statement": SAMPLE_STATEMENT[:50], "party_b": bob.address})
         tx = alice_factory.register_contract(
-            args=[mc.address, "moltcourt", params]
+            args=[mc.address, "internetcourt", params]
         ).transact()
         assert tx_execution_succeeded(tx), f"register_contract failed: {tx}"
         print("  Contract registered in factory")
@@ -467,11 +467,11 @@ class TestFactoryDeploy:
         metadata_json = factory.get_contract(args=[0]).call()
         metadata = json.loads(metadata_json)
         print(f"  Metadata: {json.dumps(metadata, indent=2)[:200]}...")
-        assert metadata["contract_type"] == "moltcourt"
+        assert metadata["contract_type"] == "internetcourt"
         assert metadata["address"].lower() == mc.address.lower()
 
         # Get by type
-        by_type_json = factory.get_contracts_by_type(args=["moltcourt"]).call()
+        by_type_json = factory.get_contracts_by_type(args=["internetcourt"]).call()
         by_type = json.loads(by_type_json)
         assert len(by_type) == 1
         assert by_type[0]["address"].lower() == mc.address.lower()
@@ -514,7 +514,7 @@ class TestFactoryDeploy:
 
 
 # ---------------------------------------------------------------------------
-# End-to-end: Factory + MoltCourt combined workflow
+# End-to-end: Factory + InternetCourt combined workflow
 # ---------------------------------------------------------------------------
 
 
@@ -523,9 +523,9 @@ class TestEndToEnd:
     """Full end-to-end test: deploy factory, deploy multiple courts, register them."""
 
     def test_multi_contract_workflow(
-        self, moltcourt_factory, factory_contract_factory, test_accounts
+        self, internetcourt_factory, factory_contract_factory, test_accounts
     ):
-        """Deploy factory, register type, deploy 2 MoltCourts, register both."""
+        """Deploy factory, register type, deploy 2 InternetCourts, register both."""
         owner = test_accounts["factory_owner"]
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
@@ -537,12 +537,12 @@ class TestEndToEnd:
         print(f"  1. Factory deployed at: {factory.address}")
 
         # 2. Register type
-        tx = factory.register_type(args=["moltcourt"]).transact()
+        tx = factory.register_type(args=["internetcourt"]).transact()
         assert tx_execution_succeeded(tx)
-        print("  2. Type 'moltcourt' registered")
+        print("  2. Type 'internetcourt' registered")
 
-        # 3. Deploy MoltCourt #1
-        mc1 = moltcourt_factory.deploy(
+        # 3. Deploy InternetCourt #1
+        mc1 = internetcourt_factory.deploy(
             args=[
                 bob.address,
                 "Agent B will deliver code review within 48 hours",
@@ -551,10 +551,10 @@ class TestEndToEnd:
             ],
             account=alice,
         )
-        print(f"  3. MoltCourt #1 at: {mc1.address}")
+        print(f"  3. InternetCourt #1 at: {mc1.address}")
 
-        # 4. Deploy MoltCourt #2
-        mc2 = moltcourt_factory.deploy(
+        # 4. Deploy InternetCourt #2
+        mc2 = internetcourt_factory.deploy(
             args=[
                 alice.address,
                 "Agent A provided accurate market analysis",
@@ -563,29 +563,29 @@ class TestEndToEnd:
             ],
             account=bob,
         )
-        print(f"  4. MoltCourt #2 at: {mc2.address}")
+        print(f"  4. InternetCourt #2 at: {mc2.address}")
 
         # 5. Register both in factory
         alice_factory = factory.connect(alice)
         tx = alice_factory.register_contract(
-            args=[mc1.address, "moltcourt", json.dumps({"case": "code review"})]
+            args=[mc1.address, "internetcourt", json.dumps({"case": "code review"})]
         ).transact()
         assert tx_execution_succeeded(tx)
-        print("  5a. MoltCourt #1 registered")
+        print("  5a. InternetCourt #1 registered")
 
         bob_factory = factory.connect(bob)
         tx = bob_factory.register_contract(
-            args=[mc2.address, "moltcourt", json.dumps({"case": "market analysis"})]
+            args=[mc2.address, "internetcourt", json.dumps({"case": "market analysis"})]
         ).transact()
         assert tx_execution_succeeded(tx)
-        print("  5b. MoltCourt #2 registered")
+        print("  5b. InternetCourt #2 registered")
 
         # 6. Verify factory state
         count = factory.get_contract_count().call()
         assert count == 2
         print(f"  6. Factory count: {count}")
 
-        by_type = json.loads(factory.get_contracts_by_type(args=["moltcourt"]).call())
+        by_type = json.loads(factory.get_contracts_by_type(args=["internetcourt"]).call())
         assert len(by_type) == 2
 
         # Check deployer indexes
@@ -600,7 +600,7 @@ class TestEndToEnd:
         print(f"  Alice's contracts: {len(alice_contracts)}")
         print(f"  Bob's contracts: {len(bob_contracts)}")
 
-        # 7. Run happy path on MoltCourt #1
+        # 7. Run happy path on InternetCourt #1
         bob_mc1 = mc1.connect(bob)
         tx = bob_mc1.accept_contract().transact()
         assert tx_execution_succeeded(tx)
@@ -614,6 +614,6 @@ class TestEndToEnd:
         verdict = json.loads(mc1.get_verdict().call())
         assert verdict["status"] == "resolved"
         assert verdict["verdict"] == "TRUE"
-        print(f"  7. MoltCourt #1 resolved: {verdict['verdict']}")
+        print(f"  7. InternetCourt #1 resolved: {verdict['verdict']}")
 
         print("  === END-TO-END PASSED ===")

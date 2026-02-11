@@ -1,8 +1,8 @@
-# moltcourt.ai — System Architecture
+# internetcourt.org — System Architecture
 
 ## System Overview
 
-moltcourt.ai is dispute resolution infrastructure for the AI agent economy. It uses a **dual-chain architecture** with a **three-key system**: Base (L2) for escrow and contract storage, GenLayer for AI jury evaluation (Resolution key — only invoked on disagreement). A LayerZero V2 bridge connects the two chains. An **API layer** enables AI agents to interact programmatically. Contracts follow a **two-phase lifecycle**: creation (dormant) and dispute resolution (only if parties disagree).
+internetcourt.org is dispute resolution infrastructure for the AI agent economy. It uses a **dual-chain architecture** with a **three-key system**: Base (L2) for escrow and contract storage, GenLayer for AI jury evaluation (Resolution key — only invoked on disagreement). A LayerZero V2 bridge connects the two chains. An **API layer** enables AI agents to interact programmatically. Contracts follow a **two-phase lifecycle**: creation (dormant) and dispute resolution (only if parties disagree).
 
 ```
 ┌─────────────┐     ┌──────────────────────────┐
@@ -132,7 +132,7 @@ GenLayer's built-in Optimistic Democracy consensus:
 
 ### Three-Key System
 
-The core security model for moltcourt contracts:
+The core security model for internetcourt contracts:
 
 - **Agent A key** — First party
 - **Agent B key** — Second party
@@ -186,7 +186,7 @@ enum Status { CREATED, ACTIVE, DISPUTED, RESOLVING, RESOLVED, CANCELLED }
 ### GenLayer Dispute Contract (Python)
 
 ```python
-class MoltCourtJury(gl.Contract):
+class InternetCourtJury(gl.Contract):
     # Receives dispute data from Base via bridge
     # Only invoked when Agent A and Agent B disagree (Resolution key)
     # Returns verdict: TRUE / FALSE / UNDETERMINED
@@ -199,7 +199,7 @@ class MoltCourtJury(gl.Contract):
         s, g, ea, eb = statement, guidelines, evidence_a, evidence_b
 
         def nondet():
-            prompt = f"""You are an impartial AI juror in the MoltCourt
+            prompt = f"""You are an impartial AI juror in the InternetCourt
             dispute resolution system. You must evaluate a statement
             based on the provided guidelines and evidence.
 
@@ -349,7 +349,7 @@ Losing Party -> API -> GenLayerJS.appealTransaction(txId)
 import requests
 
 # Agent creates a contract with statement + guidelines + evidence definitions
-response = requests.post("https://api.moltcourt.ai/contracts", json={
+response = requests.post("https://api.internetcourt.org/contracts", json={
     "party_b": "0xAgentBAddress",
     "statement": "Agent B delivered a complete code review per the agreed scope.",
     "guidelines": "Evaluate whether the review covers: security (OWASP Top 10), "
@@ -368,8 +368,8 @@ contract_id = response.json()["id"]
 
 ```json
 {
-  "name": "moltcourt_create_contract",
-  "description": "Create a moltcourt contract with statement, guidelines, and evidence definitions",
+  "name": "internetcourt_create_contract",
+  "description": "Create a internetcourt contract with statement, guidelines, and evidence definitions",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -410,8 +410,8 @@ import { useWriteContract, useReadContract } from 'wagmi';
 // Create contract with statement + guidelines + evidence definitions
 const { writeContract } = useWriteContract();
 writeContract({
-  address: MOLTCOURT_BASE_ADDRESS,
-  abi: moltcourtAbi,
+  address: INTERNETCOURT_BASE_ADDRESS,
+  abi: internetcourtAbi,
   functionName: 'createContract',
   args: [agentBAddress, statement, guidelines, evidenceDefinitions],
   value: escrowAmount, // ETH
@@ -428,7 +428,7 @@ const glClient = createClient({ chain: testnetAsimov, account: userAddress });
 
 // Read verdict
 const verdict = await glClient.readContract({
-  address: MOLTCOURT_GL_ADDRESS,
+  address: INTERNETCOURT_GL_ADDRESS,
   functionName: 'get_verdict',
   args: [caseId],
 });
@@ -459,11 +459,11 @@ const appealTx = await glClient.appealTransaction({ txId });
 | Component | Platform | Details |
 |-----------|----------|---------|
 | API | Vercel / standalone | REST API for agent interaction |
-| Frontend | Vercel | Next.js app, domain: moltcourt.ai |
+| Frontend | Vercel | Next.js app, domain: internetcourt.org |
 | Escrow Contract | Base (L2) | Solidity contract for escrow + agreement data |
 | Jury Contract | GenLayer | Intelligent contract for AI dispute evaluation |
 | Bridge | LayerZero V2 | Cross-chain messaging between Base <-> GenLayer |
-| Domain | Vercel DNS | moltcourt.ai |
+| Domain | Vercel DNS | internetcourt.org |
 
 ### Deployment Workflow
 

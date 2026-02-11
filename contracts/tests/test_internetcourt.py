@@ -1,4 +1,4 @@
-"""Comprehensive tests for the MoltCourt intelligent contract."""
+"""Comprehensive tests for the InternetCourt intelligent contract."""
 import json
 import pytest
 
@@ -48,48 +48,48 @@ CHARLIE_BYTES = b'\x03' * 20
 
 
 class TestDeployment:
-    def test_initial_status_is_created(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_initial_status_is_created(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.status == "created"
 
-    def test_stores_statement(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_stores_statement(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.statement == SAMPLE_STATEMENT
 
-    def test_stores_guidelines(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_stores_guidelines(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.guidelines == SAMPLE_GUIDELINES
 
-    def test_stores_evidence_defs(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_stores_evidence_defs(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.evidence_defs == SAMPLE_EVIDENCE_DEFS
 
-    def test_stores_party_a_as_sender(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_stores_party_a_as_sender(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.party_a == alice
 
-    def test_stores_party_b(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_stores_party_b(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.party_b == bob
 
-    def test_evidence_empty_on_deploy(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_evidence_empty_on_deploy(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.evidence_a == ""
         assert contract.evidence_b == ""
 
-    def test_verdict_empty_on_deploy(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_verdict_empty_on_deploy(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         assert contract.verdict == ""
         assert contract.reasoning == ""
 
-    def test_get_status_returns_json(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_get_status_returns_json(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         status = json.loads(contract.get_status())
         assert status["status"] == "created"
         assert status["statement"] == SAMPLE_STATEMENT
 
-    def test_get_contract_details(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_get_contract_details(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         details = json.loads(contract.get_contract_details())
         assert details["status"] == "created"
         assert details["statement"] == SAMPLE_STATEMENT
@@ -103,20 +103,20 @@ class TestDeployment:
 
 
 class TestAcceptContract:
-    def test_party_b_can_accept(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_party_b_can_accept(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(bob):
             contract.accept_contract()
         assert contract.status == "active"
 
-    def test_party_a_cannot_accept(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_party_a_cannot_accept(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("Only party B can accept"):
             with direct_vm.prank(alice):
                 contract.accept_contract()
 
-    def test_non_party_cannot_accept(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_non_party_cannot_accept(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         from genlayer import Address
         charlie = Address(CHARLIE_BYTES)
         with direct_vm.expect_revert("Only party B can accept"):
@@ -136,14 +136,14 @@ class TestAcceptContract:
 
 
 class TestCancelContract:
-    def test_creator_can_cancel(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_creator_can_cancel(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         assert contract.status == "cancelled"
 
-    def test_party_b_cannot_cancel(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_party_b_cannot_cancel(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("Only creator can cancel"):
             with direct_vm.prank(bob):
                 contract.cancel()
@@ -211,8 +211,8 @@ class TestProposeOutcome:
             with direct_vm.prank(charlie):
                 contract.propose_outcome("TRUE")
 
-    def test_cannot_propose_before_active(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_propose_before_active(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
                 contract.propose_outcome("TRUE")
@@ -250,8 +250,8 @@ class TestInitiateDispute:
             with direct_vm.prank(charlie):
                 contract.initiate_dispute()
 
-    def test_cannot_dispute_before_active(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_dispute_before_active(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
                 contract.initiate_dispute()
@@ -429,8 +429,8 @@ class TestResolve:
         assert verdict["reasoning"] == "Incomplete audit."
         assert verdict["status"] == "resolved"
 
-    def test_get_verdict_before_resolution(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_get_verdict_before_resolution(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         verdict = json.loads(contract.get_verdict())
         assert verdict["verdict"] == ""
         assert verdict["reasoning"] == ""
@@ -442,9 +442,9 @@ class TestResolve:
 
 
 class TestStateTransitions:
-    def test_full_lifecycle_mutual_agreement(self, deploy_moltcourt, direct_vm):
+    def test_full_lifecycle_mutual_agreement(self, deploy_internetcourt, direct_vm):
         """CREATED -> ACTIVE -> RESOLVED (mutual)"""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
 
         assert contract.status == "created"
 
@@ -458,9 +458,9 @@ class TestStateTransitions:
             contract.propose_outcome("FALSE")
         assert contract.status == "resolved"
 
-    def test_full_lifecycle_ai_jury(self, deploy_moltcourt, direct_vm):
+    def test_full_lifecycle_ai_jury(self, deploy_internetcourt, direct_vm):
         """CREATED -> ACTIVE -> DISPUTED -> auto-RESOLVED on second evidence"""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
 
         assert contract.status == "created"
 
@@ -484,9 +484,9 @@ class TestStateTransitions:
             contract.submit_evidence("B's evidence")
         assert contract.status == "resolved"
 
-    def test_cancel_lifecycle(self, deploy_moltcourt, direct_vm):
+    def test_cancel_lifecycle(self, deploy_internetcourt, direct_vm):
         """CREATED -> CANCELLED"""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         assert contract.status == "cancelled"
@@ -498,8 +498,8 @@ class TestStateTransitions:
 
 
 class TestViewMethods:
-    def test_get_evidence_empty(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_get_evidence_empty(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         evidence = json.loads(contract.get_evidence())
         assert evidence["evidence_a"] == ""
         assert evidence["evidence_b"] == ""
@@ -623,8 +623,8 @@ class TestInvalidStateTransitions:
             with direct_vm.prank(alice):
                 contract.cancel()
 
-    def test_cannot_accept_cancelled_contract(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_accept_cancelled_contract(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         with direct_vm.expect_revert("Contract not in created state"):
@@ -637,8 +637,8 @@ class TestInvalidStateTransitions:
             with direct_vm.prank(bob):
                 contract.accept_contract()
 
-    def test_cannot_propose_on_cancelled_contract(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_propose_on_cancelled_contract(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         with direct_vm.expect_revert("Contract not active"):
@@ -662,8 +662,8 @@ class TestInvalidStateTransitions:
             with direct_vm.prank(alice):
                 contract.propose_outcome("TRUE")
 
-    def test_cannot_dispute_cancelled_contract(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_dispute_cancelled_contract(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         with direct_vm.expect_revert("Contract not active"):
@@ -686,14 +686,14 @@ class TestInvalidStateTransitions:
             with direct_vm.prank(alice):
                 contract.initiate_dispute()
 
-    def test_cannot_submit_evidence_on_created(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_submit_evidence_on_created(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("No active dispute"):
             with direct_vm.prank(alice):
                 contract.submit_evidence("Evidence")
 
-    def test_cannot_submit_evidence_on_cancelled(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_submit_evidence_on_cancelled(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         with direct_vm.expect_revert("No active dispute"):
@@ -710,13 +710,13 @@ class TestInvalidStateTransitions:
             with direct_vm.prank(alice):
                 contract.submit_evidence("Evidence")
 
-    def test_cannot_resolve_created_contract(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_resolve_created_contract(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("No active dispute to resolve"):
             contract.resolve()
 
-    def test_cannot_resolve_cancelled_contract(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_cannot_resolve_cancelled_contract(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         with direct_vm.expect_revert("No active dispute to resolve"):
@@ -830,7 +830,7 @@ class TestEvidenceValidation:
             "party_b": {"types": ["text"]},
         })
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             "Test statement",
             "Test guidelines",
@@ -858,7 +858,7 @@ class TestEvidenceValidation:
             "party_b": {"types": ["text"]},
         })
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             "Test statement",
             "Test guidelines",
@@ -904,8 +904,8 @@ class TestViewMethodsAcrossStates:
         status = json.loads(contract.get_status())
         assert status["status"] == "disputed"
 
-    def test_get_status_cancelled(self, deploy_moltcourt, direct_vm):
-        contract, alice, bob = deploy_moltcourt
+    def test_get_status_cancelled(self, deploy_internetcourt, direct_vm):
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         status = json.loads(contract.get_status())
@@ -929,8 +929,8 @@ class TestViewMethodsAcrossStates:
         assert verdict["verdict"] == ""
         assert verdict["status"] == "active"
 
-    def test_get_evidence_on_created(self, deploy_moltcourt):
-        contract, alice, bob = deploy_moltcourt
+    def test_get_evidence_on_created(self, deploy_internetcourt):
+        contract, alice, bob = deploy_internetcourt
         evidence = json.loads(contract.get_evidence())
         assert evidence["evidence_a"] == ""
         assert evidence["evidence_b"] == ""
@@ -971,9 +971,9 @@ class TestViewMethodsAcrossStates:
         assert details["evidence_a"] == "Evidence A"
         assert details["evidence_b"] == "Evidence B"
 
-    def test_get_status_party_addresses(self, deploy_moltcourt):
+    def test_get_status_party_addresses(self, deploy_internetcourt):
         """Verify party addresses are hex strings in status."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         status = json.loads(contract.get_status())
         assert status["party_a"] == alice.as_hex
         assert status["party_b"] == bob.as_hex
@@ -1063,7 +1063,7 @@ class TestDeploymentVariants:
         direct_vm.sender = b'\x01' * 20
         evidence_defs = json.dumps({})
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             "Minimal statement",
             "Minimal guidelines",
@@ -1078,7 +1078,7 @@ class TestDeploymentVariants:
         long_statement = "A" * 5000
         evidence_defs = json.dumps({"party_a": {}, "party_b": {}})
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             long_statement,
             "Guidelines",
@@ -1092,7 +1092,7 @@ class TestDeploymentVariants:
         long_guidelines = "G" * 5000
         evidence_defs = json.dumps({"party_a": {}, "party_b": {}})
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             "Statement",
             long_guidelines,
@@ -1105,7 +1105,7 @@ class TestDeploymentVariants:
         direct_vm.sender = b'\x01' * 20
         evidence_defs = json.dumps({"party_a": {}, "party_b": {}})
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             "Statement with unicode: \u65e5\u672c\u8a9e \u03b1\u03b2\u03b3",
             "Guidelines with unicode: \u00fcber r\u00e9sum\u00e9",
@@ -1114,9 +1114,9 @@ class TestDeploymentVariants:
         assert "\u65e5\u672c\u8a9e" in contract.statement
         assert "\u00fcber" in contract.guidelines
 
-    def test_proposed_outcomes_empty_on_deploy(self, deploy_moltcourt):
+    def test_proposed_outcomes_empty_on_deploy(self, deploy_internetcourt):
         """Proposed outcomes are empty strings on deploy."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         assert contract.proposed_outcome_a == ""
         assert contract.proposed_outcome_b == ""
 
@@ -1154,9 +1154,9 @@ class TestSnapshotRevertExtended:
         assert contract.status == "active"
         assert contract.verdict == ""
 
-    def test_revert_after_cancellation(self, deploy_moltcourt, direct_vm):
+    def test_revert_after_cancellation(self, deploy_internetcourt, direct_vm):
         """Revert can undo cancellation."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         snap = direct_vm.snapshot()
 
         with direct_vm.prank(alice):
@@ -1176,10 +1176,10 @@ class TestEvidenceDeadline:
     """Tests for the time-based evidence submission deadline feature."""
 
     def _deploy_with_deadline(self, direct_vm, direct_deploy, deadline_seconds):
-        """Deploy a MoltCourt contract with a specific evidence deadline."""
+        """Deploy an InternetCourt contract with a specific evidence deadline."""
         direct_vm.sender = b'\x01' * 20
         contract = direct_deploy(
-            "contracts/MoltCourt.py",
+            "contracts/InternetCourt.py",
             b'\x02' * 20,
             SAMPLE_STATEMENT,
             SAMPLE_GUIDELINES,
@@ -1215,9 +1215,9 @@ class TestEvidenceDeadline:
             contract.submit_evidence("Late but allowed")
         assert contract.evidence_a == "Late but allowed"
 
-    def test_default_deadline_is_zero(self, deploy_moltcourt):
+    def test_default_deadline_is_zero(self, deploy_internetcourt):
         """Default deployment (no deadline arg) results in 0 deadline."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         assert int(contract.evidence_deadline_seconds) == 0
 
     def test_dispute_timestamp_set_on_dispute(self, direct_vm, direct_deploy):
@@ -1371,9 +1371,9 @@ class TestEvidenceDeadline:
         info = json.loads(contract.get_evidence_deadline())
         assert info["deadline_passed"] is True
 
-    def test_get_evidence_deadline_zero_never_passes(self, deploy_moltcourt, direct_vm):
+    def test_get_evidence_deadline_zero_never_passes(self, deploy_internetcourt, direct_vm):
         """With deadline=0, deadline_passed is always False."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
 
         with direct_vm.prank(bob):
             contract.accept_contract()
@@ -1443,9 +1443,9 @@ class TestDisputeTimestamp:
 class TestGetEvidenceDeadlineView:
     """Test get_evidence_deadline view method across different states."""
 
-    def test_default_deadline_before_dispute(self, deploy_moltcourt):
+    def test_default_deadline_before_dispute(self, deploy_internetcourt):
         """Default contract shows 0 deadline and no dispute timestamp."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         info = json.loads(contract.get_evidence_deadline())
         assert info["evidence_deadline_seconds"] == 0
         assert info["dispute_timestamp"] == ""
@@ -1459,9 +1459,9 @@ class TestGetEvidenceDeadlineView:
         assert info["dispute_timestamp"] == ""
         assert info["deadline_passed"] is False
 
-    def test_deadline_on_cancelled_contract(self, deploy_moltcourt, direct_vm):
+    def test_deadline_on_cancelled_contract(self, deploy_internetcourt, direct_vm):
         """Cancelled contract deadline info is still accessible."""
-        contract, alice, bob = deploy_moltcourt
+        contract, alice, bob = deploy_internetcourt
         with direct_vm.prank(alice):
             contract.cancel()
         info = json.loads(contract.get_evidence_deadline())

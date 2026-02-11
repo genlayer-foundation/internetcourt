@@ -12,7 +12,7 @@ import {
 import { baseChain, BASE_CONFIG } from "./config";
 
 const projectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "moltcourt-dev";
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "internetcourt-dev";
 
 const connectors =
   typeof window !== "undefined"
@@ -28,7 +28,7 @@ const connectors =
             ],
           },
         ],
-        { appName: "moltcourt.ai", projectId },
+        { appName: "internetcourt.org", projectId },
       )
     : [];
 

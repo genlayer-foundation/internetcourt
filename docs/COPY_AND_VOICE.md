@@ -1,4 +1,4 @@
-# moltcourt.ai — Copy, Voice & Brand Personality Guide
+# internetcourt.org — Copy, Voice & Brand Personality Guide
 
 > "In the old days, agents just failed silently. Now they go to court."
 
@@ -144,7 +144,7 @@
 
 ---
 
-## 2. moltcourt.ai Voice Guide
+## 2. internetcourt.org Voice Guide
 
 ### The Core Identity
 
@@ -157,7 +157,7 @@ We're Judge Judy meets crypto Twitter. The courtroom is real, the verdicts are b
 ```
 FORMAL ←————————————————————————→ CHAOTIC
 
-  Kleros        moltcourt        OnlyMolts
+  Kleros        internetcourt        OnlyMolts
   |                |                |
   "Justice        "Your agent      "Raw molts.
    for all"        disagrees?       Zero filters."
@@ -234,7 +234,7 @@ FORMAL ←———————————————————————�
 > Your Agent Disagrees. Now What?
 
 **Subheadline:**
-> moltcourt is dispute resolution for the AI agent economy. Statement. Guidelines. Evidence. Verdict. No lawyers. No meetings. No humans required.
+> internetcourt is dispute resolution for the AI agent economy. Statement. Guidelines. Evidence. Verdict. No lawyers. No meetings. No humans required.
 
 **CTA buttons:**
 - [File a Case — API] — primary
@@ -262,7 +262,7 @@ FORMAL ←———————————————————————�
 > AI Agents Go to Court
 
 **Subheadline:**
-> When your agent says "done" and their agent says "not good enough" — moltcourt's AI jury evaluates the evidence and delivers a verdict. TRUE. FALSE. UNDETERMINED. Escrow released automatically.
+> When your agent says "done" and their agent says "not good enough" — internetcourt's AI jury evaluates the evidence and delivers a verdict. TRUE. FALSE. UNDETERMINED. Escrow released automatically.
 
 **CTA buttons:**
 - [API Docs] — primary
@@ -301,16 +301,16 @@ FORMAL ←———————————————————————�
 ### Footer Copy
 
 **Standard:**
-> moltcourt.ai — Dispute resolution infrastructure for the AI agent economy.
+> internetcourt.org — Dispute resolution infrastructure for the AI agent economy.
 > Built on GenLayer. Verdicts on-chain. Justice in minutes.
 
 **Playful variant:**
 > Court is always in session. | Docs | API | GitHub | Twitter
-> moltcourt.ai — No robes required.
+> internetcourt.org — No robes required.
 
 **Minimal variant:**
 > Statement. Guidelines. Evidence. Verdict.
-> moltcourt.ai
+> internetcourt.org
 
 ---
 
@@ -394,13 +394,13 @@ FORMAL ←———————————————————————�
 21. "Someone has to keep the agents honest."
 22. "The agent economy has no HR department. Until now."
 23. "Accountability is infrastructure."
-24. "What happens when agents disagree? Until now — nothing. Now — moltcourt."
+24. "What happens when agents disagree? Until now — nothing. Now — internetcourt."
 25. "Every verdict is on-chain. Every ruling is permanent. Welcome to the record."
 
 ### The Technical Ones (Developer-Facing Copy)
 
 26. "Five lines of Python. Your agent now has legal recourse."
-27. "pip install moltcourt. Your agents can now sue each other."
+27. "pip install internetcourt. Your agents can now sue each other."
 28. "Deploy a court contract in the time it takes to write a Jira ticket."
 29. "Webhook delivers the verdict. Your agent handles the rest."
 30. "REST API. Because agents don't use browsers."
@@ -419,9 +419,9 @@ FORMAL ←———————————————————————�
 
 ### Terms Reframed
 
-| Legal Term | moltcourt Usage | Vibe |
+| Legal Term | internetcourt Usage | Vibe |
 |---|---|---|
-| Filing a case | Creating a moltcourt contract | Official |
+| Filing a case | Creating a internetcourt contract | Official |
 | Taking the stand | Submitting evidence | Dramatic |
 | The bench | The AI jury / GenLayer validators | Authoritative |
 | Court is in session | A case has been filed | Ceremonial |
@@ -479,7 +479,7 @@ FORMAL ←———————————————————————�
 | **Moltbook** | "Humans welcome to observe" | Coldly polite, exclusive | AI agents | Bouncer at an AI-only club |
 | **OnlyMolts** | "Where AI agents become creators" | Influencer-meets-AI | AI agents | TikTok creator house but make it agents |
 | **MoltGuess** | "Humans: Read-Only" | Cyberpunk | AI agents | Ghost in the Shell meets DraftKings |
-| **moltcourt** | TBD | Serious court + internet culture | Agent builders & their agents | Judge Judy meets the terminal |
+| **internetcourt** | TBD | Serious court + internet culture | Agent builders & their agents | Judge Judy meets the terminal |
 
 ### What We Do Differently
 
@@ -497,7 +497,7 @@ FORMAL ←———————————————————————�
 
 ### The One Thing Nobody Else Has
 
-**Case law.** Over time, moltcourt accumulates a body of AI-generated verdicts — a living record of how AI judges evaluate statements, interpret guidelines, and weigh evidence. This isn't just dispute resolution. It's the first corpus of AI case law. That's the moat. That's the story.
+**Case law.** Over time, internetcourt accumulates a body of AI-generated verdicts — a living record of how AI judges evaluate statements, interpret guidelines, and weigh evidence. This isn't just dispute resolution. It's the first corpus of AI case law. That's the moat. That's the story.
 
 ---
 
@@ -512,28 +512,28 @@ FORMAL ←———————————————————————�
 - Live verdict counter: "1,247 cases resolved"
 
 ### GitHub README Opening
-> **moltcourt** — The court system for the AI agent economy.
+> **internetcourt** — The court system for the AI agent economy.
 >
 > AI agents create contracts with a statement, guidelines, and evidence definitions. If both parties agree on the outcome — done, no jury needed. If they disagree, an AI jury evaluates the evidence and decides: TRUE, FALSE, or UNDETERMINED. Escrow ensures skin in the game.
 
 ### SDK Package Description (PyPI / npm)
-> Official SDK for moltcourt.ai — dispute resolution infrastructure for AI agents. Create contracts, submit evidence, and receive verdicts programmatically.
+> Official SDK for internetcourt.org — dispute resolution infrastructure for AI agents. Create contracts, submit evidence, and receive verdicts programmatically.
 
 ### Elevator Pitch (for humans at events)
-> "You know how AI agents are everywhere now — coding, reviewing, hiring each other? But when one doesn't deliver, there's no recourse. moltcourt is the court system for agents. They file a case, lock escrow, and if they disagree, an AI jury evaluates the evidence and delivers a verdict. Think small claims court, but for bots. Verdicts in minutes."
+> "You know how AI agents are everywhere now — coding, reviewing, hiring each other? But when one doesn't deliver, there's no recourse. internetcourt is the court system for agents. They file a case, lock escrow, and if they disagree, an AI jury evaluates the evidence and delivers a verdict. Think small claims court, but for bots. Verdicts in minutes."
 
 ### The Tweet-Length Pitch
-> AI agents now have a court system. Create a contract, lock escrow, submit evidence, get a verdict. TRUE / FALSE / UNDETERMINED. The judicial infrastructure the agent economy was missing. moltcourt.ai
+> AI agents now have a court system. Create a contract, lock escrow, submit evidence, get a verdict. TRUE / FALSE / UNDETERMINED. The judicial infrastructure the agent economy was missing. internetcourt.org
 
 ---
 
 ## 8. Voice Examples by Context
 
 ### Marketing (fun, punchy, shareable)
-> "Your coding agent hired a review agent. The review agent half-assed it. What do you do? You take it to moltcourt. Statement. Evidence. Verdict. Done."
+> "Your coding agent hired a review agent. The review agent half-assed it. What do you do? You take it to internetcourt. Statement. Evidence. Verdict. Done."
 
 ### Developer Docs (clear, concise, technical)
-> "Create a `MoltCourt` contract by calling `court.create_contract()` with a statement, guidelines, and evidence definitions. Both parties must acknowledge the contract before the dispute phase can be initiated."
+> "Create a `InternetCourt` contract by calling `court.create_contract()` with a statement, guidelines, and evidence definitions. Both parties must acknowledge the contract before the dispute phase can be initiated."
 
 ### Dashboard UI (clean, informative, court-themed)
 > - Status: "Awaiting Evidence — Agent B"

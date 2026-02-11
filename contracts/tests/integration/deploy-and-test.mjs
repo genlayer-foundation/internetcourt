@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * MoltCourt Integration Test — GenLayer Studio
+ * InternetCourt Integration Test — GenLayer Studio
  *
- * Deploys MoltCourtFactory + MoltCourt, runs full lifecycle test,
+ * Deploys InternetCourtFactory + InternetCourt, runs full lifecycle test,
  * and queries factory registry.
  *
  * Usage: node contracts/tests/integration/deploy-and-test.mjs
@@ -161,9 +161,9 @@ async function main() {
   await partyBClient.initializeConsensusSmartContract();
   ok("Consensus initialized for all 3 clients");
 
-  // ── Step 4: Deploy MoltCourtFactory ─────────────────────────
-  log("STEP 4", "Deploying MoltCourtFactory");
-  const factoryCode = readContract("contracts/MoltCourtFactory.py");
+  // ── Step 4: Deploy InternetCourtFactory ─────────────────────────
+  log("STEP 4", "Deploying InternetCourtFactory");
+  const factoryCode = readContract("contracts/InternetCourtFactory.py");
   let factoryAddr;
   try {
     const result = await deploy(deployerClient, factoryCode, []);
@@ -177,23 +177,23 @@ async function main() {
     throw e;
   }
 
-  // ── Step 5: Register "moltcourt" type in factory ────────────
-  log("STEP 5", "Registering 'moltcourt' contract type");
+  // ── Step 5: Register "internetcourt" type in factory ────────────
+  log("STEP 5", "Registering 'internetcourt' contract type");
   try {
-    await write(deployerClient, factoryAddr, "register_type", ["moltcourt"]);
-    ok("Type 'moltcourt' registered");
+    await write(deployerClient, factoryAddr, "register_type", ["internetcourt"]);
+    ok("Type 'internetcourt' registered");
 
-    const isReg = await read(deployerClient, factoryAddr, "is_type_registered", ["moltcourt"]);
-    ok(`is_type_registered('moltcourt') = ${isReg}`);
+    const isReg = await read(deployerClient, factoryAddr, "is_type_registered", ["internetcourt"]);
+    ok(`is_type_registered('internetcourt') = ${isReg}`);
     report.steps.push({ step: 5, status: "ok" });
   } catch (e) {
     fail(`register_type failed: ${e.message}`);
     report.errors.push({ step: 5, error: e.message });
   }
 
-  // ── Step 6: Deploy MoltCourt instance ───────────────────────
-  log("STEP 6", "Deploying MoltCourt instance");
-  const courtCode = readContract("contracts/MoltCourt.py");
+  // ── Step 6: Deploy InternetCourt instance ───────────────────────
+  log("STEP 6", "Deploying InternetCourt instance");
+  const courtCode = readContract("contracts/InternetCourt.py");
   const evidenceDefs = JSON.stringify({
     party_a: { type: "text", max_chars: 10000 },
     party_b: { type: "text", max_chars: 10000 },
@@ -225,7 +225,7 @@ async function main() {
       party_a: deployer.address,
       party_b: partyB.address,
     });
-    await write(deployerClient, factoryAddr, "register_contract", [courtAddr, "moltcourt", params]);
+    await write(deployerClient, factoryAddr, "register_contract", [courtAddr, "internetcourt", params]);
     ok("Court registered in factory");
     report.steps.push({ step: 7, status: "ok" });
   } catch (e) {
@@ -381,9 +381,9 @@ async function main() {
     ok(`Contract #0: type=${parsed.contract_type}, address=${parsed.address}`);
 
     // Get by type
-    const byType = await read(deployerClient, factoryAddr, "get_contracts_by_type", ["moltcourt"]);
+    const byType = await read(deployerClient, factoryAddr, "get_contracts_by_type", ["internetcourt"]);
     const typeList = typeof byType === "string" ? JSON.parse(byType) : byType;
-    ok(`Contracts of type 'moltcourt': ${typeList.length}`);
+    ok(`Contracts of type 'internetcourt': ${typeList.length}`);
 
     // Get by deployer
     const byDeployer = await read(deployerClient, factoryAddr, "get_contracts_by_deployer", [deployer.address]);

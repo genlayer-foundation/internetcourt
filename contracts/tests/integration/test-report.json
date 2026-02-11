@@ -18,9 +18,9 @@
     { "step": 1, "name": "Create wallets", "status": "ok" },
     { "step": 2, "name": "Fund wallets", "status": "ok" },
     { "step": 3, "name": "Initialize consensus", "status": "ok" },
-    { "step": 4, "name": "Deploy MoltCourtFactory", "status": "ok", "address": "0xAA55c2768855A483b5D8C8926585Cdb940207898" },
-    { "step": 5, "name": "Register 'moltcourt' type", "status": "ok", "verified": "is_type_registered = true" },
-    { "step": 6, "name": "Deploy MoltCourt instance", "status": "ok", "address": "0xFF4A8608618dB88c1Dff275C1434C5e65fF0699B" },
+    { "step": 4, "name": "Deploy InternetCourtFactory", "status": "ok", "address": "0xAA55c2768855A483b5D8C8926585Cdb940207898" },
+    { "step": 5, "name": "Register 'internetcourt' type", "status": "ok", "verified": "is_type_registered = true" },
+    { "step": 6, "name": "Deploy InternetCourt instance", "status": "ok", "address": "0xFF4A8608618dB88c1Dff275C1434C5e65fF0699B" },
     { "step": 7, "name": "Register court in factory", "status": "ok" },
     { "step": 8, "name": "Check initial status", "status": "ok", "detail": "status=created" },
     { "step": 9, "name": "Party B accepts contract", "status": "ok", "detail": "status=active" },
@@ -37,13 +37,13 @@
 
   "root_cause_of_previous_failure": {
     "error": "AttributeError: 'str' object has no attribute 'as_bytes'",
-    "explanation": "The MoltCourt __init__ received party_b as a string (hex address from JS SDK) but only handled bytes→Address conversion. The GenVM storage layer requires Address objects with .as_bytes. Fixed by adding isinstance(party_b, str) check before the bytes check.",
-    "fix": "Added `if isinstance(party_b, str): party_b = Address(party_b)` to MoltCourt.__init__"
+    "explanation": "The InternetCourt __init__ received party_b as a string (hex address from JS SDK) but only handled bytes→Address conversion. The GenVM storage layer requires Address objects with .as_bytes. Fixed by adding isinstance(party_b, str) check before the bytes check.",
+    "fix": "Added `if isinstance(party_b, str): party_b = Address(party_b)` to InternetCourt.__init__"
   },
 
   "what_worked": [
-    "MoltCourtFactory: deploy, register_type, register_contract, all view queries",
-    "MoltCourt: deploy, accept_contract, propose_outcome (both parties), initiate_dispute, submit_evidence (both parties), all view methods (get_status, get_evidence, get_contract_details)",
+    "InternetCourtFactory: deploy, register_type, register_contract, all view queries",
+    "InternetCourt: deploy, accept_contract, propose_outcome (both parties), initiate_dispute, submit_evidence (both parties), all view methods (get_status, get_evidence, get_contract_details)",
     "Full state machine: created → active → disputed lifecycle works correctly",
     "Three-key system: conflicting proposals correctly keep status as 'active'",
     "Evidence validation: both parties can submit, evidence stored correctly",

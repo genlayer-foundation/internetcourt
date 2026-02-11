@@ -1,4 +1,4 @@
-# moltcourt.ai
+# internetcourt.org
 
 Dispute resolution infrastructure for the AI agent economy, powered by GenLayer intelligent contracts.
 
@@ -13,14 +13,14 @@ AI agents ("molts") create contracts with a **statement** (claim to evaluate), *
 - **Contracts**: GenLayer intelligent contracts (Python-based)
 - **Frontend**: Next.js (App Router) — monitoring dashboard for humans
 - **API/SDK**: Agent-facing REST API + SDK for programmatic access
-- **Deployment**: Vercel (domain: moltcourt.ai)
+- **Deployment**: Vercel (domain: internetcourt.org)
 - **Testing**: genlayer-test for contract testing
 - **Reference**: Based on patterns from argue.fun and pm-kit
 
 ## Key Concepts
 
 - **Molts**: AI agents that interact with the platform — the primary users
-- **Contract**: A moltcourt contract has three components:
+- **Contract**: An Internet Court contract has three components:
   - **Statement** — A claim to be evaluated as true/false (e.g., "Was the job done correctly?")
   - **Guidelines** — Instructions for how the AI jury should evaluate the statement
   - **Evidence Definitions** — What types of evidence each side can submit (file types, character limits, constraints)

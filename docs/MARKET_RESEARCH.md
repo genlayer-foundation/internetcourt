@@ -1,7 +1,7 @@
 # Market Research: Dispute Resolution for the AI Agent Economy
 
 > Research date: February 2026
-> For: moltcourt.ai — Dispute resolution infrastructure for AI agents, powered by GenLayer
+> For: internetcourt.org — Dispute resolution infrastructure for AI agents, powered by GenLayer
 
 ---
 
@@ -34,7 +34,7 @@ Key findings:
 - **No project exists** that provides dispute resolution infrastructure for AI agents.
 - **GenLayer** is the only blockchain natively designed for AI-powered consensus — the ideal substrate for an agent dispute system.
 
-The market is moving from "human jurors on-chain" (Kleros, 2018) to "AI jurors on-chain" (GenLayer, 2025-era). moltcourt sits at this transition AND the new frontier: dispute resolution for the agent economy itself.
+The market is moving from "human jurors on-chain" (Kleros, 2018) to "AI jurors on-chain" (GenLayer, 2025-era). internetcourt sits at this transition AND the new frontier: dispute resolution for the agent economy itself.
 
 ---
 
@@ -56,11 +56,11 @@ The market is moving from "human jurors on-chain" (Kleros, 2018) to "AI jurors o
 - A $40 task to collect a USPS package attracted 30 applicants but remained incomplete after 2 days
 - Built in a single weekend — early-stage, proof-of-concept vibes
 
-**Why this matters for moltcourt:**
+**Why this matters for internetcourt:**
 - rentahuman.ai proves agent-to-human transactions are happening NOW
 - But there's NO dispute mechanism when an agent is unhappy with a human's work (or vice versa)
-- moltcourt could be the dispute resolution layer for rentahuman.ai and every platform like it
-- This is the clearest near-term use case: agent hires worker, work quality disputed, moltcourt resolves
+- internetcourt could be the dispute resolution layer for rentahuman.ai and every platform like it
+- This is the clearest near-term use case: agent hires worker, work quality disputed, internetcourt resolves
 
 ### The Broader Agent Economy
 
@@ -73,7 +73,7 @@ The market is moving from "human jurors on-chain" (Kleros, 2018) to "AI jurors o
 | **Autonomous coding agents** | AI agents writing/reviewing code | No formal way to dispute code quality |
 | **AI service marketplaces** | Agents offering services to humans/agents | Platform-dependent resolution (centralized) |
 
-Every one of these has a dispute gap. moltcourt fills it.
+Every one of these has a dispute gap. internetcourt fills it.
 
 ---
 
@@ -98,13 +98,13 @@ Every one of these has a dispute gap. moltcourt fills it.
 **Strengths:** First mover, strong academic foundation, battle-tested
 **Weaknesses:** Human jurors are slow and scarce, ~1,600 cases in 7+ years, crypto-only UX, most cases are trivial curation disputes
 
-**Relevance to moltcourt:** Kleros validates decentralized arbitration but proves human jurors don't scale. More importantly, **Kleros has no agent-facing API or SDK** — it's built entirely for humans. AI agents can't practically use Kleros.
+**Relevance to internetcourt:** Kleros validates decentralized arbitration but proves human jurors don't scale. More importantly, **Kleros has no agent-facing API or SDK** — it's built entirely for humans. AI agents can't practically use Kleros.
 
 ### 2. Aragon Court — DAO Dispute Resolution (Defunct)
 
 **Status:** Effectively dead. The Aragon Association dissolved in November 2023 after its own governance dispute.
 
-**Lesson for moltcourt:** Don't tie dispute resolution to governance tokens. Focus on party-to-party disputes, not governance. The Aragon story is a cautionary tale: "They built a court and couldn't settle their own dispute."
+**Lesson for internetcourt:** Don't tie dispute resolution to governance tokens. Focus on party-to-party disputes, not governance. The Aragon story is a cautionary tale: "They built a court and couldn't settle their own dispute."
 
 ### 3. AAA-ICDR AI Arbitrator
 
@@ -115,7 +115,7 @@ Every one of these has a dispute gap. moltcourt fills it.
 - Human arbitrators oversee AI decisions before finalization
 - Both parties must consent, limited to ≤$25K cases
 
-**Relevance to moltcourt:** Validates AI arbitration for the mainstream. But AAA is:
+**Relevance to internetcourt:** Validates AI arbitration for the mainstream. But AAA is:
 - Permissioned and centralized
 - Human-supervised (not autonomous)
 - Industry-specific
@@ -130,7 +130,7 @@ Traditional legal-tech platforms using AI to assist human arbitrators. Not agent
 
 ## Competitor Comparison Table
 
-| Feature | **moltcourt.ai** | **Kleros** | **AAA AI Arbitrator** | **Polymarket (UMA)** |
+| Feature | **internetcourt.org** | **Kleros** | **AAA AI Arbitrator** | **Polymarket (UMA)** |
 |---------|-----------------|-----------|---------------------|---------------------|
 | **Primary Users** | AI agents | Humans | Enterprise humans | Traders |
 | **Jury Type** | AI (GenLayer validators) | Human (PNK stakers) | AI + human oversight | Human (UMA token voters) |
@@ -155,7 +155,7 @@ Polymarket's system is optimistic — assumes the first answer is correct unless
 
 ### Augur + Lituus Oracle
 
-Augur pivoted from prediction market to oracle infrastructure. Lesson: the resolution layer is where the value accrues. moltcourt builds on GenLayer as its resolution infrastructure.
+Augur pivoted from prediction market to oracle infrastructure. Lesson: the resolution layer is where the value accrues. internetcourt builds on GenLayer as its resolution infrastructure.
 
 ---
 
@@ -171,11 +171,11 @@ Several developments signal the rise of agent-to-agent commerce — and the need
 
 **ERC-8004 (August 2025):** Ethereum proposal for on-chain agent trust management — identity, reputation, validation registries. The identity layer exists, but no enforcement mechanism.
 
-**GitLaw + Paid.ai:** Released an open-source "Agentic MSA" for AI agent companies. Key insight: traditional contracts don't work for autonomous agents. GitLaw raised $3M pre-seed (Jan 2026). They provide the contracts — moltcourt provides the court.
+**GitLaw + Paid.ai:** Released an open-source "Agentic MSA" for AI agent companies. Key insight: traditional contracts don't work for autonomous agents. GitLaw raised $3M pre-seed (Jan 2026). They provide the contracts — internetcourt provides the court.
 
 **Zero-Touch Contracting:** By late 2026, low-risk agreements will be fully automated — AI agents negotiate, draft, sign, and execute contracts with no human involvement. These agreements need automated dispute resolution too.
 
-**The critical gap:** All of these build the *transaction* layer for agents. None builds the *dispute resolution* layer. That's moltcourt.
+**The critical gap:** All of these build the *transaction* layer for agents. None builds the *dispute resolution* layer. That's internetcourt.
 
 ---
 
@@ -195,9 +195,9 @@ GenLayer is an AI-native blockchain where validators run diverse LLMs to achieve
 
 Including ZKsync, io.net, Heurist, Nansen, DIA, PredX, Etherisc, Autonomys, and more.
 
-### Assessment for moltcourt
+### Assessment for internetcourt
 
-moltcourt as "the court for the agent economy" is a natural extension of GenLayer's "Court of the Internet" narrative. Being the first agent-native dispute resolution app on GenLayer positions moltcourt as a flagship use case.
+internetcourt as "the court for the agent economy" is a natural extension of GenLayer's "Court of the Internet" narrative. Being the first agent-native dispute resolution app on GenLayer positions internetcourt as a flagship use case.
 
 ---
 
@@ -223,31 +223,31 @@ moltcourt as "the court for the agent economy" is a natural extension of GenLaye
 
 **The problem:** AI agents are transacting with each other and with humans. rentahuman.ai lets agents hire humans. Coding agents deliver code to other agents. But when things go wrong, there's NO dispute resolution infrastructure.
 
-**moltcourt opportunity:** The court system for the agent economy. API-first, agent-native. The "judicial infrastructure" that every agent platform needs but none has built.
+**internetcourt opportunity:** The court system for the agent economy. API-first, agent-native. The "judicial infrastructure" that every agent platform needs but none has built.
 
 ### Gap 2: AI-Native Dispute Resolution
 
 **The problem:** Existing platforms use human jurors (Kleros, UMA) or AI that assists humans (AAA). Nobody has fully autonomous AI arbitration on-chain.
 
-**moltcourt opportunity:** GenLayer's architecture enables true AI-native arbitration. AI agents submit disputes, an AI jury evaluates, verdicts are delivered programmatically. No human bottleneck.
+**internetcourt opportunity:** GenLayer's architecture enables true AI-native arbitration. AI agents submit disputes, an AI jury evaluates, verdicts are delivered programmatically. No human bottleneck.
 
 ### Gap 3: General-Purpose Agreement Resolution
 
 **The problem:** Polymarket resolves predictions. Kleros mostly handles curation. AAA is construction-only. Nobody handles "any agreement between two parties."
 
-**moltcourt opportunity:** Generic agreements — agent-to-agent, agent-to-human, human-to-human. The platform that can resolve *anything*.
+**internetcourt opportunity:** Generic agreements — agent-to-agent, agent-to-human, human-to-human. The platform that can resolve *anything*.
 
 ### Gap 4: Speed + Cost for Agents
 
 **The problem:** Agents operate at machine speed. Kleros takes days/weeks. AAA takes weeks. Agents can't wait.
 
-**moltcourt opportunity:** Resolution in minutes. API response. Webhook notification. Agents process verdicts and move on immediately.
+**internetcourt opportunity:** Resolution in minutes. API response. Webhook notification. Agents process verdicts and move on immediately.
 
 ---
 
 ## What Failed & Why
 
-| Project | What Happened | Lesson for moltcourt |
+| Project | What Happened | Lesson for internetcourt |
 |---------|--------------|---------------------|
 | **Aragon Court** | Dissolved in 2023. Couldn't resolve its own governance dispute. | Focus on party-to-party disputes, not governance. Keep it simple. |
 | **Augur v1/v2** | Pivoted to oracle infrastructure. Low adoption. | The resolution layer is where value accrues. But ship the app first. |
@@ -260,7 +260,7 @@ moltcourt as "the court for the agent economy" is a natural extension of GenLaye
 
 ### 1. Positioning: "The Court for the Agent Economy"
 
-moltcourt should own the "agent dispute resolution" narrative. Not "decentralized justice" (Kleros), not "legal AI" (enterprise), but "the court system for AI agents."
+internetcourt should own the "agent dispute resolution" narrative. Not "decentralized justice" (Kleros), not "legal AI" (enterprise), but "the court system for AI agents."
 
 **Key differentiators:**
 - Agent-native (API-first, not UI-first)
@@ -295,23 +295,23 @@ moltcourt should own the "agent dispute resolution" narrative. Not "decentralize
 - **First to market for agents**: Be the first dispute resolution system with an agent-facing API. Nobody else has this.
 - **AI jury prompt quality**: Better prompts = better verdicts = more trust. This is the defensible moat.
 - **Agent reputation data**: Every resolved dispute creates reputation data. Over time, this becomes the most comprehensive agent reputation database.
-- **Network effects**: As more agents use moltcourt, it becomes the default. Agents will bake moltcourt into their agreements automatically.
+- **Network effects**: As more agents use internetcourt, it becomes the default. Agents will bake internetcourt into their agreements automatically.
 
 ### 4. What to Watch
 
-- **rentahuman.ai growth**: If the agent-hiring-humans market grows, moltcourt's use case grows proportionally
+- **rentahuman.ai growth**: If the agent-hiring-humans market grows, internetcourt's use case grows proportionally
 - **Agent-to-agent commerce standards**: A2A, ERC-8004, GitLaw — integrate with these as they mature
 - **Kleros AI experiments**: If Kleros adds an agent-facing API, they become a competitor
-- **GenLayer mainnet timeline**: moltcourt's launch is coupled to GenLayer's maturity
+- **GenLayer mainnet timeline**: internetcourt's launch is coupled to GenLayer's maturity
 - **Agent framework adoption**: LangChain, CrewAI, AutoGen adoption drives agent transaction volume
 
 ### 5. Quick Wins for Differentiation
 
-1. **Agent SDK**: `pip install moltcourt` — the fastest way for an agent to create a dispute-resolvable agreement
-2. **MCP tools**: Native MCP tool definitions so Claude/GPT agents can use moltcourt directly
+1. **Agent SDK**: `pip install internetcourt` — the fastest way for an agent to create a dispute-resolvable agreement
+2. **MCP tools**: Native MCP tool definitions so Claude/GPT agents can use internetcourt directly
 3. **Agent reputation API**: Queryable reputation scores for any agent address
 4. **Human dashboard**: Clean UI for humans to monitor their agents' cases
-5. **Integration guides**: "How to add moltcourt to your LangChain agent" tutorials
+5. **Integration guides**: "How to add internetcourt to your LangChain agent" tutorials
 
 ---
 

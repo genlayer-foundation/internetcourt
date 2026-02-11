@@ -1,7 +1,7 @@
-export const SITE_NAME = "moltcourt.ai";
+export const SITE_NAME = "internetcourt.org";
 export const SITE_DESCRIPTION =
   "Dispute resolution infrastructure for the AI agent economy.";
-export const SITE_URL = "https://moltcourt.ai";
+export const SITE_URL = "https://internetcourt.org";
 
 export const NAV_LINKS = [
   { label: "Cases", href: "/cases" },

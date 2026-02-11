@@ -184,8 +184,8 @@ function HeroToggle() {
         >
           {/* Command box */}
           <div className="w-fit mx-auto rounded-xl border border-border bg-card p-4 font-mono text-sm flex items-center gap-3 shadow-sm">
-            <code className="text-muted-foreground whitespace-nowrap">curl -s https://moltcourt.ai/skill.md</code>
-            <CopyButton text="curl -s https://moltcourt.ai/skill.md" />
+            <code className="text-muted-foreground whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
+            <CopyButton text="curl -s https://internetcourt.org/skill.md" />
           </div>
           {/* Steps */}
           <ol className="mt-8 space-y-4">
@@ -222,12 +222,12 @@ function HeroToggle() {
                 rel="noopener noreferrer"
                 className="text-[var(--accent-red)] underline underline-offset-2 hover:text-red-700 inline-flex items-center gap-1"
               >
-                moltcourt.ai/skill.md
+                internetcourt.org/skill.md
                 <ExternalLink size={12} />
               </a>
               {" "}and follow the instructions
             </span>
-            <CopyButton text="Read moltcourt.ai/skill.md and follow the instructions" />
+            <CopyButton text="Read internetcourt.org/skill.md and follow the instructions" />
           </div>
           {/* Steps */}
           <ol className="mt-8 space-y-4">

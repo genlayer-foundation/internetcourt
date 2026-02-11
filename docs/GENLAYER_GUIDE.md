@@ -1,6 +1,6 @@
-# GenLayer Technical Guide for moltcourt.ai
+# GenLayer Technical Guide for internetcourt.org
 
-> Technical reference for building moltcourt's agent-native dispute resolution system on GenLayer.
+> Technical reference for building internetcourt's agent-native dispute resolution system on GenLayer.
 
 ## Table of Contents
 1. [GenLayer Overview](#genlayer-overview)
@@ -13,7 +13,7 @@
 8. [Testing with genlayer-test](#testing-with-genlayer-test)
 9. [Developer Tooling & Deployment](#developer-tooling--deployment)
 10. [Frontend Integration with GenLayerJS](#frontend-integration-with-genlayerjs)
-11. [Recommendations for moltcourt.ai Dispute Resolution](#recommendations-for-moltcourtai-dispute-resolution)
+11. [Recommendations for internetcourt.org Dispute Resolution](#recommendations-for-internetcourtai-dispute-resolution)
 12. [Example: Dispute Resolution Contract](#example-dispute-resolution-contract)
 13. [Limitations & Gotchas](#limitations--gotchas)
 
@@ -23,7 +23,7 @@
 
 GenLayer is an AI-native blockchain platform — "the Intelligence Layer of the Internet." It extends the blockchain evolution beyond Bitcoin (trustless money) and Ethereum (trustless applications) into **trustless decision-making**.
 
-GenLayer positions itself as a **synthetic jurisdiction**: a decentralized digital court where validators running diverse Large Language Models (LLMs) resolve disputes and enforce contracts. This is exactly the infrastructure moltcourt.ai needs — the judicial layer for the AI agent economy.
+GenLayer positions itself as a **synthetic jurisdiction**: a decentralized digital court where validators running diverse Large Language Models (LLMs) resolve disputes and enforce contracts. This is exactly the infrastructure internetcourt.org needs — the judicial layer for the AI agent economy.
 
 **Key capabilities:**
 - Validators connected to different LLMs act as an AI jury
@@ -59,7 +59,7 @@ GenLayer positions itself as a **synthetic jurisdiction**: a decentralized digit
 | NLP | Not possible | Native natural language processing |
 | Use cases | DeFi, tokens, DAOs | Arbitration, prediction markets, AI agents, content moderation |
 
-**Why this matters for moltcourt.ai:** Traditional smart contracts can only handle deterministic logic ("if party A deposited by date X, release funds"). Intelligent contracts can evaluate *evidence*, interpret *arguments*, and render *judgments* — exactly what agent dispute resolution requires. When Agent A and Agent B disagree on whether a code review meets the agreement terms, GenLayer's intelligent contracts can actually *read and evaluate* the arguments.
+**Why this matters for internetcourt.org:** Traditional smart contracts can only handle deterministic logic ("if party A deposited by date X, release funds"). Intelligent contracts can evaluate *evidence*, interpret *arguments*, and render *judgments* — exactly what agent dispute resolution requires. When Agent A and Agent B disagree on whether a code review meets the agreement terms, GenLayer's intelligent contracts can actually *read and evaluate* the arguments.
 
 ---
 
@@ -92,7 +92,7 @@ Third appeal:     95 validators
 
 Anyone can submit an appeal during the finality window by staking GEN tokens to cover gas costs. More validators re-examine the evidence and can overturn previous decisions.
 
-**For moltcourt.ai:** This means agent disputes get progressively more scrutiny on appeal — like a real court system. We get multi-instance adjudication *for free* at the protocol level. Agents (or their human operators) can appeal verdicts programmatically via the API.
+**For internetcourt.org:** This means agent disputes get progressively more scrutiny on appeal — like a real court system. We get multi-instance adjudication *for free* at the protocol level. Agents (or their human operators) can appeal verdicts programmatically via the API.
 
 ### The Equivalence Principle
 
@@ -568,11 +568,11 @@ genlayer up
 ### Project Structure (Recommended)
 
 ```
-moltcourt/
+internetcourt/
 ├── contracts/
 │   ├── DisputeResolution.py      # Main dispute contract
 │   ├── Escrow.py                  # Escrow contract
-│   └── MoltCourt.py              # Court orchestration contract
+│   └── InternetCourt.py              # Court orchestration contract
 ├── deploy/
 │   └── deploy.ts                  # Deployment script
 ├── frontend/
@@ -769,11 +769,11 @@ export function useCreateDispute(contractAddress: string) {
 
 ---
 
-## Recommendations for moltcourt.ai Dispute Resolution
+## Recommendations for internetcourt.org Dispute Resolution
 
 ### Architecture Design
 
-moltcourt.ai should leverage GenLayer's strengths for an agent-native dispute system:
+internetcourt.org should leverage GenLayer's strengths for an agent-native dispute system:
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -886,7 +886,7 @@ The parties may be AI agents, humans, or a mix. Judge based on the agreement and
 
 ## Example: Dispute Resolution Contract
 
-Here is a complete contract skeleton for moltcourt.ai's agent-native dispute system:
+Here is a complete contract skeleton for internetcourt.org's agent-native dispute system:
 
 ```python
 from genlayer import *
@@ -907,7 +907,7 @@ CASE_STATUS_FINALIZED = "finalized"
 # Dispute Resolution Contract
 # ============================================================
 
-class MoltCourt(gl.Contract):
+class InternetCourt(gl.Contract):
     # State variables
     case_count: u256
     # Store cases as serialized JSON in a TreeMap keyed by case ID string
@@ -1028,7 +1028,7 @@ class MoltCourt(gl.Contract):
         evidence = gl.storage.copy_to_memory(self.case_evidence[case_id])
 
         def nondet():
-            prompt = f"""You are an impartial AI arbitrator in MoltCourt, a dispute resolution system for the agent economy.
+            prompt = f"""You are an impartial AI arbitrator in InternetCourt, a dispute resolution system for the agent economy.
 The parties may be AI agents, humans, or a mix. Judge based on the agreement and evidence, not on who or what the parties are.
 
 ## Dispute Description
@@ -1144,12 +1144,12 @@ IMPORTANT: plaintiff_pct + defendant_pct must equal 100.
 ### Corresponding Test File
 
 ```python
-# tests/test_moltcourt.py
+# tests/test_internetcourt.py
 from gltest import get_contract_factory
 from gltest.assertions import tx_execution_succeeded, tx_execution_failed
 
 def test_full_dispute_lifecycle():
-    factory = get_contract_factory("MoltCourt")
+    factory = get_contract_factory("InternetCourt")
     contract = factory.deploy(args=[1000, 250])  # min_stake=1000, fee=2.5%
 
     # 1. File dispute
@@ -1168,7 +1168,7 @@ def test_full_dispute_lifecycle():
     assert status == "open"
 
 def test_insufficient_stake_rejected():
-    factory = get_contract_factory("MoltCourt")
+    factory = get_contract_factory("InternetCourt")
     contract = factory.deploy(args=[1000, 250])
 
     tx = contract.file_dispute(
@@ -1179,7 +1179,7 @@ def test_insufficient_stake_rejected():
 
 def test_direct_mode(direct_vm, direct_deploy):
     """Fast unit test using direct execution."""
-    contract = direct_deploy("contracts/MoltCourt.py", 1000, 250)
+    contract = direct_deploy("contracts/InternetCourt.py", 1000, 250)
 
     # Mock the LLM for deterministic testing
     direct_vm.mock_llm(

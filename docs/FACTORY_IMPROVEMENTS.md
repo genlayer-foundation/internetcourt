@@ -1,8 +1,8 @@
-# MoltCourtFactory Improvements Proposal
+# InternetCourtFactory Improvements Proposal
 
 ## Current Capabilities
 
-The factory contract (`MoltCourtFactory.py`) currently supports:
+The factory contract (`InternetCourtFactory.py`) currently supports:
 
 | Feature | Method | Status |
 |---------|--------|--------|
@@ -42,7 +42,7 @@ The factory contract (`MoltCourtFactory.py`) currently supports:
 @gl.public.view
 def export_all_types(self) -> str:
     """Export all registered type names as a JSON array.
-    Returns: '["MoltCourt", "Escrow", ...]'
+    Returns: '["InternetCourt", "Escrow", ...]'
     Only includes currently-active types (registered_types == "true").
     """
 
@@ -132,8 +132,8 @@ def import_contracts(self, contracts_json: str) -> None:
 **Migration script** (JS/Python using GenLayer SDK):
 
 ```
-1. Deploy new MoltCourtFactory with same owner wallet
-   → new_factory_address = deploy(MoltCourtFactory)
+1. Deploy new InternetCourtFactory with same owner wallet
+   → new_factory_address = deploy(InternetCourtFactory)
 
 2. Export types from old factory
    → types = old_factory.export_all_types()
@@ -228,7 +228,7 @@ def get_recent_contracts(self, limit: u256) -> str:
 
 **Problem**: Dashboard needs aggregate stats (e.g., "42 active, 15 disputed, 8 resolved"). Currently impossible without reading every contract individually.
 
-**Challenge**: The factory doesn't know about MoltCourt contract status — it only stores metadata at registration time. Status is stored in individual MoltCourt contracts.
+**Challenge**: The factory doesn't know about InternetCourt contract status — it only stores metadata at registration time. Status is stored in individual InternetCourt contracts.
 
 **Options**:
 - **Option A**: Add a `status` field to factory metadata, updated via a `update_status()` method. Requires callers to keep it in sync.
@@ -239,7 +239,7 @@ def get_recent_contracts(self, limit: u256) -> str:
 
 #### 5. Find by Status — `get_contracts_by_status(status)`
 
-**Problem**: Frontend filters (show all "disputed" cases). Same challenge as #4 — factory doesn't track MoltCourt status.
+**Problem**: Frontend filters (show all "disputed" cases). Same challenge as #4 — factory doesn't track InternetCourt status.
 
 **Recommended**: Handle in API layer, not on-chain. Alternatively, if Option A/B from #4 is implemented:
 
@@ -286,7 +286,7 @@ def get_contracts_by_status(self, status: str) -> str:
 GenLayer uses `TreeMap` (ordered key-value store) and `DynArray` (dynamic array). Current indexing approach serializes ID lists as JSON strings in TreeMap values. This works but has limitations:
 
 - **JSON array size**: Each type/deployer index is a single JSON string. With thousands of IDs, parsing becomes slow.
-- **Alternative**: Use composite TreeMap keys like `"type:MoltCourt:0"`, `"type:MoltCourt:1"` with a counter. This allows TreeMap range queries instead of parsing huge JSON arrays.
+- **Alternative**: Use composite TreeMap keys like `"type:InternetCourt:0"`, `"type:InternetCourt:1"` with a counter. This allows TreeMap range queries instead of parsing huge JSON arrays.
 - **DynArray**: Could be used for the global registry order, but TreeMap is more flexible for key-based lookups.
 
 For Phase 1 (pagination), the current JSON array approach works fine. For Phase 2+, consider migrating to composite keys if scale becomes an issue.

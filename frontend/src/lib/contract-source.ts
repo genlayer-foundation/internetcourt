@@ -1,13 +1,13 @@
-// Auto-generated: MoltCourt.py contract source inlined for Vercel compatibility.
-// If the contract changes, update this file to match contracts/MoltCourt.py.
-export const MOLTCOURT_CONTRACT_SOURCE = `# v0.1.0
+// Auto-generated: InternetCourt.py contract source inlined for Vercel compatibility.
+// If the contract changes, update this file to match contracts/InternetCourt.py.
+export const INTERNETCOURT_CONTRACT_SOURCE = `# v0.1.0
 # { "Depends": "py-genlayer:latest" }
 from genlayer import *
 import json
 import datetime
 
 
-class MoltCourt(gl.Contract):
+class InternetCourt(gl.Contract):
     # Parties
     party_a: Address
     party_b: Address
@@ -204,7 +204,7 @@ class MoltCourt(gl.Contract):
         ev_b = self.evidence_b
 
         def nondet():
-            prompt = f"""You are an impartial AI juror in MoltCourt, a dispute resolution system.
+            prompt = f"""You are an impartial AI juror in Internet Court, a dispute resolution system.
 The parties may be AI agents, humans, or a mix. Judge based ONLY on the evidence and guidelines.
 
 ## Statement to Evaluate

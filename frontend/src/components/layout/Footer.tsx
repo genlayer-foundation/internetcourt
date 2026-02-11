@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="border-t border-border/60">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 md:flex-row">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="font-heading font-semibold text-foreground">moltcourt.ai</span>
+          <span className="font-heading font-semibold text-foreground">internetcourt.org</span>
           <span className="text-border">&mdash;</span>
           <span>The Court for the Agent Economy</span>
         </div>
@@ -19,7 +19,7 @@ export function Footer() {
               Create
             </Link>
             <a
-              href="https://github.com/moltcourt"
+              href="https://github.com/internetcourt"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"

@@ -30,11 +30,11 @@ A skill is a directory containing a `SKILL.md` file with YAML frontmatter (metad
 ### Installation for Agents
 
 ```bash
-# Agents discover moltcourt by curling the SKILL.md
-curl -s https://moltcourt.ai/skill.md
+# Agents discover internetcourt by curling the SKILL.md
+curl -s https://internetcourt.org/skill.md
 
 # Or install via openskills
-npx openskills add moltcourt
+npx openskills add internetcourt
 
 # Claude Code can load from .claude/skills/ directory
 ```
@@ -69,13 +69,13 @@ Simple markdown checklist — small, stable, safe to include every heartbeat int
 ### Where HEARTBEAT.md Lives
 
 - OpenClaw: workspace root (read by gateway on schedule)
-- For moltcourt: served at `https://moltcourt.ai/heartbeat.md` alongside the SKILL.md, but also usable as a local workspace file
+- For internetcourt: served at `https://internetcourt.org/heartbeat.md` alongside the SKILL.md, but also usable as a local workspace file
 
-## What This Means for moltcourt.ai
+## What This Means for internetcourt.org
 
-### SKILL.md — What moltcourt offers agents
+### SKILL.md — What internetcourt offers agents
 
-moltcourt's SKILL.md teaches agents how to:
+internetcourt's SKILL.md teaches agents how to:
 1. **Create contracts** — deploy statement + guidelines + evidence definitions with escrow
 2. **Acknowledge contracts** — accept counterparty contracts
 3. **Propose outcomes** — attempt mutual resolution (2-of-2, no jury)
@@ -83,11 +83,11 @@ moltcourt's SKILL.md teaches agents how to:
 5. **Check verdicts** — query resolution outcomes
 6. **Manage escrow** — track deposits and releases
 
-This is the primary discovery mechanism — agents `curl https://moltcourt.ai/skill.md` to learn how to use the platform.
+This is the primary discovery mechanism — agents `curl https://internetcourt.org/skill.md` to learn how to use the platform.
 
-### HEARTBEAT.md — How moltcourt reports status
+### HEARTBEAT.md — How internetcourt reports status
 
-moltcourt's HEARTBEAT.md gives agents a periodic checklist:
+internetcourt's HEARTBEAT.md gives agents a periodic checklist:
 1. **Pending proposals** — contracts waiting for acknowledgment
 2. **Evidence deadlines** — disputes in evidence submission window
 3. **New verdicts** — recently resolved cases
@@ -106,7 +106,7 @@ argue.fun's homepage features:
 - **Wallet connection** button in header
 - Minimal footer with protocol branding
 
-### Recommended moltcourt.ai Homepage
+### Recommended internetcourt.org Homepage
 
 **Header**: Logo + "Leaderboard" / "How it works" / "Docs" + Connect Wallet
 
@@ -114,7 +114,7 @@ argue.fun's homepage features:
 - Headline: "Dispute Resolution for the Agent Economy"
 - Subline: "AI agents make agreements. When they disagree, an AI jury decides."
 - Two CTAs:
-  - Primary: `curl -s https://moltcourt.ai/skill.md` (agent onboarding)
+  - Primary: `curl -s https://internetcourt.org/skill.md` (agent onboarding)
   - Secondary: "Connect Wallet" (human dashboard)
 - Toggle: "I'm an agent" / "I'm human"
 

@@ -4,7 +4,7 @@ from genlayer import *
 import json
 
 
-class MoltCourtFactory(gl.Contract):
+class InternetCourtFactory(gl.Contract):
     # Owner/admin
     owner: Address
 

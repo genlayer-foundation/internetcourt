@@ -1,4 +1,4 @@
-"""Comprehensive tests for the MoltCourtFactory intelligent contract."""
+"""Comprehensive tests for the InternetCourtFactory intelligent contract."""
 import json
 import pytest
 
@@ -11,13 +11,13 @@ CHARLIE_BYTES = b'\x03' * 20
 
 @pytest.fixture
 def deploy_factory(direct_vm, direct_deploy):
-    """Deploy a MoltCourtFactory contract.
+    """Deploy an InternetCourtFactory contract.
 
     Returns (contract, owner_addr).
     """
     direct_vm.sender = ALICE_BYTES
 
-    contract = direct_deploy("contracts/MoltCourtFactory.py")
+    contract = direct_deploy("contracts/InternetCourtFactory.py")
 
     from genlayer import Address
     owner = Address(ALICE_BYTES)
@@ -27,11 +27,11 @@ def deploy_factory(direct_vm, direct_deploy):
 
 @pytest.fixture
 def factory_with_type(deploy_factory, direct_vm):
-    """Deploy factory and register 'MoltCourt' type."""
+    """Deploy factory and register 'InternetCourt' type."""
     contract, owner = deploy_factory
 
     with direct_vm.prank(owner):
-        contract.register_type("MoltCourt")
+        contract.register_type("InternetCourt")
 
     return contract, owner
 
@@ -60,8 +60,8 @@ class TestTypeRegistration:
     def test_owner_can_register_type(self, deploy_factory, direct_vm):
         contract, owner = deploy_factory
         with direct_vm.prank(owner):
-            contract.register_type("MoltCourt")
-        assert contract.is_type_registered("MoltCourt") == "true"
+            contract.register_type("InternetCourt")
+        assert contract.is_type_registered("InternetCourt") == "true"
 
     def test_non_owner_cannot_register_type(self, deploy_factory, direct_vm):
         contract, owner = deploy_factory
@@ -69,7 +69,7 @@ class TestTypeRegistration:
         bob = Address(BOB_BYTES)
         with direct_vm.expect_revert("Only owner can register types"):
             with direct_vm.prank(bob):
-                contract.register_type("MoltCourt")
+                contract.register_type("InternetCourt")
 
     def test_cannot_register_empty_type(self, deploy_factory, direct_vm):
         contract, owner = deploy_factory
@@ -81,7 +81,7 @@ class TestTypeRegistration:
         contract, owner = factory_with_type
         with direct_vm.expect_revert("Contract type already registered"):
             with direct_vm.prank(owner):
-                contract.register_type("MoltCourt")
+                contract.register_type("InternetCourt")
 
     def test_unregistered_type_returns_false(self, deploy_factory):
         contract, owner = deploy_factory
@@ -89,10 +89,10 @@ class TestTypeRegistration:
 
     def test_owner_can_unregister_type(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
-        assert contract.is_type_registered("MoltCourt") == "true"
+        assert contract.is_type_registered("InternetCourt") == "true"
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
-        assert contract.is_type_registered("MoltCourt") == "false"
+            contract.unregister_type("InternetCourt")
+        assert contract.is_type_registered("InternetCourt") == "false"
 
     def test_non_owner_cannot_unregister_type(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
@@ -100,7 +100,7 @@ class TestTypeRegistration:
         bob = Address(BOB_BYTES)
         with direct_vm.expect_revert("Only owner can unregister types"):
             with direct_vm.prank(bob):
-                contract.unregister_type("MoltCourt")
+                contract.unregister_type("InternetCourt")
 
     def test_cannot_unregister_nonexistent_type(self, deploy_factory, direct_vm):
         contract, owner = deploy_factory
@@ -111,12 +111,12 @@ class TestTypeRegistration:
     def test_register_multiple_types(self, deploy_factory, direct_vm):
         contract, owner = deploy_factory
         with direct_vm.prank(owner):
-            contract.register_type("MoltCourt")
+            contract.register_type("InternetCourt")
         with direct_vm.prank(owner):
             contract.register_type("Escrow")
         with direct_vm.prank(owner):
             contract.register_type("Arbitration")
-        assert contract.is_type_registered("MoltCourt") == "true"
+        assert contract.is_type_registered("InternetCourt") == "true"
         assert contract.is_type_registered("Escrow") == "true"
         assert contract.is_type_registered("Arbitration") == "true"
 
@@ -132,7 +132,7 @@ class TestContractRegistration:
         with direct_vm.prank(owner):
             cid = contract.register_contract(
                 "0xdeadbeef1234567890abcdef",
-                "MoltCourt",
+                "InternetCourt",
                 '{"statement": "test"}',
             )
         assert int(cid) == 0
@@ -141,9 +141,9 @@ class TestContractRegistration:
     def test_register_increments_id(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            cid1 = contract.register_contract("0xaddr1", "MoltCourt", "{}")
+            cid1 = contract.register_contract("0xaddr1", "InternetCourt", "{}")
         with direct_vm.prank(owner):
-            cid2 = contract.register_contract("0xaddr2", "MoltCourt", "{}")
+            cid2 = contract.register_contract("0xaddr2", "InternetCourt", "{}")
         assert int(cid1) == 0
         assert int(cid2) == 1
         assert int(contract.get_contract_count()) == 2
@@ -152,12 +152,12 @@ class TestContractRegistration:
         contract, owner = factory_with_type
         params = json.dumps({"statement": "test claim"})
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0xcontractaddr", "MoltCourt", params)
+            cid = contract.register_contract("0xcontractaddr", "InternetCourt", params)
 
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
         assert metadata["address"] == "0xcontractaddr"
-        assert metadata["contract_type"] == "MoltCourt"
+        assert metadata["contract_type"] == "InternetCourt"
         assert metadata["deployer"] == owner.as_hex
         assert metadata["params"] == params
 
@@ -171,7 +171,7 @@ class TestContractRegistration:
         contract, owner = factory_with_type
         with direct_vm.expect_revert("Contract address cannot be empty"):
             with direct_vm.prank(owner):
-                contract.register_contract("", "MoltCourt", "{}")
+                contract.register_contract("", "InternetCourt", "{}")
 
     def test_register_rejects_empty_type(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
@@ -185,7 +185,7 @@ class TestContractRegistration:
         from genlayer import Address
         bob = Address(BOB_BYTES)
         with direct_vm.prank(bob):
-            cid = contract.register_contract("0xbobcontract", "MoltCourt", "{}")
+            cid = contract.register_contract("0xbobcontract", "InternetCourt", "{}")
         assert int(cid) == 0
 
         from genlayer import u256
@@ -196,10 +196,10 @@ class TestContractRegistration:
         """Cannot register contracts for unregistered types."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
+            contract.unregister_type("InternetCourt")
         with direct_vm.expect_revert("Contract type not registered"):
             with direct_vm.prank(owner):
-                contract.register_contract("0xaddr", "MoltCourt", "{}")
+                contract.register_contract("0xaddr", "InternetCourt", "{}")
 
 
 # ============================================================
@@ -211,7 +211,7 @@ class TestGetContract:
     def test_get_existing_contract(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.register_contract("0xaddr1", "MoltCourt", '{"key": "val"}')
+            contract.register_contract("0xaddr1", "InternetCourt", '{"key": "val"}')
 
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(0)))
@@ -233,17 +233,17 @@ class TestGetContract:
 class TestGetContractsByType:
     def test_get_by_type_empty(self, deploy_factory):
         contract, owner = deploy_factory
-        result = json.loads(contract.get_contracts_by_type("MoltCourt"))
+        result = json.loads(contract.get_contracts_by_type("InternetCourt"))
         assert result == []
 
     def test_get_by_type_with_contracts(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.register_contract("0xaddr1", "MoltCourt", '{"a": 1}')
+            contract.register_contract("0xaddr1", "InternetCourt", '{"a": 1}')
         with direct_vm.prank(owner):
-            contract.register_contract("0xaddr2", "MoltCourt", '{"a": 2}')
+            contract.register_contract("0xaddr2", "InternetCourt", '{"a": 2}')
 
-        result = json.loads(contract.get_contracts_by_type("MoltCourt"))
+        result = json.loads(contract.get_contracts_by_type("InternetCourt"))
         assert len(result) == 2
         assert result[0]["address"] == "0xaddr1"
         assert result[1]["address"] == "0xaddr2"
@@ -286,9 +286,9 @@ class TestGetContractsByDeployer:
     def test_get_by_deployer_with_contracts(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.register_contract("0xaddr1", "MoltCourt", "{}")
+            contract.register_contract("0xaddr1", "InternetCourt", "{}")
         with direct_vm.prank(owner):
-            contract.register_contract("0xaddr2", "MoltCourt", "{}")
+            contract.register_contract("0xaddr2", "InternetCourt", "{}")
 
         result = json.loads(contract.get_contracts_by_deployer(owner.as_hex))
         assert len(result) == 2
@@ -300,11 +300,11 @@ class TestGetContractsByDeployer:
         bob = Address(BOB_BYTES)
 
         with direct_vm.prank(owner):
-            contract.register_contract("0xowner1", "MoltCourt", "{}")
+            contract.register_contract("0xowner1", "InternetCourt", "{}")
         with direct_vm.prank(bob):
-            contract.register_contract("0xbob1", "MoltCourt", "{}")
+            contract.register_contract("0xbob1", "InternetCourt", "{}")
         with direct_vm.prank(owner):
-            contract.register_contract("0xowner2", "MoltCourt", "{}")
+            contract.register_contract("0xowner2", "InternetCourt", "{}")
 
         owner_contracts = json.loads(contract.get_contracts_by_deployer(owner.as_hex))
         bob_contracts = json.loads(contract.get_contracts_by_deployer(bob.as_hex))
@@ -376,7 +376,7 @@ class TestSnapshotRevert:
         snap = direct_vm.snapshot()
 
         with direct_vm.prank(owner):
-            contract.register_contract("0xsnap", "MoltCourt", "{}")
+            contract.register_contract("0xsnap", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 1
 
         direct_vm.revert(snap)
@@ -394,7 +394,7 @@ class TestEdgeCases:
         contract, owner = factory_with_type
         large_params = json.dumps({"data": "x" * 5000})
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0xlarge", "MoltCourt", large_params)
+            cid = contract.register_contract("0xlarge", "InternetCourt", large_params)
 
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
@@ -405,7 +405,7 @@ class TestEdgeCases:
         contract, owner = factory_with_type
         params = json.dumps({"text": 'Contains "quotes" and\nnewlines'})
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0xspecial", "MoltCourt", params)
+            cid = contract.register_contract("0xspecial", "InternetCourt", params)
 
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
@@ -420,16 +420,16 @@ class TestEdgeCases:
         charlie = Address(CHARLIE_BYTES)
 
         with direct_vm.prank(owner):
-            contract.register_type("MoltCourt")
+            contract.register_type("InternetCourt")
         with direct_vm.prank(owner):
             contract.register_type("Escrow")
 
-        # Alice deploys MoltCourt
+        # Alice deploys InternetCourt
         with direct_vm.prank(owner):
-            contract.register_contract("0xa_mc1", "MoltCourt", "{}")
-        # Bob deploys MoltCourt
+            contract.register_contract("0xa_mc1", "InternetCourt", "{}")
+        # Bob deploys InternetCourt
         with direct_vm.prank(bob):
-            contract.register_contract("0xb_mc1", "MoltCourt", "{}")
+            contract.register_contract("0xb_mc1", "InternetCourt", "{}")
         # Charlie deploys Escrow
         with direct_vm.prank(charlie):
             contract.register_contract("0xc_es1", "Escrow", "{}")
@@ -439,7 +439,7 @@ class TestEdgeCases:
 
         assert int(contract.get_contract_count()) == 4
 
-        mc_contracts = json.loads(contract.get_contracts_by_type("MoltCourt"))
+        mc_contracts = json.loads(contract.get_contracts_by_type("InternetCourt"))
         es_contracts = json.loads(contract.get_contracts_by_type("Escrow"))
         assert len(mc_contracts) == 2
         assert len(es_contracts) == 2
@@ -462,30 +462,30 @@ class TestTypeReregistration:
         """Can re-register a type that was previously unregistered."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
-        assert contract.is_type_registered("MoltCourt") == "false"
+            contract.unregister_type("InternetCourt")
+        assert contract.is_type_registered("InternetCourt") == "false"
         with direct_vm.prank(owner):
-            contract.register_type("MoltCourt")
-        assert contract.is_type_registered("MoltCourt") == "true"
+            contract.register_type("InternetCourt")
+        assert contract.is_type_registered("InternetCourt") == "true"
 
     def test_cannot_unregister_twice(self, factory_with_type, direct_vm):
         """Unregistering an already-unregistered type fails."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
+            contract.unregister_type("InternetCourt")
         with direct_vm.expect_revert("Contract type not registered"):
             with direct_vm.prank(owner):
-                contract.unregister_type("MoltCourt")
+                contract.unregister_type("InternetCourt")
 
     def test_register_contract_after_type_reregistered(self, factory_with_type, direct_vm):
         """After unregister + re-register, can register contracts again."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
+            contract.unregister_type("InternetCourt")
         with direct_vm.prank(owner):
-            contract.register_type("MoltCourt")
+            contract.register_type("InternetCourt")
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0xreregistered", "MoltCourt", "{}")
+            cid = contract.register_contract("0xreregistered", "InternetCourt", "{}")
         assert int(cid) == 0
 
 
@@ -574,13 +574,13 @@ class TestQueryEdgeCases:
         contract, owner = factory_with_type
         assert int(contract.get_contract_count()) == 0
         with direct_vm.prank(owner):
-            contract.register_contract("0xa", "MoltCourt", "{}")
+            contract.register_contract("0xa", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 1
         with direct_vm.prank(owner):
-            contract.register_contract("0xb", "MoltCourt", "{}")
+            contract.register_contract("0xb", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 2
         with direct_vm.prank(owner):
-            contract.register_contract("0xc", "MoltCourt", "{}")
+            contract.register_contract("0xc", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 3
 
     def test_metadata_ids_are_sequential(self, factory_with_type, direct_vm):
@@ -589,7 +589,7 @@ class TestQueryEdgeCases:
         from genlayer import u256
         for i in range(5):
             with direct_vm.prank(owner):
-                contract.register_contract(f"0xaddr{i}", "MoltCourt", "{}")
+                contract.register_contract(f"0xaddr{i}", "InternetCourt", "{}")
 
         for i in range(5):
             metadata = json.loads(contract.get_contract(u256(i)))
@@ -607,7 +607,7 @@ class TestQueryEdgeCases:
         contract, owner = factory_with_type
         params = json.dumps({"key": "value"})
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0xfullmeta", "MoltCourt", params)
+            cid = contract.register_contract("0xfullmeta", "InternetCourt", params)
 
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
@@ -617,7 +617,7 @@ class TestQueryEdgeCases:
         assert "deployer" in metadata
         assert "params" in metadata
         assert metadata["address"] == "0xfullmeta"
-        assert metadata["contract_type"] == "MoltCourt"
+        assert metadata["contract_type"] == "InternetCourt"
         assert metadata["params"] == params
 
 
@@ -631,7 +631,7 @@ class TestContractRegistrationEdgeCases:
         """Address containing unicode characters is stored."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0x\u00fcnicode\u00e9", "MoltCourt", "{}")
+            cid = contract.register_contract("0x\u00fcnicode\u00e9", "InternetCourt", "{}")
 
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
@@ -641,7 +641,7 @@ class TestContractRegistrationEdgeCases:
         """Empty params string is allowed."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            cid = contract.register_contract("0xaddr", "MoltCourt", "")
+            cid = contract.register_contract("0xaddr", "InternetCourt", "")
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
         assert metadata["params"] == ""
@@ -651,7 +651,7 @@ class TestContractRegistrationEdgeCases:
         contract, owner = factory_with_type
         long_addr = "0x" + "a" * 5000
         with direct_vm.prank(owner):
-            cid = contract.register_contract(long_addr, "MoltCourt", "{}")
+            cid = contract.register_contract(long_addr, "InternetCourt", "{}")
         from genlayer import u256
         metadata = json.loads(contract.get_contract(u256(int(cid))))
         assert metadata["address"] == long_addr
@@ -664,14 +664,14 @@ class TestContractRegistrationEdgeCases:
         charlie = Address(CHARLIE_BYTES)
 
         with direct_vm.prank(owner):
-            contract.register_contract("0xa1", "MoltCourt", "{}")
+            contract.register_contract("0xa1", "InternetCourt", "{}")
         with direct_vm.prank(bob):
-            contract.register_contract("0xb1", "MoltCourt", "{}")
+            contract.register_contract("0xb1", "InternetCourt", "{}")
         with direct_vm.prank(charlie):
-            contract.register_contract("0xc1", "MoltCourt", "{}")
+            contract.register_contract("0xc1", "InternetCourt", "{}")
 
         # Type index should have all 3
-        by_type = json.loads(contract.get_contracts_by_type("MoltCourt"))
+        by_type = json.loads(contract.get_contracts_by_type("InternetCourt"))
         assert len(by_type) == 3
 
         # Each deployer index should have exactly 1
@@ -703,12 +703,12 @@ class TestSnapshotRevertExtended:
         contract, owner = factory_with_type
 
         with direct_vm.prank(owner):
-            contract.register_contract("0xfirst", "MoltCourt", "{}")
+            contract.register_contract("0xfirst", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 1
 
         snap = direct_vm.snapshot()
         with direct_vm.prank(owner):
-            contract.register_contract("0xsecond", "MoltCourt", "{}")
+            contract.register_contract("0xsecond", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 2
 
         direct_vm.revert(snap)
@@ -763,13 +763,13 @@ class TestGetContractCountView:
         """IDs are never reused — count only goes up."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.register_contract("0xa", "MoltCourt", "{}")
+            contract.register_contract("0xa", "InternetCourt", "{}")
         with direct_vm.prank(owner):
-            contract.register_contract("0xb", "MoltCourt", "{}")
+            contract.register_contract("0xb", "InternetCourt", "{}")
         assert int(contract.get_contract_count()) == 2
         # Even after unregistering the type, count stays
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
+            contract.unregister_type("InternetCourt")
         assert int(contract.get_contract_count()) == 2
 
 
@@ -781,7 +781,7 @@ class TestGetContractCountView:
 class TestIsTypeRegisteredView:
     def test_returns_true_for_registered(self, factory_with_type):
         contract, owner = factory_with_type
-        assert contract.is_type_registered("MoltCourt") == "true"
+        assert contract.is_type_registered("InternetCourt") == "true"
 
     def test_returns_false_for_unregistered(self, deploy_factory):
         contract, owner = deploy_factory
@@ -790,8 +790,8 @@ class TestIsTypeRegisteredView:
     def test_returns_false_after_unregister(self, factory_with_type, direct_vm):
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
-        assert contract.is_type_registered("MoltCourt") == "false"
+            contract.unregister_type("InternetCourt")
+        assert contract.is_type_registered("InternetCourt") == "false"
 
 
 # ============================================================
@@ -804,13 +804,13 @@ class TestRegisterContractAfterUnregister:
         """Contracts registered before type unregister are still queryable."""
         contract, owner = factory_with_type
         with direct_vm.prank(owner):
-            contract.register_contract("0xbefore", "MoltCourt", "{}")
+            contract.register_contract("0xbefore", "InternetCourt", "{}")
 
         with direct_vm.prank(owner):
-            contract.unregister_type("MoltCourt")
+            contract.unregister_type("InternetCourt")
 
         # Existing contracts still queryable by type
-        result = json.loads(contract.get_contracts_by_type("MoltCourt"))
+        result = json.loads(contract.get_contracts_by_type("InternetCourt"))
         assert len(result) == 1
         assert result[0]["address"] == "0xbefore"
 

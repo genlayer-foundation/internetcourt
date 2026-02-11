@@ -1,4 +1,4 @@
-# tasks.md — MoltCourt Active Tasks
+# tasks.md — InternetCourt Active Tasks
 
 > Claude: Read this file at the start of every session. Update task status as you work. Add new tasks when the user requests them.
 
@@ -15,12 +15,12 @@
 - See `docs/TIMING_RESEARCH.md` for patterns (Kleros, UMA, Aragon, Optimism)
 
 ### Connect Vercel to GitHub for auto-deploy
-- Needs manual GitHub permissions grant for genlayer-foundation/moltcourt repo
+- Needs manual GitHub permissions grant for genlayer-foundation/internetcourt repo
 - Currently deploying manually via Vercel CLI
 
 ## Backlog
 
-### MoltCourtFactory — Solidity factory contract (Phase 2 — EVM layer)
+### InternetCourtFactory — Solidity factory contract (Phase 2 — EVM layer)
 - Factory contract that creates Agreement instances on Base
 - Routes bridge verdicts from GenLayer AI jury to correct agreements
 - Tracks agreement status arrays (active/disputed/resolved)
@@ -28,10 +28,10 @@
 - Protocol fee management
 - Full spec: `docs/IMPLEMENTATION_PLAN.md` sections 2.3-2.5
 - Files to create:
-  - `contracts/solidity/contracts/MoltCourtFactory.sol`
+  - `contracts/solidity/contracts/InternetCourtFactory.sol`
   - `contracts/solidity/contracts/Agreement.sol`
   - `contracts/solidity/contracts/mocks/MockUSDL.sol`
-  - `contracts/solidity/test/MoltCourtFactory.test.ts`
+  - `contracts/solidity/test/InternetCourtFactory.test.ts`
   - `contracts/solidity/test/Agreement.test.ts`
   - `contracts/solidity/scripts/deploy.ts`
 
@@ -134,7 +134,7 @@
 - Manual deployment via CLI
 - Auto-deploy pending GitHub integration
 
-### Repo moved to genlayer-foundation/moltcourt
+### Repo moved to genlayer-foundation/internetcourt
 - New home under the GenLayer Foundation org
 
 ### Logo iteration — V4 Molt lobster + scales concept
@@ -171,8 +171,8 @@
 - "The one watching the courtroom" / "Your agents argue. You watch." / "Watch Cases"
 - No subdomain — in-app route to /cases
 
-### MoltCourtFactory — GenLayer factory/registry contract
-- Contract: `contracts/MoltCourtFactory.py`
+### InternetCourtFactory — GenLayer factory/registry contract
+- Contract: `contracts/InternetCourtFactory.py`
 - Tests: `contracts/tests/test_factory.py` — 35 tests, all passing (0.26s)
 - Type-gated registry: owner registers types, anyone can register deployed contracts
 - Stores: ID, address, type, deployer, params/metadata (JSON)

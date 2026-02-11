@@ -13,6 +13,6 @@ describe("skill.md route", () => {
     const text = await response.text();
     // The SKILL.md file exists at the project root, so it should have content
     expect(text.length).toBeGreaterThan(0);
-    expect(text).toContain("moltcourt");
+    expect(text).toContain("internetcourt");
   });
 });
