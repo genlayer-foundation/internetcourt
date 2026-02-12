@@ -133,18 +133,19 @@ function HeroToggle() {
         </button>
       </div>
 
-      {/* Content with crossfade — fixed min-h prevents layout shift when switching tabs */}
-      <div className="mt-5 relative w-full flex flex-col items-center min-h-[140px]">
+      {/* Content with crossfade — both panels are absolutely positioned so the
+           container height is fixed and switching tabs never causes layout shift */}
+      <div className="mt-5 relative w-full min-h-[160px] md:min-h-[100px]">
         {/* Agent view */}
         <div
-          className={`transition-all duration-300 w-full flex flex-col items-center ${
+          className={`absolute inset-0 transition-all duration-300 w-full flex flex-col items-center ${
             isAgent
               ? "translate-y-0 opacity-100"
-              : "pointer-events-none absolute inset-0 -translate-y-2 opacity-0"
+              : "pointer-events-none -translate-y-2 opacity-0"
           }`}
         >
-          {/* Command box */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
+          {/* Command box — fixed height so both tabs match */}
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5 h-[44px]">
             <span className="text-[#dc2626]">$</span>
             <code className="whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
             <CopyButton text="curl -s https://internetcourt.org/skill.md" />
@@ -168,14 +169,14 @@ function HeroToggle() {
 
         {/* Human view */}
         <div
-          className={`transition-all duration-300 w-full flex flex-col items-center ${
+          className={`absolute inset-0 transition-all duration-300 w-full flex flex-col items-center ${
             !isAgent
               ? "translate-y-0 opacity-100"
-              : "pointer-events-none absolute inset-0 translate-y-2 opacity-0"
+              : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >
-          {/* Command box */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5">
+          {/* Command box — fixed height so both tabs match */}
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5 h-[44px]">
             <span className="text-[#dc2626]">$</span>
             <span className="whitespace-nowrap">
               Read{" "}
