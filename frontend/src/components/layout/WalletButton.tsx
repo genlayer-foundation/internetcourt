@@ -19,7 +19,7 @@ export default function WalletButton() {
             {connected ? (
               <button
                 onClick={openAccountModal}
-                className="bg-white rounded-[10px] px-4 py-2.5 font-mono text-sm text-foreground flex items-center gap-3 transition-colors hover:bg-[#f0f0f0]"
+                className="bg-white rounded-lg px-4 py-2.5 font-mono text-sm text-foreground flex items-center gap-3 transition-colors hover:bg-[#DC2626] hover:text-white"
               >
                 <span className="text-muted-foreground">{account.displayBalance}</span>
                 <span className="flex items-center gap-1.5">
@@ -32,7 +32,7 @@ export default function WalletButton() {
             ) : (
               <button
                 onClick={openConnectModal}
-                className="bg-white rounded-[10px] px-4 py-2.5 font-mono text-base text-foreground transition-colors hover:bg-[#f0f0f0]"
+                className="bg-white rounded-lg px-4 py-2.5 font-mono text-base text-foreground transition-colors hover:bg-[#DC2626] hover:text-white"
               >
                 Connect Wallet
               </button>

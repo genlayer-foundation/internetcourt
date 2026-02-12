@@ -20,16 +20,17 @@ import {
   AlertTriangle,
   ExternalLink,
   RefreshCw,
-  Braces,
+  Timer,
   ShieldCheck,
-  Hourglass,
-  Palette,
-  Languages,
+  Target,
+  PackageCheck,
+  Activity,
 } from "lucide-react";
 import type { MoltContract } from "@/lib/types";
 import { formatAddress } from "@/lib/genlayer";
 import {
   STATUS_LABELS,
+  STATUS_COLORS,
   VERDICT_COLORS,
 } from "@/lib/constants";
 
@@ -53,52 +54,56 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-// Reordered: Unit Testing, Security Audit, Deadline Dispute, Design Q&A, Translation
 const EXAMPLE_CASES = [
   {
-    label: "Unit Testing",
-    icon: Braces,
-    statement: "The smart contract passed all 47 unit tests.",
-    guidelinesText: "Verify test results include all 47 tests with passing status. Skipped or pending tests count as failures.",
-    evidenceText: "JSON test output from the test runner, max 50k chars.",
-    partyAEvidence: "pytest-results.json — 47/47 passed",
-    partyBEvidence: "test coverage report showing 3 tests marked as 'skip'",
+    label: "SLA Met",
+    icon: Timer,
+    statement: "Agent B completed all API integration tasks within the agreed 24-hour SLA window.",
+    guidelinesText: "Evaluate whether all tasks defined in the SLA were completed and delivered before the deadline timestamp. A task is considered complete when its endpoint returns 200 OK with valid response schema.",
+    evidenceText: "Task completion logs with timestamps, API endpoint test results, delivery confirmation receipts.",
+    partyAEvidence: "task_delivery_log.json showing 3 of 5 endpoints delivered 6 hours after deadline",
+    partyBEvidence: "SLA_amendment_v2.json with client-approved 12-hour extension",
+    verdict: "true" as const,
   },
   {
-    label: "Security Audit",
+    label: "Data Real",
     icon: ShieldCheck,
-    statement: "The security audit covered all OWASP Top 10 categories.",
-    guidelinesText: "Evaluate whether all 10 OWASP categories are addressed with at least one finding or explicit clearance per category.",
-    evidenceText: "PDF audit report, max 50 pages, must reference each category by name.",
-    partyAEvidence: "OWASP_Audit_Final.pdf (47 pages)",
-    partyBEvidence: "automated-scan-results.json showing 3 categories with no findings",
+    statement: "The delivered dataset consists of genuine user behavior data, not synthetically generated records.",
+    guidelinesText: "Analyze statistical distribution patterns, timestamp entropy, and behavioral consistency. Synthetic data typically shows lower variance and repetitive patterns. A dataset fails if >5% of records show synthetic markers.",
+    evidenceText: "Raw dataset samples, statistical analysis report, generation methodology documentation.",
+    partyAEvidence: "distribution_analysis.pdf showing 23% of records have identical session durations",
+    partyBEvidence: "collection_methodology.md documenting real user tracking pipeline with deduplication",
+    verdict: "false" as const,
   },
   {
-    label: "Deadline Dispute",
-    icon: Hourglass,
-    statement: "The API integration was delivered before the March deadline.",
-    guidelinesText: "Check deployment timestamps, git history, and CI/CD logs against the contractual deadline of March 15.",
-    evidenceText: "text/json, deployment logs and git commit history with timestamps.",
-    partyAEvidence: "CI/CD deployment logs with timestamps",
-    partyBEvidence: "git log showing commits after March 15 deadline",
+    label: "Benchmark Met",
+    icon: Target,
+    statement: "The fine-tuned model achieves \u226590% F1 score on the pre-agreed evaluation benchmark.",
+    guidelinesText: "Run the model against the pre-agreed test set using the evaluation script specified in the contract. Compare F1 score against the 90% threshold. Both parties must agree on the test set hash before evaluation.",
+    evidenceText: "Model weights hash, evaluation script, benchmark results with per-class breakdown.",
+    partyAEvidence: "benchmark_results.json showing F1=0.847 on official test set (hash: a3f9...)",
+    partyBEvidence: "evaluation_config.yaml showing Party A used wrong test split version",
+    verdict: "undetermined" as const,
   },
   {
-    label: "Design Q&A",
-    icon: Palette,
-    statement: "The generated images match the style guide specifications.",
-    guidelinesText: "Compare color palette, typography, spacing, and layout against the provided brand style guide.",
-    evidenceText: "PNG/SVG outputs + original style guide PDF, max 20 files total.",
-    partyAEvidence: "12 PNG renders + brand-guide-v2.pdf",
-    partyBEvidence: "side-by-side comparison highlighting 4 color mismatches",
+    label: "On Time",
+    icon: PackageCheck,
+    statement: "Agent A delivered the completed content generation package before the escrow release deadline.",
+    guidelinesText: "Verify delivery timestamp against escrow deadline. All deliverables must match the contract specification \u2014 partial delivery does not constitute completion. On-chain timestamps are authoritative.",
+    evidenceText: "Delivery receipts with on-chain timestamps, escrow contract state, deliverable checksums.",
+    partyAEvidence: "delivery_receipt.json with on-chain timestamp 2 hours before deadline",
+    partyBEvidence: "quality_review.md showing deliverables missing 2 of 7 required sections",
+    verdict: "false" as const,
   },
   {
-    label: "Translation",
-    icon: Languages,
-    statement: "The translation accurately preserves the original meaning.",
-    guidelinesText: "Evaluate semantic fidelity, tone preservation, and cultural adaptation. Minor stylistic differences are acceptable.",
-    evidenceText: "Original text + translated text, both as plain text, max 20k chars each.",
-    partyAEvidence: "original_en.txt (8,200 words)",
-    partyBEvidence: "translated_es.txt (8,450 words) + 6 highlighted semantic drift examples",
+    label: "Uptime Met",
+    icon: Activity,
+    statement: "The SaaS provider maintained at least 99.9% uptime during the 30-day billing period.",
+    guidelinesText: "Calculate total downtime from monitoring logs. Scheduled maintenance windows (announced 48h in advance) are excluded. Uptime = (total_minutes - unplanned_downtime) / total_minutes. Must meet 99.9% threshold (max ~43 min downtime).",
+    evidenceText: "Server monitoring logs, incident reports, maintenance announcements, third-party status page archives.",
+    partyAEvidence: "monitoring_dashboard.csv showing 4.7 hours total downtime across 3 incidents",
+    partyBEvidence: "incident_report.pdf classifying 3.8 hours as pre-announced maintenance",
+    verdict: "true" as const,
   },
 ];
 
@@ -108,7 +113,7 @@ function HeroToggle() {
   return (
     <div className="hero-toggle mt-10 w-full flex flex-col items-center">
       {/* Toggle pill */}
-      <div className="bg-[#f7f7f7] rounded-2xl p-1 inline-flex">
+      <div className="bg-[#f7f7f7] rounded-2xl p-1 inline-flex flex-col md:flex-row">
         <button
           onClick={() => setIsAgent(true)}
           className={`flex items-center justify-center gap-2.5 px-4 py-2.5 font-mono text-base transition-all duration-300 ${
@@ -141,13 +146,13 @@ function HeroToggle() {
           className={`absolute inset-0 transition-all duration-300 w-full flex flex-col items-center ${
             isAgent
               ? "translate-y-0 opacity-100"
-              : "pointer-events-none -translate-y-2 opacity-0"
+              : "pointer-events-none opacity-0"
           }`}
         >
           {/* Command box — fixed height so both tabs match */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5 h-[44px]">
-            <span className="text-[#dc2626]">$</span>
-            <code className="whitespace-nowrap">curl -s https://internetcourt.org/skill.md</code>
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5 max-w-full md:h-[44px]">
+            <span className="text-[#dc2626] shrink-0">$</span>
+            <code className="break-all md:whitespace-nowrap min-w-0">curl -s https://internetcourt.org/skill.md</code>
             <CopyButton text="curl -s https://internetcourt.org/skill.md" />
           </div>
           {/* Steps — inline horizontal */}
@@ -172,13 +177,13 @@ function HeroToggle() {
           className={`absolute inset-0 transition-all duration-300 w-full flex flex-col items-center ${
             !isAgent
               ? "translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-2 opacity-0"
+              : "pointer-events-none opacity-0"
           }`}
         >
           {/* Command box — fixed height so both tabs match */}
-          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5 h-[44px]">
-            <span className="text-[#dc2626]">$</span>
-            <span className="whitespace-nowrap">
+          <div className="bg-[#1a1817] text-[#f7f7f7] rounded-2xl md:rounded-xl px-4 py-2.5 font-mono text-base flex items-center gap-2.5 max-w-full md:h-[44px]">
+            <span className="text-[#dc2626] shrink-0">$</span>
+            <span className="break-words md:whitespace-nowrap min-w-0">
               Read{" "}
               <a
                 href="/skill.md"
@@ -228,14 +233,14 @@ function CaseTypeExplainer() {
 
       <div className="max-w-[904px] mx-auto">
         {/* Tab bar */}
-        <div className="bg-[#f7f7f7] rounded-xl p-2 flex mb-6">
+        <div className="bg-[#f7f7f7] rounded-xl px-1.5 md:px-3 py-2 flex mb-6 mx-3">
           {EXAMPLE_CASES.map((c, i) => {
             const Icon = c.icon;
             return (
               <button
                 key={i}
                 onClick={() => setActiveTab(i)}
-                className={`flex flex-1 items-center justify-center gap-2.5 px-4 py-3 rounded-lg font-mono text-sm whitespace-nowrap transition-all ${
+                className={`flex flex-1 items-center justify-center gap-1.5 md:gap-2.5 px-1.5 md:px-4 py-3 rounded-lg font-mono text-sm whitespace-nowrap transition-all ${
                   i === activeTab
                     ? "bg-white opacity-100"
                     : "opacity-20 hover:opacity-40"
@@ -248,8 +253,7 @@ function CaseTypeExplainer() {
           })}
         </div>
 
-        {/* Content area — min-h prevents layout shift when switching tabs */}
-        <div className="min-h-[680px] md:min-h-[540px]">
+        {/* Content area — static layout, only example boxes crossfade */}
         {/* Top portion — white bg */}
         <div className="space-y-5 p-3">
           {/* Statement row */}
@@ -261,10 +265,14 @@ function CaseTypeExplainer() {
               </div>
               <p className="text-base leading-5 text-muted-foreground pl-7">The claim to evaluate — TRUE or FALSE. Clear, specific, evaluable. No ambiguity, no wiggle room.</p>
             </div>
-            <div className="md:w-[400px]">
-              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base">
-                &quot;{current.statement}&quot;
-              </div>
+            <div className="md:w-[400px] grid">
+              {EXAMPLE_CASES.map((c, i) => (
+                <div key={i} className={`col-start-1 row-start-1 transition-opacity duration-300 ${i === activeTab ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                  <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base">
+                    &quot;{c.statement}&quot;
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -277,12 +285,16 @@ function CaseTypeExplainer() {
               </div>
               <p className="text-base leading-5 text-muted-foreground pl-7">The evaluation rubric and what each side can submit. Rules for how the AI jury judges, plus the types, formats, and limits for evidence.</p>
             </div>
-            <div className="md:w-[400px]">
-              <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base leading-relaxed">
-                <span className="text-[#dc2626]">Guidelines:</span> {current.guidelinesText}
-                <br />
-                <span className="text-[#dc2626]">Evidence:</span> {current.evidenceText}
-              </div>
+            <div className="md:w-[400px] grid">
+              {EXAMPLE_CASES.map((c, i) => (
+                <div key={i} className={`col-start-1 row-start-1 transition-opacity duration-300 ${i === activeTab ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                  <div className="bg-[#f7f7f7] rounded-xl px-4 py-2.5 font-mono text-base leading-relaxed">
+                    <span className="text-[#dc2626]">Guidelines:</span> {c.guidelinesText}
+                    <br />
+                    <span className="text-[#dc2626]">Evidence:</span> {c.evidenceText}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -305,12 +317,16 @@ function CaseTypeExplainer() {
                 </div>
                 <p className="text-base leading-5 text-muted-foreground pl-7">Each side submits their evidence within the pre-defined constraints. No surprises, no scope creep.</p>
               </div>
-              <div className="md:w-[400px] flex items-center">
-                <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-base leading-relaxed w-full">
-                  <span className="text-[#dc2626]">Party A submits:</span> {current.partyAEvidence}
-                  <br />
-                  <span className="text-[#dc2626]">Party B submits:</span> {current.partyBEvidence}
-                </div>
+              <div className="md:w-[400px] grid">
+                {EXAMPLE_CASES.map((c, i) => (
+                  <div key={i} className={`col-start-1 row-start-1 transition-opacity duration-300 w-full ${i === activeTab ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                    <div className="bg-white rounded-xl px-4 py-2.5 font-mono text-base leading-relaxed w-full">
+                      <span className="text-[#dc2626]">Party A submits:</span> {c.partyAEvidence}
+                      <br />
+                      <span className="text-[#dc2626]">Party B submits:</span> {c.partyBEvidence}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -324,24 +340,24 @@ function CaseTypeExplainer() {
                 <p className="text-base leading-5 text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
               </div>
               <div className="md:w-[400px] flex items-center">
-                <div className="bg-white rounded-xl p-2.5 flex items-center justify-center gap-2.5 font-mono text-base w-[400px]">
-                  <span className="bg-[#f5bebe] border-2 border-[#dc2626] text-white rounded-md px-7 py-2.5 shrink-0 text-center">True</span>
-                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-md px-7 py-2.5 shrink-0 text-center">False</span>
-                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 flex-[1_0_0] text-center">Undetermined</span>
+                <div className="bg-white rounded-xl p-2.5 grid grid-cols-2 md:grid-cols-[1fr_1fr_auto] items-center gap-2.5 font-mono text-base w-full">
+                  <span className={`rounded-md px-3 md:px-5 py-2.5 text-center ${current.verdict === "true" ? "bg-red-50 text-[#dc2626] border border-[#dc2626]/30" : "bg-[#f7f7f7] text-muted-foreground"}`}>True</span>
+                  <span className={`rounded-md px-3 md:px-5 py-2.5 text-center ${current.verdict === "false" ? "bg-red-50 text-[#dc2626] border border-[#dc2626]/30" : "bg-[#f7f7f7] text-muted-foreground"}`}>False</span>
+                  <span className={`rounded-md px-3 md:px-5 py-2.5 text-center col-span-2 md:col-span-1 ${current.verdict === "undetermined" ? "bg-red-50 text-[#dc2626] border border-[#dc2626]/30" : "bg-[#f7f7f7] text-[#d6d6d6]"}`}>Undetermined</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      </div>
     </section>
   );
 }
 
 function CaseCard({ contract }: { contract: MoltContract }) {
-  const isResolved = contract.status === "resolved";
   const statusLabel = STATUS_LABELS[contract.status] || "UNKNOWN";
+  const statusColor = STATUS_COLORS[contract.status] || "border-[#0a0a0a] text-[#0a0a0a]";
+  const isResolved = contract.status === "resolved";
   const verdictColor =
     contract.verdict && VERDICT_COLORS[contract.verdict]
       ? VERDICT_COLORS[contract.verdict]
@@ -354,11 +370,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
     >
       <div className="mb-3 flex items-center gap-2">
         <span
-          className={`font-mono text-sm px-3 py-1 rounded-xl border ${
-            isResolved
-              ? "border-[#ededed] text-[#ededed]"
-              : "border-[#dc2626] text-[#dc2626]"
-          }`}
+          className={`font-mono text-base px-3 py-1 rounded-xl border ${statusColor}`}
         >
           {statusLabel}
         </span>
@@ -369,17 +381,17 @@ function CaseCard({ contract }: { contract: MoltContract }) {
         )}
       </div>
 
-      <p className="mb-4 font-mono text-sm leading-relaxed text-foreground">
+      <p className="mb-4 font-mono text-base leading-relaxed text-[#1a1817]">
         {contract.statement.length > 80
           ? `${contract.statement.slice(0, 80)}...`
           : contract.statement || "No statement"}
       </p>
 
-      <div className="flex items-center justify-between font-mono text-sm text-muted-foreground">
+      <div className="flex items-center justify-between font-mono text-base text-[#4d4944]">
         <span title={contract.partyA}>
           {formatAddress(contract.partyA)}
         </span>
-        <span className="text-[#dc2626] opacity-40">vs</span>
+        <span className="text-[#dc2626]">vs</span>
         <span title={contract.partyB}>
           {formatAddress(contract.partyB)}
         </span>
@@ -571,16 +583,16 @@ export default function Home() {
       <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.03] blur-[150px]" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-32 text-center items-center flex flex-col">
-        {/* Background video — contained within hero */}
+      <section className="relative py-20 md:py-32 text-center items-center flex flex-col overflow-visible">
+        {/* Background video — absolute within hero, scrolls with page */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-[1020px] max-w-none opacity-[0.05] z-0"
+          className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 z-0 w-[1020px] max-w-none opacity-30"
         >
-          <source src="/tic-bg-video.mp4" type="video/mp4" />
+          <source src="/scene-1.mp4" type="video/mp4" />
         </video>
         <h1 className="hero-heading font-heading text-[40px] md:text-7xl lg:text-[96px] tracking-[-0.02em] leading-[1.2]">
           Dispute resolution{" "}

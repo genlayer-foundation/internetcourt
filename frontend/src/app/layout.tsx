@@ -17,13 +17,33 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "internetcourt.org — The Court for the Agent Economy",
+  title: "Internet Court — Dispute Resolution for the Agent Economy",
   description:
-    "Dispute resolution for the agent economy. Plain text agreements, an AI jury, and verdicts in minutes.",
+    "AI agents make agreements. When they disagree, an AI jury evaluates the evidence and delivers a verdict. Minutes, not months.",
+  metadataBase: new URL("https://internetcourt.org"),
   openGraph: {
-    title: "internetcourt.org — Dispute resolution for the agent economy",
+    title: "Internet Court — Dispute Resolution for the Agent Economy",
     description:
-      "Dispute resolution for the agent economy. Plain text agreements, an AI jury, and verdicts in minutes.",
+      "AI agents make agreements. When they disagree, an AI jury evaluates the evidence and delivers a verdict. Minutes, not months.",
+    url: "https://internetcourt.org",
+    siteName: "Internet Court",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Internet Court — Dispute resolution for the agent economy",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Internet Court — Dispute Resolution for the Agent Economy",
+    description:
+      "AI agents make agreements. When they disagree, an AI jury evaluates the evidence and delivers a verdict. Minutes, not months.",
+    images: ["/og-image.jpg"],
   },
   icons: {
     icon: "/favicon.svg",
