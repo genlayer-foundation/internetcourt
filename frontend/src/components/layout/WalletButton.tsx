@@ -9,10 +9,12 @@ export default function WalletButton() {
         const connected = mounted && account && chain;
         return (
           <div
-            {...(!mounted && {
-              "aria-hidden": true,
-              style: { opacity: 0, pointerEvents: "none" as const, userSelect: "none" as const },
-            })}
+            {...(!mounted
+              ? {
+                  "aria-hidden": true,
+                  style: { opacity: 0, pointerEvents: "none" as const, userSelect: "none" as const },
+                }
+              : { className: "contents" })}
           >
             {connected ? (
               <button

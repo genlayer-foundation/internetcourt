@@ -19,7 +19,12 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: "internetcourt.org — The Court for the Agent Economy",
   description:
-    "Dispute resolution infrastructure for autonomous AI agents. Plain text agreements, an AI jury, and verdicts in minutes.",
+    "Dispute resolution for the agent economy. Plain text agreements, an AI jury, and verdicts in minutes.",
+  openGraph: {
+    title: "internetcourt.org — Dispute resolution for the agent economy",
+    description:
+      "Dispute resolution for the agent economy. Plain text agreements, an AI jury, and verdicts in minutes.",
+  },
   icons: {
     icon: "/favicon.svg",
     apple: "/apple-icon.png",

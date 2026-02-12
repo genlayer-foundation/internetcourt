@@ -133,8 +133,8 @@ function HeroToggle() {
         </button>
       </div>
 
-      {/* Content with crossfade */}
-      <div className="mt-5 relative w-full flex flex-col items-center">
+      {/* Content with crossfade — fixed min-h prevents layout shift when switching tabs */}
+      <div className="mt-5 relative w-full flex flex-col items-center min-h-[140px]">
         {/* Agent view */}
         <div
           className={`transition-all duration-300 w-full flex flex-col items-center ${
@@ -218,7 +218,7 @@ function CaseTypeExplainer() {
   const current = EXAMPLE_CASES[activeTab];
 
   return (
-    <section className="pb-24">
+    <section className="relative z-10 pb-24">
       {/* Section header */}
       <div className="text-center mb-8">
         <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.72px] md:tracking-[-0.96px] leading-[1.2]">How does a case work?</h2>
@@ -234,21 +234,21 @@ function CaseTypeExplainer() {
               <button
                 key={i}
                 onClick={() => setActiveTab(i)}
-                className={`flex flex-1 items-center justify-center gap-2.5 px-4 py-3 rounded-lg font-mono text-sm transition-all ${
+                className={`flex flex-1 items-center justify-center gap-2.5 px-4 py-3 rounded-lg font-mono text-sm whitespace-nowrap transition-all ${
                   i === activeTab
                     ? "bg-white opacity-100"
                     : "opacity-20 hover:opacity-40"
                 }`}
               >
                 <Icon size={16} />
-                <span className={i === activeTab ? "md:inline" : "hidden md:inline"}>{c.label}</span>
+                <span className={i === activeTab ? "inline" : "hidden md:inline"}>{c.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Content area */}
-        <div>
+        {/* Content area — min-h prevents layout shift when switching tabs */}
+        <div className="min-h-[680px] md:min-h-[540px]">
         {/* Top portion — white bg */}
         <div className="space-y-5 p-3">
           {/* Statement row */}
@@ -288,7 +288,7 @@ function CaseTypeExplainer() {
 
         {/* "If disputed..." divider */}
         <div className="border-2 border-[#dc2626] rounded-3xl overflow-clip md:border-0 md:rounded-none md:overflow-visible">
-          <div className="bg-[#f7f7f7] rounded-t-3xl md:rounded-t-xl px-6 pt-3 flex items-center gap-2.5 w-full md:w-fit">
+          <div className="bg-[#f7f7f7] rounded-t-3xl md:rounded-t-xl px-6 pt-3 flex items-center justify-center md:justify-start gap-2.5 w-full md:w-fit">
             <AlertTriangle size={14} className="text-[#dc2626]" />
             <span className="font-mono text-base text-[#dc2626]">If disputed...</span>
           </div>
@@ -296,7 +296,7 @@ function CaseTypeExplainer() {
           {/* Bottom portion */}
           <div className="bg-[#f7f7f7] rounded-b-3xl md:rounded-b-xl md:rounded-tr-3xl p-3 space-y-5">
             {/* Evidence Submission row */}
-            <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="md:w-[400px] flex flex-col gap-3 p-3">
                 <div className="flex items-center gap-3">
                   <FolderOpen size={16} className="text-[#dc2626]" />
@@ -314,7 +314,7 @@ function CaseTypeExplainer() {
             </div>
 
             {/* Verdict row */}
-            <div className="flex flex-col gap-6 md:flex-row md:justify-between">
+            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="md:w-[400px] flex flex-col gap-3 p-3">
                 <div className="flex items-center gap-3">
                   <Scale size={16} className="text-[#dc2626]" />
@@ -323,10 +323,10 @@ function CaseTypeExplainer() {
                 <p className="text-base leading-5 text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
               </div>
               <div className="md:w-[400px] flex items-center">
-                <div className="bg-white rounded-xl p-2.5 flex gap-2.5 font-mono text-base w-full">
-                  <span className="bg-[#f5bebe] text-white border-2 border-[#dc2626] rounded-md px-7 py-2.5 flex-1 md:flex-none text-center">True</span>
-                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-md px-7 py-2.5">False</span>
-                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 md:flex-1 text-center">Undetermined</span>
+                <div className="bg-white rounded-xl p-2.5 flex items-center justify-center gap-2.5 font-mono text-base w-[400px]">
+                  <span className="bg-[#f5bebe] border-2 border-[#dc2626] text-white rounded-md px-7 py-2.5 shrink-0 text-center">True</span>
+                  <span className="bg-[#f7f7f7] text-[#dc2626] rounded-md px-7 py-2.5 shrink-0 text-center">False</span>
+                  <span className="bg-[#f7f7f7] text-[#d6d6d6] rounded-md px-7 py-2.5 flex-[1_0_0] text-center">Undetermined</span>
                 </div>
               </div>
             </div>
@@ -431,12 +431,12 @@ function LatestCases() {
   }, [fetchCases]);
 
   return (
-    <section className="relative pb-24">
+    <section className="relative z-10 pb-24">
       {/* Header */}
       <div className="latest-cases-header text-center mb-8">
         <h2 className="font-heading text-4xl md:text-5xl tracking-[-0.72px] md:tracking-[-0.96px] leading-[1.2]">Recent Cases</h2>
         <p className="mt-5 text-xl leading-normal text-muted-foreground">
-          Real live time disputes on the network
+          Live disputes on the network
         </p>
         {!loading && error && (
           <button
@@ -569,21 +569,20 @@ export default function Home() {
       {/* Subtle background orb */}
       <div className="bg-orb pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[var(--accent-red)] opacity-[0.03] blur-[150px]" />
 
-      {/* Background video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-[1020px] max-w-none opacity-[0.05]"
-      >
-        <source src="/tic-bg-video.mp4" type="video/mp4" />
-      </video>
-
       {/* Hero */}
-      <section className="relative py-20 md:py-32 text-center items-center flex flex-col">
+      <section className="relative overflow-hidden py-20 md:py-32 text-center items-center flex flex-col">
+        {/* Background video — contained within hero */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-[1020px] max-w-none opacity-[0.05] z-0"
+        >
+          <source src="/tic-bg-video.mp4" type="video/mp4" />
+        </video>
         <h1 className="hero-heading font-heading text-[40px] md:text-7xl lg:text-[96px] tracking-[-0.02em] leading-[1.2]">
-          Dispute resolution
+          Dispute resolution{" "}
           <br />
           for the agent economy
         </h1>
