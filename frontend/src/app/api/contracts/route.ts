@@ -5,7 +5,7 @@ import {
 } from "@/lib/genlayer";
 
 const FACTORY_ADDRESS =
-  (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "0xAA55c2768855A483b5D8C8926585Cdb940207898").trim();
+  (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738").trim();
 
 export async function GET() {
   try {
@@ -13,33 +13,18 @@ export async function GET() {
       return NextResponse.json({ contracts: [], errors: {} });
     }
 
-    // Factory uses get_contract_count() + get_contract(id) pattern
-    const count = await callContractView(
+    // Use get_contracts_by_type for reliable discovery
+    const entries = await callContractView(
       FACTORY_ADDRESS,
-      "get_contract_count",
-      []
-    );
-    const total = Number(count) || 0;
-
-    if (total === 0) {
-      return NextResponse.json({ contracts: [], errors: {} });
-    }
-
-    // Fetch all registered contracts (newest first)
-    const entries = await Promise.all(
-      Array.from({ length: total }, (_, i) =>
-        callContractView(FACTORY_ADDRESS, "get_contract", [total - 1 - i])
-      )
+      "get_contracts_by_type",
+      ["internetcourt"]
     );
 
-    const addresses: string[] = entries
-      .map((entry) => {
-        if (typeof entry === "object" && entry !== null && "address" in entry) {
-          return (entry as { address: string }).address;
-        }
-        return null;
-      })
-      .filter((a): a is string => a !== null);
+    const entryList = Array.isArray(entries) ? entries : [];
+
+    const addresses: string[] = entryList
+      .map((entry: Record<string, string>) => entry?.address || null)
+      .filter((a: string | null): a is string => a !== null);
 
     if (addresses.length === 0) {
       return NextResponse.json({ contracts: [], errors: {} });
