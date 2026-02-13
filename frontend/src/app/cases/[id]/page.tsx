@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS } from "@/lib/constants";
@@ -17,42 +16,44 @@ const STATUS_ORDER: ContractStatus[] = [
   "resolved",
 ];
 
-function StatusTimeline({ current }: { current: ContractStatus }) {
+function ProgressBar({ current }: { current: ContractStatus }) {
   const currentIdx = STATUS_ORDER.indexOf(current);
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto py-2">
-      {STATUS_ORDER.map((s, i) => {
-        const isActive = i <= currentIdx;
-        const isCurrent = s === current;
-        return (
-          <div key={s} className="flex items-center gap-1">
-            <div
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                isCurrent
-                  ? STATUS_COLORS[s] || ""
-                  : isActive
-                    ? "bg-muted text-foreground"
-                    : "bg-muted/50 text-muted-foreground"
-              }`}
-            >
-              {STATUS_LABELS[s] || s.toUpperCase()}
-            </div>
-            {i < STATUS_ORDER.length - 1 && (
-              <div
-                className={`h-px w-4 ${
-                  isActive ? "bg-foreground/30" : "bg-muted"
-                }`}
-              />
-            )}
-          </div>
-        );
-      })}
+    <div className="mb-10">
+      {/* Bar */}
+      <div className="mb-1.5 flex overflow-hidden rounded-lg h-1.5 bg-card">
+        {STATUS_ORDER.map((s, i) => (
+          <div
+            key={s}
+            className={`flex-1 ${
+              i < currentIdx
+                ? "bg-foreground"
+                : i === currentIdx
+                  ? "bg-[#dc2626]"
+                  : ""
+            }`}
+          />
+        ))}
+      </div>
+      {/* Labels */}
+      <div className="flex">
+        {STATUS_ORDER.map((s, i) => (
+          <span
+            key={s}
+            className={`flex-1 text-center text-[10px] font-semibold tracking-wide ${
+              i === currentIdx ? "text-[#dc2626]" : "text-muted-foreground"
+            }`}
+          >
+            {STATUS_LABELS[s] || s.toUpperCase()}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-function CopyableAddress({ address, label }: { address: string; label: string }) {
+function CopyableAddress({ address }: { address: string }) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -62,22 +63,56 @@ function CopyableAddress({ address, label }: { address: string; label: string })
   }
 
   return (
-    <div>
-      <p className="mb-1 text-xs font-semibold uppercase text-muted-foreground">
-        {label}
-      </p>
-      <div className="flex items-center gap-2">
-        <p className="font-mono text-sm break-all">{address || "—"}</p>
-        {address && (
-          <button
-            onClick={handleCopy}
-            className="shrink-0 text-muted-foreground hover:text-foreground"
-            title="Copy address"
-          >
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-          </button>
-        )}
-      </div>
+    <div className="flex items-center gap-1.5">
+      <span className="font-mono text-[11px] text-muted-foreground break-all">
+        {address || "—"}
+      </span>
+      {address && (
+        <button
+          onClick={handleCopy}
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+          title="Copy address"
+        >
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function formatEvidence(raw: string): string {
+  if (!raw) return "";
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2);
+  } catch {
+    return raw;
+  }
+}
+
+function EvidenceDefsSummary({ defs }: { defs: MoltContract["evidenceDefs"] }) {
+  if (!defs?.party_a && !defs?.party_b) return null;
+
+  const formatDef = (def: typeof defs.party_a) => {
+    if (!def) return "—";
+    const parts: string[] = [];
+    if (def.allowed_types) parts.push(def.allowed_types.join(", "));
+    if (def.max_chars) parts.push(`max ${def.max_chars.toLocaleString()} chars`);
+    if (def.constraints) parts.push(def.constraints);
+    return parts.join(" · ") || "—";
+  };
+
+  return (
+    <div className="mb-8 flex justify-center gap-8 rounded-lg bg-card px-5 py-3.5 text-xs text-muted-foreground">
+      {defs.party_a && (
+        <span>
+          <strong className="text-foreground">Party A:</strong> {formatDef(defs.party_a)}
+        </span>
+      )}
+      {defs.party_b && (
+        <span>
+          <strong className="text-foreground">Party B:</strong> {formatDef(defs.party_b)}
+        </span>
+      )}
     </div>
   );
 }
@@ -122,7 +157,7 @@ export default function CaseDetailPage({
 
   if (error || !contract) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-10">
+      <div className="mx-auto max-w-[1000px] px-6 py-10">
         <Link href="/cases">
           <Button variant="ghost" size="sm" className="mb-4 gap-1">
             <ArrowLeft size={14} /> Back to cases
@@ -140,240 +175,147 @@ export default function CaseDetailPage({
     );
   }
 
-  const evidenceDefs = contract.evidenceDefs || {};
+  const hasEvidence = contract.evidenceA || contract.evidenceB;
+  const hasProposals = contract.proposedOutcomeA || contract.proposedOutcomeB;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-[1000px] px-6 py-8 pb-20">
+      {/* Back */}
       <Link href="/cases">
-        <Button variant="ghost" size="sm" className="mb-4 gap-1">
+        <Button variant="ghost" size="sm" className="mb-8 gap-1 text-muted-foreground hover:text-foreground">
           <ArrowLeft size={14} /> Back to cases
         </Button>
       </Link>
 
-      <div className="mb-6 flex items-center gap-3">
+      {/* Top bar: status + address */}
+      <div className="mb-6 flex items-center justify-between">
         <Badge
           variant="outline"
-          className={`text-xs ${STATUS_COLORS[contract.status] || ""}`}
+          className={`text-[11px] font-bold tracking-wide px-3.5 py-1 rounded-md ${STATUS_COLORS[contract.status] || ""}`}
         >
           {STATUS_LABELS[contract.status] || contract.status.toUpperCase()}
         </Badge>
-        {contract.status === "created" && (
-          <span className="text-xs text-blue-600">
-            Awaiting Party B acceptance
-          </span>
-        )}
+        <CopyableAddress address={contract.address} />
       </div>
 
-      <StatusTimeline current={contract.status} />
+      {/* Progress bar */}
+      <ProgressBar current={contract.status} />
 
-      {/* Contract Address */}
-      <Card className="mt-6">
-        <CardContent className="p-4">
-          <CopyableAddress address={contract.address} label="Contract Address" />
-        </CardContent>
-      </Card>
-
-      {/* Statement */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-base">Statement</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm">{contract.statement}</p>
-        </CardContent>
-      </Card>
-
-      {/* Guidelines */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-base">Guidelines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {contract.guidelines}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Parties */}
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Party A — Creator</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CopyableAddress address={contract.partyA} label="Address" />
-            {contract.proposedOutcomeA && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Proposed outcome:{" "}
-                <span className="font-semibold text-foreground">
-                  {contract.proposedOutcomeA}
-                </span>
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Party B — Counterparty</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CopyableAddress address={contract.partyB} label="Address" />
-            {contract.proposedOutcomeB && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Proposed outcome:{" "}
-                <span className="font-semibold text-foreground">
-                  {contract.proposedOutcomeB}
-                </span>
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      {/* Statement — centered, serif, italic */}
+      <div className="mb-8 text-center px-10">
+        <h1 className="font-serif text-[28px] sm:text-[32px] font-normal leading-[1.45] tracking-[-0.3px] italic">
+          &ldquo;{contract.statement}&rdquo;
+        </h1>
+        <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+          {contract.guidelines}
+        </p>
       </div>
 
-      {/* Evidence Definitions */}
-      {(evidenceDefs.party_a || evidenceDefs.party_b) && (
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle className="text-base">Evidence Definitions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              {evidenceDefs.party_a && (
-                <div>
-                  <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
-                    Party A
-                  </h4>
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    {evidenceDefs.party_a.allowed_types && (
-                      <p>
-                        Types:{" "}
-                        {evidenceDefs.party_a.allowed_types.join(", ")}
-                      </p>
-                    )}
-                    {evidenceDefs.party_a.max_chars && (
-                      <p>
-                        Max chars:{" "}
-                        {evidenceDefs.party_a.max_chars.toLocaleString()}
-                      </p>
-                    )}
-                    {evidenceDefs.party_a.constraints && (
-                      <p>Constraints: {evidenceDefs.party_a.constraints}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {evidenceDefs.party_b && (
-                <div>
-                  <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
-                    Party B
-                  </h4>
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    {evidenceDefs.party_b.allowed_types && (
-                      <p>
-                        Types:{" "}
-                        {evidenceDefs.party_b.allowed_types.join(", ")}
-                      </p>
-                    )}
-                    {evidenceDefs.party_b.max_chars && (
-                      <p>
-                        Max chars:{" "}
-                        {evidenceDefs.party_b.max_chars.toLocaleString()}
-                      </p>
-                    )}
-                    {evidenceDefs.party_b.constraints && (
-                      <p>Constraints: {evidenceDefs.party_b.constraints}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Evidence definitions bar */}
+      <EvidenceDefsSummary defs={contract.evidenceDefs} />
 
-      {/* Evidence */}
-      {(contract.evidenceA || contract.evidenceB) && (
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {contract.evidenceA && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Party A&apos;s Evidence
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                  {contract.evidenceA}
-                </p>
-              </CardContent>
-            </Card>
+      {/* Split adversarial: Party A | VS | Party B */}
+      <div className="mb-10 grid grid-cols-[1fr_48px_1fr]">
+        {/* Party A */}
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+            <span className="text-xs font-bold tracking-wide">Party A — Creator</span>
+          </div>
+          <div className="mb-3">
+            <CopyableAddress address={contract.partyA} />
+          </div>
+          {contract.proposedOutcomeA && (
+            <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
+              contract.proposedOutcomeA === "TRUE"
+                ? "bg-emerald-100 text-emerald-800"
+                : contract.proposedOutcomeA === "FALSE"
+                  ? "bg-red-100 text-red-800"
+                  : "bg-amber-100 text-amber-800"
+            }`}>
+              Proposes {contract.proposedOutcomeA}
+            </span>
           )}
-          {contract.evidenceB && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Party B&apos;s Evidence
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                  {contract.evidenceB}
-                </p>
-              </CardContent>
-            </Card>
+          {contract.evidenceA && (
+            <div className="mt-3 rounded-[10px] border-l-[3px] border-blue-600 bg-card p-5">
+              <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Evidence
+              </div>
+              <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
+                {formatEvidence(contract.evidenceA)}
+              </pre>
+            </div>
           )}
         </div>
-      )}
 
-      {/* Proposed Outcomes (when active, before dispute) */}
-      {contract.status === "active" &&
-        (contract.proposedOutcomeA || contract.proposedOutcomeB) && (
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-base">Proposed Outcomes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <p className="text-xs text-muted-foreground">Party A</p>
-                  <p className="font-mono text-sm font-bold">
-                    {contract.proposedOutcomeA || "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Party B</p>
-                  <p className="font-mono text-sm font-bold">
-                    {contract.proposedOutcomeB || "—"}
-                  </p>
-                </div>
+        {/* VS Divider */}
+        <div className="flex flex-col items-center pt-3">
+          <div className="w-px flex-1 bg-border" />
+          <div className="my-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-[9px] font-bold tracking-widest text-white">
+            VS
+          </div>
+          <div className="w-px flex-1 bg-border" />
+        </div>
+
+        {/* Party B */}
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full bg-pink-600" />
+            <span className="text-xs font-bold tracking-wide">Party B — Counterparty</span>
+          </div>
+          <div className="mb-3">
+            <CopyableAddress address={contract.partyB} />
+          </div>
+          {contract.proposedOutcomeB && (
+            <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
+              contract.proposedOutcomeB === "TRUE"
+                ? "bg-emerald-100 text-emerald-800"
+                : contract.proposedOutcomeB === "FALSE"
+                  ? "bg-red-100 text-red-800"
+                  : "bg-amber-100 text-amber-800"
+            }`}>
+              Proposes {contract.proposedOutcomeB}
+            </span>
+          )}
+          {contract.evidenceB && (
+            <div className="mt-3 rounded-[10px] border-l-[3px] border-pink-600 bg-card p-5">
+              <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Evidence
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
+                {formatEvidence(contract.evidenceB)}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Verdict */}
-      {contract.verdict && (
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle className="text-base">Verdict</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-3">
-              <Badge
-                variant="outline"
-                className={`font-mono text-sm font-bold ${VERDICT_COLORS[contract.verdict] || ""}`}
-              >
-                {contract.verdict}
-              </Badge>
+      {contract.verdict ? (
+        <div className="rounded-xl bg-card p-8 text-center">
+          <div className="mb-3 text-[10px] font-bold uppercase tracking-[1.5px] text-muted-foreground">
+            Verdict
+          </div>
+          <div className={`mb-4 font-mono text-3xl font-bold ${VERDICT_COLORS[contract.verdict] || ""}`}>
+            {contract.verdict}
+          </div>
+          {contract.reasoning && (
+            <p className="mx-auto max-w-lg text-sm leading-relaxed text-muted-foreground">
+              {contract.reasoning}
+            </p>
+          )}
+        </div>
+      ) : (
+        contract.status !== "created" && contract.status !== "active" && (
+          <div className="rounded-xl border-2 border-dashed border-border p-10 text-center">
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-[1.5px] text-muted-foreground">
+              Verdict
             </div>
-            {contract.reasoning && (
-              <p className="text-sm text-muted-foreground">
-                {contract.reasoning}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+            <p className="text-sm text-muted-foreground">
+              Awaiting AI jury resolution
+            </p>
+          </div>
+        )
       )}
     </div>
   );
