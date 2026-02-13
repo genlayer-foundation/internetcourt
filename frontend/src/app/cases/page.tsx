@@ -271,27 +271,28 @@ export default function CasesPage() {
         </p>
       )}
 
-      {/* Pending Acceptance Banner */}
-      {!loading && hasPending && (
-        <div className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-600">
-            <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-            Pending Acceptance ({pending.length})
-          </h2>
-          <div className="space-y-3">
-            {pending.map((c) => (
-              <ContractCard key={c.address} contract={c} highlight />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Main list */}
+      {/* Case list */}
       {!loading && filtered.length > 0 && (
-        <div className="space-y-3">
-          {(hasPending ? filtered.filter((c) => c.status !== "created") : filtered).map((c) => (
-            <ContractCard key={c.address} contract={c} />
-          ))}
+        <div className="space-y-6">
+          {hasPending && (
+            <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-600">
+              <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+              Pending Acceptance ({pending.length})
+            </h2>
+          )}
+          {[...filtered]
+            .sort((a, b) => {
+              if (a.status === "created" && b.status !== "created") return -1;
+              if (a.status !== "created" && b.status === "created") return 1;
+              return 0;
+            })
+            .map((c) => (
+              <ContractCard
+                key={c.address}
+                contract={c}
+                highlight={hasPending && c.status === "created"}
+              />
+            ))}
         </div>
       )}
 
