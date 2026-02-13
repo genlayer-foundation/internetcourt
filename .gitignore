@@ -48,3 +48,7 @@ contracts/solidity/typechain-types/
 
 # Vercel
 .vercel
+
+# Build artifacts
+*-report.json
+tmp/

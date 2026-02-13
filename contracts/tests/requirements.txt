@@ -1,2 +1,0 @@
-genlayer-test>=0.12.0
-pytest>=8.0.0
