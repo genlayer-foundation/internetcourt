@@ -14,9 +14,13 @@
 - Add minimum dispute period enforcement from timing research
 - See `docs/TIMING_RESEARCH.md` for patterns (Kleros, UMA, Aragon, Optimism)
 
-### Connect Vercel to GitHub for auto-deploy
-- Needs manual GitHub permissions grant for genlayer-foundation/internetcourt repo
-- Currently deploying manually via Vercel CLI
+### Fix skill.md — rewrite from CLI-first to SDK-first
+- CLI v0.4.0 doesn't have deploy/write/call commands
+- Needs full rewrite to use genlayer-js SDK as primary method
+
+### Bridge implementation research complete
+- `docs/ARGUE_BRIDGE_RESEARCH.md` + `docs/BRIDGE_IMPLEMENTATION_GUIDE.md` created
+- Next step: begin implementation
 
 ## Backlog
 
@@ -42,6 +46,7 @@
 ### Set up Vercel environment variables via dashboard
 - NEXT_PUBLIC_COURT_FACTORY_ADDRESS
 - NEXT_PUBLIC_GENLAYER_RPC
+- Currently bypassed — factory address hardcoded in source. NEXT_PUBLIC_COURT_FACTORY_ADDRESS still points to old factory in Vercel dashboard.
 
 ## Done
 
@@ -100,14 +105,31 @@
 - `# v0.1.0` and `# { "Depends": "py-genlayer:latest" }` headers
 - Fixes `absent_runner_comment` error on studionet
 
-### 194 unit tests — full method coverage
-- 14 new tests added for complete coverage
-- All 194 tests passing
+### 282+ total tests — full method coverage
+- 194 original unit tests + 90 direct tests in `contracts/tests/direct/`
+- All tests passing
 
 ### Studionet deployment — factory + full lifecycle
-- Factory deployed: `0xAA55c2768855A483b5D8C8926585Cdb940207898`
+- Factory deployed: `0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738` (old: `0xAA55c2768855A483b5D8C8926585Cdb940207898`)
 - Full lifecycle tested — unanimous AI jury verdict (TRUE) in ~2 minutes with 5 LLMs
 - Integration test scripts: deploy-and-test.mjs, test-prime-dispute.mjs
+
+### Research argue.fun bridge implementation
+- Deep dive into https://github.com/arguedotfun/arguedotfun/tree/main/bridge
+- Document architecture, contracts, message flow for Internet Court adaptation
+- Full research doc: `docs/ARGUE_BRIDGE_RESEARCH.md` (1,630 lines)
+
+### Direct test suite added — 90 additional tests
+- Tests in `contracts/tests/direct/`
+
+### Integration test scripts
+- `create-production-case.mjs`, `create-4th-case.mjs`
+
+### Factory address updated
+- New factory `0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738` (old had no types registered)
+
+### Connect Vercel to GitHub for auto-deploy
+- GitHub Actions auto-deploy set up (commit 851b63c)
 
 ### skill.md — complete rewrite
 - CLI-first approach with genlayer CLI as primary method
@@ -132,7 +154,7 @@
 
 ### Vercel deployment working
 - Manual deployment via CLI
-- Auto-deploy pending GitHub integration
+- Auto-deploy via GitHub Actions (see "Connect Vercel to GitHub" entry)
 
 ### Repo moved to genlayer-foundation/internetcourt
 - New home under the GenLayer Foundation org

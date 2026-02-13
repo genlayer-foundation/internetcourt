@@ -38,15 +38,14 @@ def test_dispute_and_resolve(active_contract, direct_vm):
 
     with direct_vm.prank(alice):
         contract.submit_evidence("The audit only covers code quality, missing security and performance.")
-    with direct_vm.prank(bob):
-        contract.submit_evidence("The audit covers all three areas as specified.")
 
-    # Mock AI jury response
+    # Mock AI jury response before second submission — auto-resolve triggers
     direct_vm.mock_llm(
         r".*impartial AI juror.*",
         '{"verdict": "FALSE", "reasoning": "The evidence shows the audit was incomplete."}'
     )
 
-    contract.resolve()
+    with direct_vm.prank(bob):
+        contract.submit_evidence("The audit covers all three areas as specified.")
     assert contract.status == "resolved"
     assert contract.verdict == "FALSE"
