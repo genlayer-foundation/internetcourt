@@ -14,7 +14,7 @@ import {
   removeTrackedAddress,
 } from "@/lib/contract-store";
 import type { MoltContract, ContractStatus } from "@/lib/types";
-import { Plus, Trash2, RefreshCw, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Loader2, AlertCircle, Copy, Check } from "lucide-react";
 
 const STATUSES: Array<ContractStatus | "ALL"> = [
   "ALL",
@@ -25,6 +25,8 @@ const STATUSES: Array<ContractStatus | "ALL"> = [
   "resolved",
 ];
 
+const FACTORY_ADDRESS = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+
 export default function CasesPage() {
   const [filter, setFilter] = useState<ContractStatus | "ALL">("ALL");
   const [contracts, setContracts] = useState<MoltContract[]>([]);
@@ -33,6 +35,7 @@ export default function CasesPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newAddress, setNewAddress] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const fetchContracts = useCallback(async (addrs: string[]) => {
     setLoading(true);
@@ -301,6 +304,22 @@ export default function CasesPage() {
           No cases matching &quot;{STATUS_LABELS[filter] || filter}&quot;.
         </p>
       )}
+
+      {/* Factory contract address */}
+      <div className="mt-12 border-t border-border/40 pt-4 text-center">
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(FACTORY_ADDRESS);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }}
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          title={FACTORY_ADDRESS}
+        >
+          <span>Factory: <span className="font-mono">{formatAddress(FACTORY_ADDRESS)}</span></span>
+          {copied ? <Check size={11} /> : <Copy size={11} />}
+        </button>
+      </div>
     </div>
   );
 }
