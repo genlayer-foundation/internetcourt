@@ -1,0 +1,17 @@
+# Hardhat artifacts
+node_modules/
+artifacts/
+cache/
+typechain-types/
+
+# Coverage
+coverage/
+coverage.json
+
+# Environment
+.env
+.env.local
+
+# Build
+dist/
+out/

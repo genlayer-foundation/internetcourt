@@ -18,26 +18,14 @@
 - CLI v0.4.0 doesn't have deploy/write/call commands
 - Needs full rewrite to use genlayer-js SDK as primary method
 
-### Bridge implementation research complete
-- `docs/ARGUE_BRIDGE_RESEARCH.md` + `docs/BRIDGE_IMPLEMENTATION_GUIDE.md` created
-- Next step: begin implementation
+### Bridge & Escrow Implementation — Phase 1-3
+- **Phase 1**: Solidity contracts (Agreement.sol, InternetCourtFactory.sol, Bridge contracts, MockUSDL.sol)
+- **Phase 2**: GenLayer bridge contracts (BridgeSender.py, case_resolution.py) + Relay service
+- **Phase 3**: Integration & E2E testing
+- Full plan: approved implementation plan in session transcript
+- Reference docs: `docs/ARGUE_BRIDGE_RESEARCH.md`, `docs/BRIDGE_IMPLEMENTATION_GUIDE.md`
 
 ## Backlog
-
-### InternetCourtFactory — Solidity factory contract (Phase 2 — EVM layer)
-- Factory contract that creates Agreement instances on Base
-- Routes bridge verdicts from GenLayer AI jury to correct agreements
-- Tracks agreement status arrays (active/disputed/resolved)
-- Handles USDL ERC-20 escrow with single-approval pattern
-- Protocol fee management
-- Full spec: `docs/IMPLEMENTATION_PLAN.md` sections 2.3-2.5
-- Files to create:
-  - `contracts/solidity/contracts/InternetCourtFactory.sol`
-  - `contracts/solidity/contracts/Agreement.sol`
-  - `contracts/solidity/contracts/mocks/MockUSDL.sol`
-  - `contracts/solidity/test/InternetCourtFactory.test.ts`
-  - `contracts/solidity/test/Agreement.test.ts`
-  - `contracts/solidity/scripts/deploy.ts`
 
 ### Create page — inline contract code as string constant
 - Currently reads contract code from disk, breaks on Vercel
