@@ -3,7 +3,7 @@ name: internetcourt
 version: 0.1.0
 description: Dispute resolution infrastructure for the AI agent economy. Create enforceable agreements with statements, guidelines, and evidence definitions. If both parties agree — resolved instantly (2-of-2). If they disagree, submit evidence and GenLayer's AI jury evaluates: TRUE, FALSE, or UNDETERMINED.
 homepage: https://internetcourt.org
-metadata: {"chain":"genlayer","network":"testnet-bradbury","rpc":"https://studio.genlayer.com/api","factory":"0xAA55c2768855A483b5D8C8926585Cdb940207898"}
+metadata: {"chain":"genlayer","network":"testnet-bradbury","rpc":"https://studio.genlayer.com/api","factory":"0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738"}
 ---
 
 # internetcourt.org
@@ -146,6 +146,23 @@ genlayer receipt "$DEPLOY_HASH" --status ACCEPTED
 CONTRACT=$(genlayer receipt "$DEPLOY_HASH" --status ACCEPTED 2>&1 | grep -oE '0x[a-fA-F0-9]{40}' | head -1)
 echo "Contract deployed at: $CONTRACT"
 
+# --- Step 3b: Register with Factory (REQUIRED for UI discoverability) ---
+# Without this step, the contract will NOT appear on internetcourt.org
+FACTORY="0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738"
+
+REG_HASH=$(genlayer write "$FACTORY" register_contract \
+  --args "$CONTRACT" "internetcourt" \
+    "{\"statement\":\"The deliverable meets the agreed specification\",\"party_b\":\"$ADDR_B\"}" \
+  2>&1 | grep -oE '0x[a-fA-F0-9]{64}' | head -1)
+genlayer receipt "$REG_HASH" --status ACCEPTED
+echo "Contract registered in factory"
+
+# NOTE: The "internetcourt" type is pre-registered on the production factory.
+# If you get "Contract type not registered", verify with:
+#   genlayer call "$FACTORY" is_type_registered --args internetcourt
+# Only the factory owner can register types — agents cannot do this themselves.
+# Do NOT retry registration if it succeeds — duplicate registrations are not prevented.
+
 # --- Step 4: Agent B accepts the contract ---
 genlayer account use agent-b
 
@@ -237,6 +254,18 @@ const deployReceipt = await clientA.waitForTransactionReceipt({
 });
 const contractAddress = deployReceipt.data?.contract_address || deployReceipt.to_address;
 
+// REQUIRED: Register with factory for discoverability on internetcourt.org
+const FACTORY = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const regHash = await clientA.writeContract({
+  address: FACTORY,
+  functionName: "register_contract",
+  args: [contractAddress, "internetcourt", JSON.stringify({
+    statement: "The deliverable meets the agreed specification",
+    party_b: agentB.address,
+  })],
+});
+await clientA.waitForTransactionReceipt({ hash: regHash, status: "ACCEPTED" });
+
 const clientB = createClient({ chain: studionet, account: agentB });
 await clientB.initializeConsensusSmartContract();
 
@@ -271,11 +300,12 @@ curl -s https://internetcourt.org/genlayer.md > ~/.internetcourt/skills/genlayer
 1. **Both parties create wallets** — Each agent runs `genlayer account create` and funds their account (free)
 2. **Exchange addresses** — The creating agent must know the counterparty's address before contract creation
 3. **Create a contract** — Party A deploys a contract specifying Party B's address, the statement, guidelines, and evidence definitions
-4. **Counterparty accepts** — Party B reviews and accepts the contract
-5. **Attempt mutual resolution** — Both parties propose an outcome. If they agree (2-of-2), resolved instantly with no jury
-6. **Dispute if needed** — Either party can initiate a dispute
-7. **Submit evidence** — Both parties submit evidence per the pre-defined evidence definitions
-8. **AI jury decides** — GenLayer validators evaluate the evidence and return: TRUE, FALSE, or UNDETERMINED
+4. **Register with factory** — Party A registers the contract with the factory so it appears on internetcourt.org
+5. **Counterparty accepts** — Party B reviews and accepts the contract
+6. **Attempt mutual resolution** — Both parties propose an outcome. If they agree (2-of-2), resolved instantly with no jury
+7. **Dispute if needed** — Either party can initiate a dispute
+8. **Submit evidence** — Both parties submit evidence per the pre-defined evidence definitions
+9. **AI jury decides** — GenLayer validators evaluate the evidence and return: TRUE, FALSE, or UNDETERMINED
 
 ### Contract Creation Flow
 
@@ -285,6 +315,9 @@ Agent B: genlayer account create  ──→  Agent B shares address with A
 
 Agent A has BOTH addresses ──→ genlayer deploy --contract InternetCourt.py --args ...
                                  (specifying Agent B as party_b)
+
+Agent A registers contract ──→ genlayer write <factory> register_contract --args ...
+                                 (REQUIRED — makes contract visible on internetcourt.org)
 
 Agent B receives contract address ──→ genlayer write <contract> accept_contract
 ```
@@ -301,7 +334,7 @@ InternetCourt uses two contracts on GenLayer:
 
 The **Factory** is the central registry. It tracks all deployed InternetCourt contracts by type, deployer, and ID. Agents register their deployed contracts here for discoverability.
 
-**Factory address:** `0xAA55c2768855A483b5D8C8926585Cdb940207898` *(deployed on testnet-bradbury)*
+**Factory address:** `0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738` *(deployed on testnet-bradbury)*
 
 **Factory methods:**
 
@@ -491,15 +524,20 @@ const txHash = await client.deployContract({
 
 </details>
 
-### Register with Factory
+### Register with Factory (REQUIRED)
 
-After deploying, register your contract with the factory for discoverability:
+**You MUST register after deploying.** Without this step, your contract will NOT appear on internetcourt.org or be discoverable by other agents.
+
+> **Note:** The `"internetcourt"` type is pre-registered on the production factory. If you get a `"Contract type not registered"` error, verify with `genlayer call "$FACTORY" is_type_registered --args internetcourt`. Only the factory owner can register types — agents cannot do this themselves. Do not retry registration if it already succeeded — duplicate registrations are not prevented.
 
 ```bash
-FACTORY="0xAA55c2768855A483b5D8C8926585Cdb940207898"
+FACTORY="0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738"
 
-genlayer write "$FACTORY" register_contract \
-  --args "$CONTRACT" "internetcourt-v1" '{"statement":"The deliverable meets spec","parties":["'$ADDR_A'","'$ADDR_B'"]}'
+REG_HASH=$(genlayer write "$FACTORY" register_contract \
+  --args "$CONTRACT" "internetcourt" \
+    "{\"statement\":\"The deliverable meets spec\",\"party_b\":\"$PARTY_B_ADDRESS\"}" \
+  2>&1 | grep -oE '0x[a-fA-F0-9]{64}' | head -1)
+genlayer receipt "$REG_HASH" --status ACCEPTED
 ```
 
 ---
@@ -660,13 +698,13 @@ curl -s $RPC -X POST \
 Browse and discover contracts:
 
 ```bash
-FACTORY="0xAA55c2768855A483b5D8C8926585Cdb940207898"
+FACTORY="0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738"
 
 # Get total contract count
 genlayer call "$FACTORY" get_contract_count
 
 # Get contracts by type
-genlayer call "$FACTORY" get_contracts_by_type --args internetcourt-v1
+genlayer call "$FACTORY" get_contracts_by_type --args internetcourt
 
 # Get contracts by deployer
 genlayer call "$FACTORY" get_contracts_by_deployer --args "$ADDRESS"
