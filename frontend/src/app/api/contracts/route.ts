@@ -25,10 +25,9 @@ export async function GET() {
       return NextResponse.json({ contracts: [], errors: {} });
     }
 
-    // Fetch latest 4 registered contracts (newest first)
-    const start = Math.max(0, total - 4);
+    // Fetch all registered contracts (newest first)
     const entries = await Promise.all(
-      Array.from({ length: total - start }, (_, i) =>
+      Array.from({ length: total }, (_, i) =>
         callContractView(FACTORY_ADDRESS, "get_contract", [total - 1 - i])
       )
     );

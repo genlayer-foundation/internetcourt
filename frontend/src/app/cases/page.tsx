@@ -35,36 +35,65 @@ export default function CasesPage() {
   const [showAdd, setShowAdd] = useState(false);
 
   const fetchContracts = useCallback(async (addrs: string[]) => {
-    if (addrs.length === 0) {
-      setContracts([]);
-      setErrors({});
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
-      const res = await fetch("/api/contracts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ addresses: addrs }),
+
+      // Always fetch factory contracts via GET
+      const factoryPromise = fetch("/api/contracts", {
         signal: controller.signal,
-      });
+      }).then((r) => r.json());
+
+      // Also fetch manually tracked contracts via POST (if any)
+      const trackedPromise =
+        addrs.length > 0
+          ? fetch("/api/contracts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ addresses: addrs }),
+              signal: controller.signal,
+            }).then((r) => r.json())
+          : Promise.resolve({ contracts: [], errors: {} });
+
+      const [factoryData, trackedData] = await Promise.all([
+        factoryPromise,
+        trackedPromise,
+      ]);
       clearTimeout(timeout);
-      const data = await res.json();
-      if (data.error) {
-        setErrors({ _global: data.error });
+
+      // Merge and deduplicate by address
+      const allContracts = [
+        ...(factoryData.contracts || []),
+        ...(trackedData.contracts || []),
+      ];
+      const seen = new Set<string>();
+      const deduplicated = allContracts.filter((c: MoltContract) => {
+        const key = c.address.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      const allErrors = {
+        ...(factoryData.errors || {}),
+        ...(trackedData.errors || {}),
+      };
+
+      if (factoryData.error && trackedData.error) {
+        setErrors({ _global: factoryData.error });
         setContracts([]);
       } else {
-        setContracts(data.contracts || []);
-        setErrors(data.errors || {});
+        setContracts(deduplicated);
+        setErrors(allErrors);
       }
     } catch (err) {
-      const message = err instanceof DOMException && err.name === "AbortError"
-        ? "Request timed out. The GenLayer RPC may be slow — try again."
-        : err instanceof Error ? err.message : "Fetch failed";
+      const message =
+        err instanceof DOMException && err.name === "AbortError"
+          ? "Request timed out. The GenLayer RPC may be slow — try again."
+          : err instanceof Error
+            ? err.message
+            : "Fetch failed";
       setErrors({ _global: message });
       setContracts([]);
     } finally {
