@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 interface IInternetCourtFactory {
     function requestDispute(address agreementAddress) external;
 }
 
 /**
  * @title Agreement
- * @notice Individual agreement contract deployed per case. Manages escrow, state machine,
+ * @notice Individual agreement contract deployed per case. Manages USDC escrow, state machine,
  *         evidence submission, mutual agreement path, and bridge-delivered verdicts.
  *
  * State machine: CREATED -> ACTIVE -> DISPUTED -> RESOLVING -> RESOLVED / CANCELLED
  *
- * Escrow is held in ETH (msg.value). Both parties must deposit equal amounts.
+ * Escrow is held in USDC (ERC-20). Party A deposits escrow at creation (via factory).
+ * Party B joins free (no deposit required).
  *
  * Two resolution paths:
  *   1. Mutual agreement (2-of-2): Both parties propose the same outcome -> resolves without jury
@@ -49,9 +52,19 @@ contract Agreement {
     uint256 public evidenceDeadlineSeconds;
     uint256 public disputeTimestamp;
 
-    // Escrow
-    uint256 public escrowA;
-    uint256 public escrowB;
+    // Escrow (USDC)
+    IERC20 public usdcToken;
+    uint256 public escrowAmount;
+
+    // Join deadline
+    uint256 public joinDeadline;
+
+    // Dispute initiator (for default judgment)
+    address public disputeInitiator;
+
+    // Evidence constraints
+    uint256 public maxEvidenceLength;
+    string public constraints;
 
     // Factory reference (for bridge callback)
     address public factory;
@@ -117,7 +130,7 @@ contract Agreement {
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Deploy a new agreement. Party A deposits escrow via msg.value.
+     * @notice Deploy a new agreement. The factory handles USDC transfer before deployment.
      * @param _partyA Address of party A (the creator)
      * @param _partyB Address of party B (the counterparty)
      * @param _statement The claim to be evaluated as true/false
@@ -125,6 +138,11 @@ contract Agreement {
      * @param _evidenceDefs What types of evidence each side can submit
      * @param _evidenceDeadlineSeconds Seconds after dispute for evidence submission window
      * @param _factory Address of the InternetCourtFactory contract
+     * @param _usdcToken Address of the USDC token contract
+     * @param _escrowAmount Amount of USDC escrowed by party A
+     * @param _joinDeadline Timestamp by which party B must accept (0 = no deadline)
+     * @param _maxEvidenceLength Maximum length of evidence in bytes (0 = no limit)
+     * @param _constraints Additional constraints string
      */
     constructor(
         address _partyA,
@@ -133,14 +151,24 @@ contract Agreement {
         string memory _guidelines,
         string memory _evidenceDefs,
         uint256 _evidenceDeadlineSeconds,
-        address _factory
-    ) payable {
+        address _factory,
+        address _usdcToken,
+        uint256 _escrowAmount,
+        uint256 _joinDeadline,
+        uint256 _maxEvidenceLength,
+        string memory _constraints
+    ) {
         require(_partyA != address(0), "Invalid party A");
         require(_partyB != address(0), "Invalid party B");
         require(_partyA != _partyB, "Parties must differ");
-        require(msg.value > 0, "Must deposit escrow");
         require(_factory != address(0), "Invalid factory");
         require(bytes(_statement).length > 0, "Empty statement");
+        if (_escrowAmount > 0) {
+            require(_usdcToken != address(0), "USDC token required for escrow");
+        }
+        if (_joinDeadline > 0) {
+            require(_joinDeadline > block.timestamp, "Join deadline must be in the future");
+        }
 
         partyA = _partyA;
         partyB = _partyB;
@@ -149,25 +177,52 @@ contract Agreement {
         evidenceDefs = _evidenceDefs;
         evidenceDeadlineSeconds = _evidenceDeadlineSeconds;
         factory = _factory;
-        escrowA = msg.value;
+        usdcToken = IERC20(_usdcToken);
+        escrowAmount = _escrowAmount;
+        joinDeadline = _joinDeadline;
+        maxEvidenceLength = _maxEvidenceLength;
+        constraints = _constraints;
         status = Status.CREATED;
     }
 
     // ──────────────────────────────────────────────
-    //  Party B: Accept and deposit
+    //  Party B: Accept agreement
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Party B accepts the agreement and deposits matching escrow.
-     *         msg.value must match party A's escrow deposit.
+     * @notice Party B accepts the agreement. No deposit required.
      */
-    function acceptAndDeposit() external payable onlyPartyB inStatus(Status.CREATED) {
-        require(msg.value == escrowA, "Must match party A escrow");
+    function acceptAgreement() external onlyPartyB inStatus(Status.CREATED) {
+        if (joinDeadline > 0) {
+            require(block.timestamp <= joinDeadline, "Join deadline passed");
+        }
 
-        escrowB = msg.value;
         status = Status.ACTIVE;
 
-        emit AgreementAccepted(partyB, msg.value);
+        emit AgreementAccepted(partyB, escrowAmount);
+    }
+
+    // ──────────────────────────────────────────────
+    //  Reclaim on expiry
+    // ──────────────────────────────────────────────
+
+    /**
+     * @notice Reclaim escrowed USDC after the join deadline has expired without party B accepting.
+     *         Anyone can call this to trigger the reclaim.
+     */
+    function reclaimOnExpiry() external inStatus(Status.CREATED) {
+        require(joinDeadline > 0, "No join deadline set");
+        require(block.timestamp > joinDeadline, "Deadline not passed");
+
+        status = Status.CANCELLED;
+
+        emit Cancelled(partyA);
+
+        if (escrowAmount > 0) {
+            uint256 amount = escrowAmount;
+            escrowAmount = 0;
+            require(usdcToken.transfer(partyA, amount), "USDC transfer failed");
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -240,6 +295,7 @@ contract Agreement {
     function raiseDispute() external onlyParty inStatus(Status.ACTIVE) {
         status = Status.DISPUTED;
         disputeTimestamp = block.timestamp;
+        disputeInitiator = msg.sender;
 
         uint256 deadline = block.timestamp + evidenceDeadlineSeconds;
         emit DisputeRaised(msg.sender, deadline);
@@ -251,6 +307,10 @@ contract Agreement {
      */
     function submitEvidence(string calldata evidence) external onlyParty inStatus(Status.DISPUTED) {
         require(bytes(evidence).length > 0, "Empty evidence");
+
+        if (maxEvidenceLength > 0) {
+            require(bytes(evidence).length <= maxEvidenceLength, "Evidence exceeds max length");
+        }
 
         // Check evidence deadline
         if (evidenceDeadlineSeconds > 0) {
@@ -293,6 +353,34 @@ contract Agreement {
     }
 
     // ──────────────────────────────────────────────
+    //  Default judgment
+    // ──────────────────────────────────────────────
+
+    /**
+     * @notice Resolve by default judgment when no evidence was submitted after the deadline.
+     *         The dispute initiator wins by default.
+     */
+    function resolveByDefault() external inStatus(Status.DISPUTED) {
+        require(evidenceDeadlineSeconds > 0, "No deadline set");
+        require(block.timestamp > disputeTimestamp + evidenceDeadlineSeconds, "Deadline not passed");
+        require(!evidenceASubmitted && !evidenceBSubmitted, "Evidence was submitted");
+        require(disputeInitiator != address(0), "No dispute initiator");
+
+        if (disputeInitiator == partyA) {
+            verdict = Verdict.TRUE_;
+        } else {
+            verdict = Verdict.FALSE_;
+        }
+
+        status = Status.RESOLVED;
+        reasoning = "Resolved by default judgment - no evidence submitted";
+
+        emit Resolved(verdict, reasoning);
+
+        _releaseEscrow();
+    }
+
+    // ──────────────────────────────────────────────
     //  Bridge verdict (factory-only)
     // ──────────────────────────────────────────────
 
@@ -320,18 +408,18 @@ contract Agreement {
 
     /**
      * @notice Cancel the agreement before party B has accepted.
-     *         Returns party A's escrow deposit.
+     *         Returns party A's USDC escrow deposit.
      */
     function cancel() external onlyPartyA inStatus(Status.CREATED) {
         status = Status.CANCELLED;
 
         emit Cancelled(msg.sender);
 
-        // Return escrow to party A
-        uint256 amount = escrowA;
-        escrowA = 0;
-        (bool success, ) = payable(partyA).call{value: amount}("");
-        require(success, "Transfer failed");
+        if (escrowAmount > 0) {
+            uint256 amount = escrowAmount;
+            escrowAmount = 0;
+            require(usdcToken.transfer(partyA, amount), "USDC transfer failed");
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -372,7 +460,7 @@ contract Agreement {
     }
 
     function getTotalEscrow() external view returns (uint256) {
-        return escrowA + escrowB;
+        return escrowAmount;
     }
 
     // ──────────────────────────────────────────────
@@ -395,27 +483,26 @@ contract Agreement {
      * @dev Calculate and store pending withdrawal amounts based on the verdict.
      *      TRUE  -> all escrow to party A
      *      FALSE -> all escrow to party B
-     *      UNDETERMINED -> return deposits to each party
+     *      UNDETERMINED -> refund to party A (creator)
      */
     function _releaseEscrow() internal {
-        uint256 amountA = escrowA;
-        uint256 amountB = escrowB;
-        escrowA = 0;
-        escrowB = 0;
+        if (escrowAmount == 0) return;
+
+        uint256 amount = escrowAmount;
+        escrowAmount = 0;
 
         if (verdict == Verdict.TRUE_) {
-            pendingWithdrawals[partyA] += amountA + amountB;
+            pendingWithdrawals[partyA] += amount;
         } else if (verdict == Verdict.FALSE_) {
-            pendingWithdrawals[partyB] += amountA + amountB;
+            pendingWithdrawals[partyB] += amount;
         } else {
-            // UNDETERMINED: return deposits to each party
-            pendingWithdrawals[partyA] += amountA;
-            pendingWithdrawals[partyB] += amountB;
+            // UNDETERMINED: refund to creator
+            pendingWithdrawals[partyA] += amount;
         }
     }
 
     /**
-     * @notice Withdraw pending funds after resolution. Pull-based pattern prevents
+     * @notice Withdraw pending USDC funds after resolution. Pull-based pattern prevents
      *         a reverting recipient from blocking the other party's withdrawal.
      */
     function claimFunds() external {
@@ -424,8 +511,7 @@ contract Agreement {
 
         pendingWithdrawals[msg.sender] = 0;
 
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
-        require(success, "Transfer failed");
+        require(usdcToken.transfer(msg.sender, amount), "USDC transfer failed");
 
         emit FundsClaimed(msg.sender, amount);
     }

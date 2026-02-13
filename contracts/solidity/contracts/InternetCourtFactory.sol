@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import {IGenLayerBridgeReceiver} from "./bridge/IGenLayerBridgeReceiver.sol";
 import {Agreement} from "./Agreement.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title InternetCourtFactory
@@ -69,12 +70,17 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Create a new Agreement contract. Party A deposits escrow via msg.value.
+     * @notice Create a new Agreement contract. Party A deposits USDC escrow via ERC-20 transferFrom.
      * @param partyB Address of the counterparty
      * @param _statement The claim to be evaluated
      * @param _guidelines Instructions for AI jury evaluation
      * @param _evidenceDefs Evidence type definitions for each side
      * @param _evidenceDeadlineSeconds Evidence submission window (seconds after dispute)
+     * @param _usdcToken Address of the USDC token contract
+     * @param _escrowAmount Amount of USDC to escrow
+     * @param _joinDeadline Timestamp by which party B must accept (0 = no deadline)
+     * @param _maxEvidenceLength Maximum length of evidence in bytes (0 = no limit)
+     * @param _constraints Additional constraints string
      * @return The address of the deployed Agreement contract
      */
     function createAgreement(
@@ -82,17 +88,35 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         string calldata _statement,
         string calldata _guidelines,
         string calldata _evidenceDefs,
-        uint256 _evidenceDeadlineSeconds
-    ) external payable returns (address) {
-        Agreement agreement = new Agreement{value: msg.value}(
+        uint256 _evidenceDeadlineSeconds,
+        address _usdcToken,
+        uint256 _escrowAmount,
+        uint256 _joinDeadline,
+        uint256 _maxEvidenceLength,
+        string calldata _constraints
+    ) external returns (address) {
+        if (_escrowAmount > 0) {
+            require(IERC20(_usdcToken).transferFrom(msg.sender, address(this), _escrowAmount), "USDC transfer to factory failed");
+        }
+
+        Agreement agreement = new Agreement(
             msg.sender,         // partyA
             partyB,
             _statement,
             _guidelines,
             _evidenceDefs,
             _evidenceDeadlineSeconds,
-            address(this)       // factory address for callbacks
+            address(this),      // factory address for callbacks
+            _usdcToken,
+            _escrowAmount,
+            _joinDeadline,
+            _maxEvidenceLength,
+            _constraints
         );
+
+        if (_escrowAmount > 0) {
+            require(IERC20(_usdcToken).transfer(address(agreement), _escrowAmount), "USDC transfer to agreement failed");
+        }
 
         uint256 id = nextAgreementId++;
         address addr = address(agreement);

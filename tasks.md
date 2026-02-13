@@ -18,12 +18,16 @@
 - CLI v0.4.0 doesn't have deploy/write/call commands
 - Needs full rewrite to use genlayer-js SDK as primary method
 
-### Bridge & Escrow Implementation — Phase 1-3
-- **Phase 1**: Solidity contracts (Agreement.sol, InternetCourtFactory.sol, Bridge contracts, MockUSDL.sol)
-- **Phase 2**: GenLayer bridge contracts (BridgeSender.py, case_resolution.py) + Relay service
-- **Phase 3**: Integration & E2E testing
-- Full plan: approved implementation plan in session transcript
-- Reference docs: `docs/ARGUE_BRIDGE_RESEARCH.md`, `docs/BRIDGE_IMPLEMENTATION_GUIDE.md`
+### USDC Escrow Refactor + API + MCP
+- ETH → USDC (ERC-20) escrow, one-sided deposit (creator only)
+- Join deadline with auto-expiry (`reclaimOnExpiry`)
+- Default judgment (`resolveByDefault` — no evidence = disputer wins)
+- Evidence validation (max length, constraints)
+- Next.js API routes (6 endpoints: list, detail, evidence, prepare-create/join/submit)
+- MCP server (get_case, list_cases, check_deadline tools)
+- 166 tests passing
+- Design: `docs/plans/2026-02-13-usdc-escrow-api-mcp-design.md`
+- Plan: `docs/plans/2026-02-13-usdc-escrow-api-mcp-plan.md`
 
 ## Backlog
 

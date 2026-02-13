@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 describe("InternetCourtFactory", function () {
-  const ESCROW = ethers.parseEther("1");
+  const ESCROW = 1000_000000n; // 1000 USDC (6 decimals)
   const STATEMENT = "The deliverable met specifications";
   const GUIDELINES = "Check against the spec document";
   const EVIDENCE_DEFS = "Files, screenshots, logs";
@@ -15,17 +15,25 @@ describe("InternetCourtFactory", function () {
     const [owner, bridgeReceiver, partyA, partyB, outsider] =
       await ethers.getSigners();
 
+    // Deploy MockUSDC
+    const MockUSDC = await ethers.getContractFactory("MockUSDC");
+    const usdc = await MockUSDC.deploy();
+
     const Factory = await ethers.getContractFactory("InternetCourtFactory");
     const factory = await Factory.deploy(
       bridgeReceiver.address,
       owner.address
     );
 
-    return { factory, owner, bridgeReceiver, partyA, partyB, outsider };
+    // Mint and approve USDC for partyA
+    await usdc.mint(partyA.address, ethers.parseUnits("100000", 6));
+    await usdc.connect(partyA).approve(await factory.getAddress(), ethers.parseUnits("100000", 6));
+
+    return { factory, usdc, owner, bridgeReceiver, partyA, partyB, outsider };
   }
 
   async function factoryWithAgreementFixture() {
-    const { factory, owner, bridgeReceiver, partyA, partyB, outsider } =
+    const { factory, usdc, owner, bridgeReceiver, partyA, partyB, outsider } =
       await loadFixture(deployFactoryFixture);
 
     const tx = await factory
@@ -36,7 +44,11 @@ describe("InternetCourtFactory", function () {
         GUIDELINES,
         EVIDENCE_DEFS,
         EVIDENCE_DEADLINE,
-        { value: ESCROW }
+        await usdc.getAddress(),
+        ESCROW,
+        0, // no join deadline
+        0, // no max evidence length
+        "" // no constraints
       );
     const receipt = await tx.wait();
 
@@ -53,6 +65,7 @@ describe("InternetCourtFactory", function () {
 
     return {
       factory,
+      usdc,
       agreement,
       agreementAddr,
       owner,
@@ -67,7 +80,7 @@ describe("InternetCourtFactory", function () {
 
   describe("createAgreement", function () {
     it("creates agreement with correct params", async function () {
-      const { factory, partyA, partyB } =
+      const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFactoryFixture);
 
       const tx = await factory
@@ -78,7 +91,11 @@ describe("InternetCourtFactory", function () {
           GUIDELINES,
           EVIDENCE_DEFS,
           EVIDENCE_DEADLINE,
-          { value: ESCROW }
+          await usdc.getAddress(),
+          ESCROW,
+          0,
+          0,
+          ""
         );
       const receipt = await tx.wait();
 
@@ -99,8 +116,8 @@ describe("InternetCourtFactory", function () {
       expect(await agreement.factory()).to.equal(await factory.getAddress());
     });
 
-    it("forwards escrow value to agreement contract", async function () {
-      const { factory, partyA, partyB } =
+    it("transfers USDC escrow to agreement contract", async function () {
+      const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFactoryFixture);
 
       const tx = await factory
@@ -111,7 +128,11 @@ describe("InternetCourtFactory", function () {
           GUIDELINES,
           EVIDENCE_DEFS,
           EVIDENCE_DEADLINE,
-          { value: ESCROW }
+          await usdc.getAddress(),
+          ESCROW,
+          0,
+          0,
+          ""
         );
       const receipt = await tx.wait();
 
@@ -125,13 +146,13 @@ describe("InternetCourtFactory", function () {
       const parsed = factory.interface.parseLog(event as any);
       const agreementAddr = parsed!.args.agreementAddress;
 
-      // The agreement contract should hold the escrow
-      const balance = await ethers.provider.getBalance(agreementAddr);
+      // The agreement contract should hold the USDC escrow
+      const balance = await usdc.balanceOf(agreementAddr);
       expect(balance).to.equal(ESCROW);
     });
 
     it("increments nextAgreementId", async function () {
-      const { factory, partyA, partyB } =
+      const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFactoryFixture);
 
       expect(await factory.nextAgreementId()).to.equal(0);
@@ -144,7 +165,11 @@ describe("InternetCourtFactory", function () {
           GUIDELINES,
           EVIDENCE_DEFS,
           EVIDENCE_DEADLINE,
-          { value: ESCROW }
+          await usdc.getAddress(),
+          ESCROW,
+          0,
+          0,
+          ""
         );
 
       expect(await factory.nextAgreementId()).to.equal(1);
@@ -157,7 +182,11 @@ describe("InternetCourtFactory", function () {
           GUIDELINES,
           EVIDENCE_DEFS,
           EVIDENCE_DEADLINE,
-          { value: ESCROW }
+          await usdc.getAddress(),
+          ESCROW,
+          0,
+          0,
+          ""
         );
 
       expect(await factory.nextAgreementId()).to.equal(2);
@@ -178,7 +207,7 @@ describe("InternetCourtFactory", function () {
     });
 
     it("emits AgreementCreated event", async function () {
-      const { factory, partyA, partyB } =
+      const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFactoryFixture);
 
       await expect(
@@ -190,7 +219,11 @@ describe("InternetCourtFactory", function () {
             GUIDELINES,
             EVIDENCE_DEFS,
             EVIDENCE_DEADLINE,
-            { value: ESCROW }
+            await usdc.getAddress(),
+            ESCROW,
+            0,
+            0,
+            ""
           )
       ).to.emit(factory, "AgreementCreated");
     });
@@ -211,7 +244,7 @@ describe("InternetCourtFactory", function () {
       } = await loadFixture(factoryWithAgreementFixture);
 
       // Setup: accept, dispute, submit evidence -> RESOLVING
-      await agreement.connect(partyB).acceptAndDeposit({ value: ESCROW });
+      await agreement.connect(partyB).acceptAgreement();
       await agreement.connect(partyA).raiseDispute();
       await agreement.connect(partyA).submitEvidence("A evidence");
       await agreement.connect(partyB).submitEvidence("B evidence");
@@ -247,7 +280,7 @@ describe("InternetCourtFactory", function () {
       } = await loadFixture(factoryWithAgreementFixture);
 
       // Setup to RESOLVING
-      await agreement.connect(partyB).acceptAndDeposit({ value: ESCROW });
+      await agreement.connect(partyB).acceptAgreement();
       await agreement.connect(partyA).raiseDispute();
       await agreement.connect(partyA).submitEvidence("A evidence");
       await agreement.connect(partyB).submitEvidence("B evidence");
@@ -325,7 +358,7 @@ describe("InternetCourtFactory", function () {
       } = await loadFixture(factoryWithAgreementFixture);
 
       // Setup
-      await agreement.connect(partyB).acceptAndDeposit({ value: ESCROW });
+      await agreement.connect(partyB).acceptAgreement();
       await agreement.connect(partyA).raiseDispute();
       await agreement.connect(partyA).submitEvidence("A evidence");
 

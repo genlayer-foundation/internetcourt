@@ -3,24 +3,24 @@ import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 /**
- * End-to-End tests for the Internet Court bridge & escrow system.
+ * End-to-End tests for the Internet Court bridge & USDC escrow system.
  *
  * Tests the FULL lifecycle on a local Hardhat network, covering:
  * - Factory + Bridge infrastructure deployment & wiring
- * - Agreement creation with escrow
- * - Agreement acceptance
+ * - Agreement creation with USDC escrow
+ * - Agreement acceptance (no deposit from Party B)
  * - Mutual agreement resolution path
  * - Dispute path: raise -> evidence -> resolving -> bridge verdict -> resolved
  * - Bridge verdict delivery via BridgeForwarder local dispatch
- * - Escrow withdrawal for all verdict types (TRUE, FALSE, UNDETERMINED)
+ * - USDC escrow withdrawal for all verdict types (TRUE, FALSE, UNDETERMINED)
  * - Cancellation before acceptance
  */
-describe("E2E: Internet Court Bridge & Escrow System", function () {
+describe("E2E: Internet Court Bridge & USDC Escrow System", function () {
   // ──────────────────────────────────────────────
   //  Constants
   // ──────────────────────────────────────────────
 
-  const ESCROW = ethers.parseEther("1");
+  const ESCROW = 1000_000000n; // 1000 USDC (6 decimals)
   const STATEMENT = "The job was completed as specified in the contract";
   const GUIDELINES = "Evaluate based on deliverables vs contract specifications";
   const EVIDENCE_DEFS = "Party A: contract + proof of delivery. Party B: contract + complaint.";
@@ -52,14 +52,20 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
 
   /**
    * Deploy the full infrastructure:
+   * - MockUSDC
    * - MockLZEndpoint
    * - BridgeForwarder (connected to endpoint)
    * - BridgeReceiver (connected to endpoint)
    * - InternetCourtFactory (with bridgeReceiver set)
    * - Wire them together: trusted forwarder on receiver, bridge address on forwarder
+   * - Mint USDC to partyA and approve factory
    */
   async function deployFullInfraFixture() {
     const [owner, partyA, partyB, outsider] = await ethers.getSigners();
+
+    // 0. Deploy MockUSDC
+    const MockUSDC = await ethers.getContractFactory("MockUSDC");
+    const usdc = await MockUSDC.deploy();
 
     // 1. Deploy MockLZEndpoint
     const MockEndpoint = await ethers.getContractFactory("MockLZEndpoint");
@@ -102,17 +108,21 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
     const receiverBytes32 = ethers.zeroPadValue(await receiver.getAddress(), 32);
     await forwarder.connect(owner).setBridgeAddress(LOCAL_EID, receiverBytes32);
 
-    return { endpoint, forwarder, receiver, factory, owner, partyA, partyB, outsider };
+    // 8. Mint USDC to partyA and approve factory
+    await usdc.mint(partyA.address, ethers.parseUnits("100000", 6)); // 100,000 USDC
+    await usdc.connect(partyA).approve(await factory.getAddress(), ethers.parseUnits("100000", 6));
+
+    return { endpoint, forwarder, receiver, factory, usdc, owner, partyA, partyB, outsider };
   }
 
   /**
-   * Deploy infra + create an agreement (Party A deposits 1 ETH)
+   * Deploy infra + create an agreement (Party A deposits USDC escrow)
    */
   async function createAgreementFixture() {
-    const { endpoint, forwarder, receiver, factory, owner, partyA, partyB, outsider } =
+    const { endpoint, forwarder, receiver, factory, usdc, owner, partyA, partyB, outsider } =
       await loadFixture(deployFullInfraFixture);
 
-    // Party A creates agreement with 1 ETH escrow
+    // Party A creates agreement with USDC escrow
     const tx = await factory
       .connect(partyA)
       .createAgreement(
@@ -121,7 +131,11 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
         GUIDELINES,
         EVIDENCE_DEFS,
         EVIDENCE_DEADLINE,
-        { value: ESCROW }
+        await usdc.getAddress(),
+        ESCROW,
+        0, // no join deadline
+        0, // no max evidence length
+        "" // no constraints
       );
     const receipt = await tx.wait();
 
@@ -137,7 +151,7 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
     const agreementAddr = parsed!.args.agreementAddress;
     const agreement = await ethers.getContractAt("Agreement", agreementAddr);
 
-    return { endpoint, forwarder, receiver, factory, agreement, agreementAddr, owner, partyA, partyB, outsider };
+    return { endpoint, forwarder, receiver, factory, usdc, agreement, agreementAddr, owner, partyA, partyB, outsider };
   }
 
   /**
@@ -147,7 +161,7 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
     const fixtures = await loadFixture(createAgreementFixture);
     const { agreement, partyB } = fixtures;
 
-    await agreement.connect(partyB).acceptAndDeposit({ value: ESCROW });
+    await agreement.connect(partyB).acceptAgreement();
 
     return fixtures;
   }
@@ -228,7 +242,7 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
 
   describe("1. Infrastructure Setup", function () {
     it("deploys all contracts and wires them together", async function () {
-      const { endpoint, forwarder, receiver, factory, owner } =
+      const { endpoint, forwarder, receiver, factory, usdc, owner } =
         await loadFixture(deployFullInfraFixture);
 
       // Endpoint deployed
@@ -249,6 +263,9 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
 
       // Factory owned by owner
       expect(await factory.owner()).to.equal(owner.address);
+
+      // USDC deployed with correct decimals
+      expect(await usdc.decimals()).to.equal(6);
     });
 
     it("factory starts with nextAgreementId = 0", async function () {
@@ -262,8 +279,8 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
   // ──────────────────────────────────────────────
 
   describe("2. Agreement Creation", function () {
-    it("Party A creates agreement with 1 ETH escrow", async function () {
-      const { factory, partyA, partyB } =
+    it("Party A creates agreement with USDC escrow", async function () {
+      const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFullInfraFixture);
 
       await expect(
@@ -275,13 +292,17 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
             GUIDELINES,
             EVIDENCE_DEFS,
             EVIDENCE_DEADLINE,
-            { value: ESCROW }
+            await usdc.getAddress(),
+            ESCROW,
+            0,
+            0,
+            ""
           )
       ).to.emit(factory, "AgreementCreated");
     });
 
     it("agreement has correct parameters after creation", async function () {
-      const { agreement, partyA, partyB, factory } =
+      const { agreement, usdc, partyA, partyB, factory } =
         await loadFixture(createAgreementFixture);
 
       expect(await agreement.partyA()).to.equal(partyA.address);
@@ -290,16 +311,16 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       expect(await agreement.guidelines()).to.equal(GUIDELINES);
       expect(await agreement.evidenceDefs()).to.equal(EVIDENCE_DEFS);
       expect(await agreement.evidenceDeadlineSeconds()).to.equal(EVIDENCE_DEADLINE);
-      expect(await agreement.escrowA()).to.equal(ESCROW);
+      expect(await agreement.escrowAmount()).to.equal(ESCROW);
       expect(await agreement.status()).to.equal(Status.CREATED);
       expect(await agreement.factory()).to.equal(await factory.getAddress());
     });
 
-    it("agreement holds the escrowed ETH", async function () {
-      const { agreement, agreementAddr } =
+    it("agreement holds the escrowed USDC", async function () {
+      const { agreement, agreementAddr, usdc } =
         await loadFixture(createAgreementFixture);
 
-      const balance = await ethers.provider.getBalance(agreementAddr);
+      const balance = await usdc.balanceOf(agreementAddr);
       expect(balance).to.equal(ESCROW);
     });
 
@@ -318,27 +339,26 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
   // ──────────────────────────────────────────────
 
   describe("3. Agreement Acceptance", function () {
-    it("Party B accepts with matching 1 ETH escrow, status -> ACTIVE", async function () {
+    it("Party B accepts (no deposit), status -> ACTIVE", async function () {
       const { agreement, partyB } =
         await loadFixture(createAgreementFixture);
 
       await expect(
-        agreement.connect(partyB).acceptAndDeposit({ value: ESCROW })
+        agreement.connect(partyB).acceptAgreement()
       )
         .to.emit(agreement, "AgreementAccepted")
         .withArgs(partyB.address, ESCROW);
 
       expect(await agreement.status()).to.equal(Status.ACTIVE);
-      expect(await agreement.escrowB()).to.equal(ESCROW);
     });
 
-    it("agreement now holds 2 ETH total escrow", async function () {
-      const { agreement, agreementAddr } =
+    it("agreement still holds USDC escrow after acceptance", async function () {
+      const { agreement, agreementAddr, usdc } =
         await loadFixture(activeAgreementFixture);
 
-      const balance = await ethers.provider.getBalance(agreementAddr);
-      expect(balance).to.equal(ESCROW * 2n);
-      expect(await agreement.getTotalEscrow()).to.equal(ESCROW * 2n);
+      const balance = await usdc.balanceOf(agreementAddr);
+      expect(balance).to.equal(ESCROW);
+      expect(await agreement.getTotalEscrow()).to.equal(ESCROW);
     });
   });
 
@@ -348,10 +368,8 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
 
   describe("4. Mutual Agreement Path (2-of-2)", function () {
     it("both propose TRUE -> resolves, all escrow to Party A", async function () {
-      const { agreement, partyA, partyB } =
+      const { agreement, usdc, partyA, partyB } =
         await loadFixture(activeAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       // Party A proposes TRUE
       await agreement.connect(partyA).proposeOutcome(true);
@@ -364,41 +382,35 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
       expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
-      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
       expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
 
-      // Party A claims all funds
-      const balanceBefore = await ethers.provider.getBalance(partyA.address);
-      const txClaim = await agreement.connect(partyA).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party A claims all funds (USDC)
+      const balanceBefore = await usdc.balanceOf(partyA.address);
+      await agreement.connect(partyA).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyA.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(0);
     });
 
     it("both propose FALSE -> resolves, all escrow to Party B", async function () {
-      const { agreement, partyA, partyB } =
+      const { agreement, usdc, partyA, partyB } =
         await loadFixture(activeAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       await agreement.connect(partyA).proposeOutcome(false);
       await agreement.connect(partyB).proposeOutcome(false);
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
       expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
 
-      // Party B claims all funds
-      const balanceBefore = await ethers.provider.getBalance(partyB.address);
-      const txClaim = await agreement.connect(partyB).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party B claims all funds (USDC)
+      const balanceBefore = await usdc.balanceOf(partyB.address);
+      await agreement.connect(partyB).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyB.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyB.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
     });
 
     it("Party B confirms Party A's TRUE proposal -> resolves", async function () {
@@ -457,8 +469,6 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       expect(await agreement.status()).to.equal(Status.DISPUTED); // Still disputed
 
       // Party B submits evidence -> triggers resolution
-      // DisputeRequested emits block.timestamp at the time of the requestDispute call,
-      // which is the same block as submitEvidence. We just check the event is emitted.
       await expect(
         agreement.connect(partyB).submitEvidence("Party B evidence: complaint details")
       )
@@ -595,11 +605,9 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
   // ──────────────────────────────────────────────
 
   describe("7. Escrow Withdrawal", function () {
-    it("TRUE verdict: Party A (winner) claims all escrow via claimFunds()", async function () {
-      const { forwarder, factory, agreement, agreementAddr, owner, partyA, partyB } =
+    it("TRUE verdict: Party A (winner) claims all USDC escrow via claimFunds()", async function () {
+      const { forwarder, factory, agreement, agreementAddr, usdc, owner, partyA, partyB } =
         await loadFixture(resolvingAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       // Deliver TRUE verdict
       await deliverVerdict(
@@ -608,17 +616,15 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       );
 
       // Verify pending withdrawals
-      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
       expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
 
-      // Party A claims
-      const balanceBefore = await ethers.provider.getBalance(partyA.address);
+      // Party A claims (USDC)
+      const balanceBefore = await usdc.balanceOf(partyA.address);
       const txClaim = await agreement.connect(partyA).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      const balanceAfter = await usdc.balanceOf(partyA.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
 
       // Pending cleared
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(0);
@@ -626,14 +632,12 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       // Emits FundsClaimed
       await expect(txClaim)
         .to.emit(agreement, "FundsClaimed")
-        .withArgs(partyA.address, totalEscrow);
+        .withArgs(partyA.address, ESCROW);
     });
 
-    it("FALSE verdict: Party B (winner) claims all escrow", async function () {
-      const { forwarder, factory, agreement, agreementAddr, owner, partyA, partyB } =
+    it("FALSE verdict: Party B (winner) claims all USDC escrow", async function () {
+      const { forwarder, factory, agreement, agreementAddr, usdc, owner, partyA, partyB } =
         await loadFixture(resolvingAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       // Deliver FALSE verdict
       await deliverVerdict(
@@ -642,17 +646,15 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       );
 
       // Verify pending withdrawals
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(0);
 
-      // Party B claims
-      const balanceBefore = await ethers.provider.getBalance(partyB.address);
-      const txClaim = await agreement.connect(partyB).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party B claims (USDC)
+      const balanceBefore = await usdc.balanceOf(partyB.address);
+      await agreement.connect(partyB).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyB.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyB.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
 
       // Party A has nothing to claim
       await expect(
@@ -700,20 +702,18 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
   // ──────────────────────────────────────────────
 
   describe("8. Cancel Path (before acceptance)", function () {
-    it("Party A cancels -> gets escrow back", async function () {
-      const { agreement, partyA } =
+    it("Party A cancels -> gets USDC escrow back", async function () {
+      const { agreement, usdc, partyA } =
         await loadFixture(createAgreementFixture);
 
-      const balanceBefore = await ethers.provider.getBalance(partyA.address);
+      const balanceBefore = await usdc.balanceOf(partyA.address);
 
-      const tx = await agreement.connect(partyA).cancel();
-      const receipt = await tx.wait();
-      const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
+      await agreement.connect(partyA).cancel();
 
       expect(await agreement.status()).to.equal(Status.CANCELLED);
 
-      const balanceAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAfter).to.equal(balanceBefore + ESCROW - gasUsed);
+      const balanceAfter = await usdc.balanceOf(partyA.address);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
     });
 
     it("emits Cancelled event", async function () {
@@ -725,13 +725,13 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
         .withArgs(partyA.address);
     });
 
-    it("agreement balance is 0 after cancellation", async function () {
-      const { agreement, agreementAddr, partyA } =
+    it("agreement USDC balance is 0 after cancellation", async function () {
+      const { agreement, agreementAddr, usdc, partyA } =
         await loadFixture(createAgreementFixture);
 
       await agreement.connect(partyA).cancel();
 
-      const balance = await ethers.provider.getBalance(agreementAddr);
+      const balance = await usdc.balanceOf(agreementAddr);
       expect(balance).to.equal(0);
     });
 
@@ -755,12 +755,12 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
   });
 
   // ──────────────────────────────────────────────
-  //  9. UNDETERMINED Verdict - Both Parties Get Deposits Back
+  //  9. UNDETERMINED Verdict - Escrow Refund to Party A
   // ──────────────────────────────────────────────
 
-  describe("9. UNDETERMINED Verdict - Both Parties Get Deposits Back", function () {
-    it("UNDETERMINED: both parties get their original deposits back", async function () {
-      const { forwarder, factory, agreement, agreementAddr, owner, partyA, partyB } =
+  describe("9. UNDETERMINED Verdict - Escrow Refund to Party A (creator)", function () {
+    it("UNDETERMINED: partyA (creator) gets escrow refund", async function () {
+      const { forwarder, factory, agreement, agreementAddr, usdc, owner, partyA, partyB } =
         await loadFixture(resolvingAgreementFixture);
 
       // Deliver UNDETERMINED verdict via bridge
@@ -775,32 +775,28 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       expect(await agreement.status()).to.equal(Status.RESOLVED);
       expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
 
-      // Both parties have pending withdrawals for their original deposit
+      // Only partyA has pending withdrawal (creator gets refund)
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
 
-      // Party A claims their deposit
-      const balanceABefore = await ethers.provider.getBalance(partyA.address);
-      const txA = await agreement.connect(partyA).claimFunds();
-      const receiptA = await txA.wait();
-      const gasA = receiptA!.gasUsed * receiptA!.gasPrice;
-      const balanceAAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAAfter).to.equal(balanceABefore - gasA + ESCROW);
+      // Party A claims their refund (USDC)
+      const balanceBefore = await usdc.balanceOf(partyA.address);
+      await agreement.connect(partyA).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyA.address);
 
-      // Party B claims their deposit
-      const balanceBBefore = await ethers.provider.getBalance(partyB.address);
-      const txB = await agreement.connect(partyB).claimFunds();
-      const receiptB = await txB.wait();
-      const gasB = receiptB!.gasUsed * receiptB!.gasPrice;
-      const balanceBAfter = await ethers.provider.getBalance(partyB.address);
-      expect(balanceBAfter).to.equal(balanceBBefore - gasB + ESCROW);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
 
-      // Agreement contract balance is now 0
-      const agreementBalance = await ethers.provider.getBalance(agreementAddr);
+      // Party B has nothing to claim
+      await expect(
+        agreement.connect(partyB).claimFunds()
+      ).to.be.revertedWith("Nothing to claim");
+
+      // Agreement contract USDC balance is now 0
+      const agreementBalance = await usdc.balanceOf(agreementAddr);
       expect(agreementBalance).to.equal(0);
     });
 
-    it("UNDETERMINED: each party can only claim their own deposit", async function () {
+    it("UNDETERMINED: partyB has nothing to claim", async function () {
       const { forwarder, factory, agreement, agreementAddr, owner, partyA, partyB } =
         await loadFixture(resolvingAgreementFixture);
 
@@ -812,14 +808,9 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
         "e2e-undetermined-own-deposit"
       );
 
-      // Each has exactly ESCROW pending, not 2*ESCROW
+      // Only partyA has pending
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
-
-      // Outsider has nothing
-      const { outsider } = await loadFixture(resolvingAgreementFixture);
-      // Just verify outsider pattern - the outsider from our current fixture
-      // We verify via the agreement that only the parties have pending amounts
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
     });
   });
 
@@ -828,10 +819,14 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
   // ──────────────────────────────────────────────
 
   describe("10. Complete Happy Path (single test)", function () {
-    it("full lifecycle: create -> accept -> dispute -> evidence -> bridge verdict -> withdraw", async function () {
+    it("full lifecycle: create -> accept -> dispute -> evidence -> bridge verdict -> withdraw (USDC)", async function () {
       const [owner, partyA, partyB] = await ethers.getSigners();
+      const HAPPY_ESCROW = 2000_000000n; // 2000 USDC
 
       // ---- Deploy infrastructure ----
+      const MockUSDC = await ethers.getContractFactory("MockUSDC");
+      const usdc = await MockUSDC.deploy();
+
       const MockEndpoint = await ethers.getContractFactory("MockLZEndpoint");
       const endpoint = await MockEndpoint.deploy(LOCAL_EID);
 
@@ -857,6 +852,10 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       const forwarderBytes32 = ethers.zeroPadValue(await forwarder.getAddress(), 32);
       await receiver.connect(owner).setTrustedForwarder(LOCAL_EID, forwarderBytes32);
 
+      // Mint USDC and approve factory
+      await usdc.mint(partyA.address, HAPPY_ESCROW * 10n);
+      await usdc.connect(partyA).approve(await factory.getAddress(), HAPPY_ESCROW * 10n);
+
       // ---- Step 1: Party A creates agreement ----
       const createTx = await factory
         .connect(partyA)
@@ -866,7 +865,11 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
           "Check delivery receipt timestamp",
           "A: delivery receipt. B: order confirmation.",
           3600,
-          { value: ethers.parseEther("2") }
+          await usdc.getAddress(),
+          HAPPY_ESCROW,
+          0, // no join deadline
+          0, // no max evidence length
+          "" // no constraints
         );
       const createReceipt = await createTx.wait();
       const createEvent = createReceipt!.logs.find((log: any) => {
@@ -882,8 +885,8 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
 
       expect(await agreement.status()).to.equal(Status.CREATED);
 
-      // ---- Step 2: Party B accepts ----
-      await agreement.connect(partyB).acceptAndDeposit({ value: ethers.parseEther("2") });
+      // ---- Step 2: Party B accepts (no deposit) ----
+      await agreement.connect(partyB).acceptAgreement();
       expect(await agreement.status()).to.equal(Status.ACTIVE);
 
       // ---- Step 3: Party A raises dispute ----
@@ -917,20 +920,17 @@ describe("E2E: Internet Court Bridge & Escrow System", function () {
       expect(await agreement.status()).to.equal(Status.RESOLVED);
       expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
 
-      // ---- Step 6: Winner withdraws ----
-      const totalEscrow = ethers.parseEther("4"); // 2 + 2
-      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(totalEscrow);
+      // ---- Step 6: Winner withdraws (USDC) ----
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(HAPPY_ESCROW);
 
-      const balBefore = await ethers.provider.getBalance(partyA.address);
-      const claimTx = await agreement.connect(partyA).claimFunds();
-      const claimReceipt = await claimTx.wait();
-      const gas = claimReceipt!.gasUsed * claimReceipt!.gasPrice;
-      const balAfter = await ethers.provider.getBalance(partyA.address);
+      const balBefore = await usdc.balanceOf(partyA.address);
+      await agreement.connect(partyA).claimFunds();
+      const balAfter = await usdc.balanceOf(partyA.address);
 
-      expect(balAfter).to.equal(balBefore - gas + totalEscrow);
+      expect(balAfter).to.equal(balBefore + HAPPY_ESCROW);
 
-      // Agreement balance is now 0
-      expect(await ethers.provider.getBalance(agreementAddr)).to.equal(0);
+      // Agreement USDC balance is now 0
+      expect(await usdc.balanceOf(agreementAddr)).to.equal(0);
     });
   });
 });

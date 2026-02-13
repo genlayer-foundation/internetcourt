@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 /**
  * Bridge relay service configuration.
  *

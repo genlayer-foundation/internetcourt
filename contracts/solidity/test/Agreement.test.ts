@@ -23,7 +23,7 @@ const Verdict = {
 };
 
 describe("Agreement", function () {
-  const ESCROW = ethers.parseEther("1");
+  const ESCROW = 1000_000000n; // 1000 USDC (6 decimals)
   const STATEMENT = "The job was completed on time";
   const GUIDELINES = "Evaluate based on delivery timestamp vs deadline";
   const EVIDENCE_DEFS = "Party A: invoice + delivery proof. Party B: complaint details.";
@@ -34,18 +34,26 @@ describe("Agreement", function () {
   async function deployFactoryFixture() {
     const [owner, partyA, partyB, outsider] = await ethers.getSigners();
 
+    // Deploy MockUSDC
+    const MockUSDC = await ethers.getContractFactory("MockUSDC");
+    const usdc = await MockUSDC.deploy();
+
     // Deploy a real factory so Agreement callbacks work
     const Factory = await ethers.getContractFactory("InternetCourtFactory");
     const factory = await Factory.deploy(owner.address, owner.address);
 
-    return { factory, owner, partyA, partyB, outsider };
+    // Mint and approve USDC for partyA
+    await usdc.mint(partyA.address, ethers.parseUnits("10000", 6)); // 10000 USDC
+    await usdc.connect(partyA).approve(await factory.getAddress(), ethers.parseUnits("10000", 6));
+
+    return { factory, usdc, owner, partyA, partyB, outsider };
   }
 
   async function createAgreementFixture() {
-    const { factory, owner, partyA, partyB, outsider } =
+    const { factory, usdc, owner, partyA, partyB, outsider } =
       await loadFixture(deployFactoryFixture);
 
-    // Create agreement via factory (party A deposits escrow)
+    // Create agreement via factory (party A deposits USDC escrow)
     const tx = await factory
       .connect(partyA)
       .createAgreement(
@@ -54,7 +62,11 @@ describe("Agreement", function () {
         GUIDELINES,
         EVIDENCE_DEFS,
         EVIDENCE_DEADLINE,
-        { value: ESCROW }
+        await usdc.getAddress(),
+        ESCROW,
+        0, // no join deadline
+        0, // no max evidence length
+        "" // no constraints
       );
     const receipt = await tx.wait();
 
@@ -71,45 +83,45 @@ describe("Agreement", function () {
 
     const agreement = await ethers.getContractAt("Agreement", agreementAddr);
 
-    return { agreement, factory, owner, partyA, partyB, outsider };
+    return { agreement, agreementAddr, factory, usdc, owner, partyA, partyB, outsider };
   }
 
   async function activeAgreementFixture() {
-    const { agreement, factory, owner, partyA, partyB, outsider } =
-      await loadFixture(createAgreementFixture);
+    const fixtures = await loadFixture(createAgreementFixture);
+    const { agreement, partyB } = fixtures;
 
-    // Party B accepts
-    await agreement.connect(partyB).acceptAndDeposit({ value: ESCROW });
+    // Party B accepts (no deposit required)
+    await agreement.connect(partyB).acceptAgreement();
 
-    return { agreement, factory, owner, partyA, partyB, outsider };
+    return fixtures;
   }
 
   async function disputedAgreementFixture() {
-    const { agreement, factory, owner, partyA, partyB, outsider } =
-      await loadFixture(activeAgreementFixture);
+    const fixtures = await loadFixture(activeAgreementFixture);
+    const { agreement, partyA } = fixtures;
 
     // Party A raises dispute
     await agreement.connect(partyA).raiseDispute();
 
-    return { agreement, factory, owner, partyA, partyB, outsider };
+    return fixtures;
   }
 
   async function resolvingAgreementFixture() {
-    const { agreement, factory, owner, partyA, partyB, outsider } =
-      await loadFixture(disputedAgreementFixture);
+    const fixtures = await loadFixture(disputedAgreementFixture);
+    const { agreement, partyA, partyB } = fixtures;
 
     // Both parties submit evidence -> auto-triggers RESOLVING
     await agreement.connect(partyA).submitEvidence("Party A evidence");
     await agreement.connect(partyB).submitEvidence("Party B evidence");
 
-    return { agreement, factory, owner, partyA, partyB, outsider };
+    return fixtures;
   }
 
   // ─── Constructor / creation ────────────────────────
 
   describe("Constructor / creation", function () {
-    it("creates with valid params and deposits escrow", async function () {
-      const { agreement, partyA, partyB } =
+    it("creates with valid params and deposits USDC escrow", async function () {
+      const { agreement, agreementAddr, usdc, partyA, partyB } =
         await loadFixture(createAgreementFixture);
 
       expect(await agreement.partyA()).to.equal(partyA.address);
@@ -118,11 +130,48 @@ describe("Agreement", function () {
       expect(await agreement.guidelines()).to.equal(GUIDELINES);
       expect(await agreement.evidenceDefs()).to.equal(EVIDENCE_DEFS);
       expect(await agreement.evidenceDeadlineSeconds()).to.equal(EVIDENCE_DEADLINE);
-      expect(await agreement.escrowA()).to.equal(ESCROW);
+      expect(await agreement.escrowAmount()).to.equal(ESCROW);
+      expect(await agreement.status()).to.equal(Status.CREATED);
+
+      // USDC balance of agreement contract
+      expect(await usdc.balanceOf(agreementAddr)).to.equal(ESCROW);
+    });
+
+    it("allows zero escrow (no-money disputes)", async function () {
+      const { factory, usdc, partyA, partyB } =
+        await loadFixture(deployFactoryFixture);
+
+      const tx = await factory
+        .connect(partyA)
+        .createAgreement(
+          partyB.address,
+          STATEMENT,
+          GUIDELINES,
+          EVIDENCE_DEFS,
+          EVIDENCE_DEADLINE,
+          ethers.ZeroAddress, // no USDC token
+          0n, // zero escrow
+          0,
+          0,
+          ""
+        );
+      const receipt = await tx.wait();
+
+      const event = receipt!.logs.find((log: any) => {
+        try {
+          return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+        } catch {
+          return false;
+        }
+      });
+      const parsed = factory.interface.parseLog(event as any);
+      const agreement = await ethers.getContractAt("Agreement", parsed!.args.agreementAddress);
+
+      expect(await agreement.escrowAmount()).to.equal(0n);
       expect(await agreement.status()).to.equal(Status.CREATED);
     });
 
-    it("reverts with zero value (no escrow)", async function () {
+    it("reverts with nonzero escrow but ZeroAddress token", async function () {
       const { factory, partyA, partyB } =
         await loadFixture(deployFactoryFixture);
 
@@ -135,13 +184,17 @@ describe("Agreement", function () {
             GUIDELINES,
             EVIDENCE_DEFS,
             EVIDENCE_DEADLINE,
-            { value: 0 }
+            ethers.ZeroAddress, // no token
+            ESCROW, // nonzero escrow
+            0,
+            0,
+            ""
           )
-      ).to.be.revertedWith("Must deposit escrow");
+      ).to.be.reverted;
     });
 
     it("reverts with zero address for party B", async function () {
-      const { factory, partyA } =
+      const { factory, usdc, partyA } =
         await loadFixture(deployFactoryFixture);
 
       await expect(
@@ -153,13 +206,17 @@ describe("Agreement", function () {
             GUIDELINES,
             EVIDENCE_DEFS,
             EVIDENCE_DEADLINE,
-            { value: ESCROW }
+            await usdc.getAddress(),
+            ESCROW,
+            0,
+            0,
+            ""
           )
       ).to.be.revertedWith("Invalid party B");
     });
 
     it("reverts with same party A and party B", async function () {
-      const { factory, partyA } =
+      const { factory, usdc, partyA } =
         await loadFixture(deployFactoryFixture);
 
       await expect(
@@ -171,13 +228,17 @@ describe("Agreement", function () {
             GUIDELINES,
             EVIDENCE_DEFS,
             EVIDENCE_DEADLINE,
-            { value: ESCROW }
+            await usdc.getAddress(),
+            ESCROW,
+            0,
+            0,
+            ""
           )
       ).to.be.revertedWith("Parties must differ");
     });
 
     it("reverts with empty statement", async function () {
-      const { factory, partyA, partyB } =
+      const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFactoryFixture);
 
       await expect(
@@ -189,27 +250,30 @@ describe("Agreement", function () {
             GUIDELINES,
             EVIDENCE_DEFS,
             EVIDENCE_DEADLINE,
-            { value: ESCROW }
+            await usdc.getAddress(),
+            ESCROW,
+            0,
+            0,
+            ""
           )
       ).to.be.revertedWith("Empty statement");
     });
   });
 
-  // ─── acceptAndDeposit ──────────────────────────────
+  // ─── acceptAgreement ──────────────────────────────
 
-  describe("acceptAndDeposit", function () {
-    it("party B accepts with matching escrow", async function () {
+  describe("acceptAgreement", function () {
+    it("party B accepts (no deposit required)", async function () {
       const { agreement, partyB } =
         await loadFixture(createAgreementFixture);
 
       await expect(
-        agreement.connect(partyB).acceptAndDeposit({ value: ESCROW })
+        agreement.connect(partyB).acceptAgreement()
       )
         .to.emit(agreement, "AgreementAccepted")
         .withArgs(partyB.address, ESCROW);
 
       expect(await agreement.status()).to.equal(Status.ACTIVE);
-      expect(await agreement.escrowB()).to.equal(ESCROW);
     });
 
     it("reverts if non-party B calls", async function () {
@@ -217,18 +281,8 @@ describe("Agreement", function () {
         await loadFixture(createAgreementFixture);
 
       await expect(
-        agreement.connect(partyA).acceptAndDeposit({ value: ESCROW })
+        agreement.connect(partyA).acceptAgreement()
       ).to.be.revertedWith("Only party B");
-    });
-
-    it("reverts if value doesn't match party A's escrow", async function () {
-      const { agreement, partyB } =
-        await loadFixture(createAgreementFixture);
-
-      const wrongAmount = ethers.parseEther("0.5");
-      await expect(
-        agreement.connect(partyB).acceptAndDeposit({ value: wrongAmount })
-      ).to.be.revertedWith("Must match party A escrow");
     });
 
     it("reverts if not in CREATED status", async function () {
@@ -236,7 +290,7 @@ describe("Agreement", function () {
         await loadFixture(activeAgreementFixture);
 
       await expect(
-        agreement.connect(partyB).acceptAndDeposit({ value: ESCROW })
+        agreement.connect(partyB).acceptAgreement()
       ).to.be.revertedWith("Wrong status");
     });
   });
@@ -257,10 +311,8 @@ describe("Agreement", function () {
     });
 
     it("party A proposes TRUE, party B proposes TRUE -> resolves, escrow to A", async function () {
-      const { agreement, partyA, partyB } =
+      const { agreement, usdc, partyA, partyB } =
         await loadFixture(activeAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       // Party A proposes TRUE
       await agreement.connect(partyA).proposeOutcome(true);
@@ -272,24 +324,20 @@ describe("Agreement", function () {
       expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
 
       // Funds are pending, not yet transferred (pull-based pattern)
-      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
 
-      // Party A claims funds
-      const balanceBefore = await ethers.provider.getBalance(partyA.address);
-      const txClaim = await agreement.connect(partyA).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party A claims funds (USDC)
+      const balanceBefore = await usdc.balanceOf(partyA.address);
+      await agreement.connect(partyA).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyA.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(0);
     });
 
     it("party A proposes FALSE, party B proposes FALSE -> resolves, escrow to B", async function () {
-      const { agreement, partyA, partyB } =
+      const { agreement, usdc, partyA, partyB } =
         await loadFixture(activeAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       // Party A proposes FALSE
       await agreement.connect(partyA).proposeOutcome(false);
@@ -301,16 +349,14 @@ describe("Agreement", function () {
       expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
 
       // Funds are pending, not yet transferred (pull-based pattern)
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
 
-      // Party B claims funds
-      const balanceBefore = await ethers.provider.getBalance(partyB.address);
-      const txClaim = await agreement.connect(partyB).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party B claims funds (USDC)
+      const balanceBefore = await usdc.balanceOf(partyB.address);
+      await agreement.connect(partyB).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyB.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyB.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
       expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
     });
 
@@ -572,10 +618,10 @@ describe("Agreement", function () {
     });
 
     it("reverts if no deadline set (evidenceDeadlineSeconds=0)", async function () {
-      const { factory, partyA, partyB, outsider } =
+      const { factory, usdc, partyA, partyB, outsider } =
         await loadFixture(deployFactoryFixture);
 
-      // Create agreement with zero deadline
+      // Create agreement with zero evidence deadline
       const tx = await factory
         .connect(partyA)
         .createAgreement(
@@ -583,8 +629,12 @@ describe("Agreement", function () {
           STATEMENT,
           GUIDELINES,
           EVIDENCE_DEFS,
-          0, // zero deadline
-          { value: ESCROW }
+          0, // zero evidence deadline
+          await usdc.getAddress(),
+          ESCROW,
+          0,
+          0,
+          ""
         );
       const receipt = await tx.wait();
       const event = receipt!.logs.find((log: any) => {
@@ -601,7 +651,7 @@ describe("Agreement", function () {
       );
 
       // Accept and activate
-      await agreement.connect(partyB).acceptAndDeposit({ value: ESCROW });
+      await agreement.connect(partyB).acceptAgreement();
       // Raise dispute
       await agreement.connect(partyA).raiseDispute();
 
@@ -615,21 +665,17 @@ describe("Agreement", function () {
 
   describe("setResolution (bridge verdict)", function () {
     it("sets TRUE verdict -> escrow to party A", async function () {
-      const { agreement, factory, owner, partyA } =
+      const { agreement, agreementAddr, factory, usdc, owner, partyA } =
         await loadFixture(resolvingAgreementFixture);
 
-      const totalEscrow = ESCROW * 2n;
-
       // Factory (as itself) calls setResolution
-      // We need to call from the factory address. Since factory is the caller,
-      // we simulate bridge message via the factory's processBridgeMessage
       const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "uint8", "string"],
-        [await agreement.getAddress(), Verdict.TRUE_, "Statement is true"]
+        [agreementAddr, Verdict.TRUE_, "Statement is true"]
       );
       const message = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "bytes"],
-        [await agreement.getAddress(), resolutionData]
+        [agreementAddr, resolutionData]
       );
 
       // Set owner as bridge receiver so we can call processBridgeMessage
@@ -645,31 +691,27 @@ describe("Agreement", function () {
       expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
 
       // Funds are pending (pull-based pattern)
-      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
 
-      // Party A claims funds
-      const balanceBefore = await ethers.provider.getBalance(partyA.address);
-      const txClaim = await agreement.connect(partyA).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party A claims funds (USDC)
+      const balanceBefore = await usdc.balanceOf(partyA.address);
+      await agreement.connect(partyA).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyA.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
     });
 
     it("sets FALSE verdict -> escrow to party B", async function () {
-      const { agreement, factory, owner, partyB } =
+      const { agreement, agreementAddr, factory, usdc, owner, partyB } =
         await loadFixture(resolvingAgreementFixture);
-
-      const totalEscrow = ESCROW * 2n;
 
       const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "uint8", "string"],
-        [await agreement.getAddress(), Verdict.FALSE_, "Statement is false"]
+        [agreementAddr, Verdict.FALSE_, "Statement is false"]
       );
       const message = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "bytes"],
-        [await agreement.getAddress(), resolutionData]
+        [agreementAddr, resolutionData]
       );
 
       await factory.connect(owner).setBridgeReceiver(owner.address);
@@ -679,29 +721,27 @@ describe("Agreement", function () {
       expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
 
       // Funds are pending (pull-based pattern)
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(totalEscrow);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
 
-      // Party B claims funds
-      const balanceBefore = await ethers.provider.getBalance(partyB.address);
-      const txClaim = await agreement.connect(partyB).claimFunds();
-      const receiptClaim = await txClaim.wait();
-      const gasClaim = receiptClaim!.gasUsed * receiptClaim!.gasPrice;
+      // Party B claims funds (USDC)
+      const balanceBefore = await usdc.balanceOf(partyB.address);
+      await agreement.connect(partyB).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyB.address);
 
-      const balanceAfter = await ethers.provider.getBalance(partyB.address);
-      expect(balanceAfter).to.equal(balanceBefore - gasClaim + totalEscrow);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
     });
 
-    it("sets UNDETERMINED verdict -> escrow returned to both", async function () {
-      const { agreement, factory, owner, partyA, partyB } =
+    it("sets UNDETERMINED verdict -> escrow returned to party A (creator)", async function () {
+      const { agreement, agreementAddr, factory, usdc, owner, partyA, partyB } =
         await loadFixture(resolvingAgreementFixture);
 
       const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "uint8", "string"],
-        [await agreement.getAddress(), Verdict.UNDETERMINED, "Insufficient evidence"]
+        [agreementAddr, Verdict.UNDETERMINED, "Insufficient evidence"]
       );
       const message = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "bytes"],
-        [await agreement.getAddress(), resolutionData]
+        [agreementAddr, resolutionData]
       );
 
       await factory.connect(owner).setBridgeReceiver(owner.address);
@@ -710,25 +750,21 @@ describe("Agreement", function () {
       expect(await agreement.status()).to.equal(Status.RESOLVED);
       expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
 
-      // Both parties have pending withdrawals (pull-based pattern)
+      // UNDETERMINED: all escrow refunded to partyA (creator)
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
 
-      // Party A claims funds
-      const balanceABefore = await ethers.provider.getBalance(partyA.address);
-      const txClaimA = await agreement.connect(partyA).claimFunds();
-      const receiptA = await txClaimA.wait();
-      const gasA = receiptA!.gasUsed * receiptA!.gasPrice;
-      const balanceAAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAAfter).to.equal(balanceABefore - gasA + ESCROW);
+      // Party A claims refund (USDC)
+      const balanceBefore = await usdc.balanceOf(partyA.address);
+      await agreement.connect(partyA).claimFunds();
+      const balanceAfter = await usdc.balanceOf(partyA.address);
 
-      // Party B claims funds
-      const balanceBBefore = await ethers.provider.getBalance(partyB.address);
-      const txClaimB = await agreement.connect(partyB).claimFunds();
-      const receiptB = await txClaimB.wait();
-      const gasB = receiptB!.gasUsed * receiptB!.gasPrice;
-      const balanceBAfter = await ethers.provider.getBalance(partyB.address);
-      expect(balanceBAfter).to.equal(balanceBBefore - gasB + ESCROW);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
+
+      // Party B has nothing to claim
+      await expect(
+        agreement.connect(partyB).claimFunds()
+      ).to.be.revertedWith("Nothing to claim");
     });
 
     it("reverts if not factory", async function () {
@@ -741,20 +777,17 @@ describe("Agreement", function () {
     });
 
     it("reverts if not in RESOLVING state", async function () {
-      const { agreement, factory, owner } =
+      const { agreement, agreementAddr, factory, owner } =
         await loadFixture(disputedAgreementFixture);
 
       // Agreement is in DISPUTED state, not RESOLVING
-      // We need to call setResolution via factory as the factory address
-      // Since we can't directly call from factory address, we test by
-      // creating a scenario where factory tries to route to a non-RESOLVING agreement
       const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "uint8", "string"],
-        [await agreement.getAddress(), Verdict.TRUE_, "Reason"]
+        [agreementAddr, Verdict.TRUE_, "Reason"]
       );
       const message = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address", "bytes"],
-        [await agreement.getAddress(), resolutionData]
+        [agreementAddr, resolutionData]
       );
 
       await factory.connect(owner).setBridgeReceiver(owner.address);
@@ -768,20 +801,21 @@ describe("Agreement", function () {
   // ─── cancel ────────────────────────────────────────
 
   describe("cancel", function () {
-    it("party A cancels -> gets escrow back", async function () {
-      const { agreement, partyA } =
+    it("party A cancels -> gets USDC escrow back", async function () {
+      const { agreement, agreementAddr, usdc, partyA } =
         await loadFixture(createAgreementFixture);
 
-      const balanceBefore = await ethers.provider.getBalance(partyA.address);
+      const balanceBefore = await usdc.balanceOf(partyA.address);
 
-      const tx = await agreement.connect(partyA).cancel();
-      const receipt = await tx.wait();
-      const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
+      await agreement.connect(partyA).cancel();
 
       expect(await agreement.status()).to.equal(Status.CANCELLED);
 
-      const balanceAfter = await ethers.provider.getBalance(partyA.address);
-      expect(balanceAfter).to.equal(balanceBefore + ESCROW - gasUsed);
+      const balanceAfter = await usdc.balanceOf(partyA.address);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
+
+      // Agreement should have 0 USDC
+      expect(await usdc.balanceOf(agreementAddr)).to.equal(0);
     });
 
     it("emits Cancelled event", async function () {
@@ -841,11 +875,9 @@ describe("Agreement", function () {
       await agreement.connect(partyA).proposeOutcome(true);
       await agreement.connect(partyB).proposeOutcome(true);
 
-      const totalEscrow = ESCROW * 2n;
-
       await expect(agreement.connect(partyA).claimFunds())
         .to.emit(agreement, "FundsClaimed")
-        .withArgs(partyA.address, totalEscrow);
+        .withArgs(partyA.address, ESCROW);
     });
 
     it("cannot claim twice", async function () {
@@ -903,14 +935,14 @@ describe("Agreement", function () {
       expect(await agreement.getPartyB()).to.equal(partyB.address);
     });
 
-    it("getTotalEscrow returns sum of both deposits", async function () {
+    it("getTotalEscrow returns escrowAmount", async function () {
       const { agreement } =
         await loadFixture(activeAgreementFixture);
 
-      expect(await agreement.getTotalEscrow()).to.equal(ESCROW * 2n);
+      expect(await agreement.getTotalEscrow()).to.equal(ESCROW);
     });
 
-    it("getTotalEscrow returns only party A's deposit before acceptance", async function () {
+    it("getTotalEscrow returns escrowAmount before acceptance", async function () {
       const { agreement } =
         await loadFixture(createAgreementFixture);
 
