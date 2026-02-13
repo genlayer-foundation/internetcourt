@@ -315,7 +315,7 @@ function ContractCard({
   return (
     <Link href={`/cases/${c.address}`}>
       <Card
-        className={`transition-colors hover:bg-accent/50 ${
+        className={`bg-white transition-colors hover:bg-accent/50 border-border/80 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ${
           highlight ? "border-blue-200" : ""
         }`}
       >
