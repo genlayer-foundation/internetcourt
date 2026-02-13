@@ -5,8 +5,7 @@ import { studionet } from "genlayer-js/chains";
 import type { GenLayerClient, GenLayerChain } from "genlayer-js/types";
 import { TransactionStatus } from "genlayer-js/types";
 
-const FACTORY_ADDRESS =
-  process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "";
+const FACTORY_ADDRESS = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
 
 const SUCCESS_RESULTS = ["SUCCESS", "MAJORITY_AGREE", "AGREE"];
 

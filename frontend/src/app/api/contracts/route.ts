@@ -4,8 +4,7 @@ import {
   fetchMultipleContracts,
 } from "@/lib/genlayer";
 
-const FACTORY_ADDRESS =
-  (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738").trim();
+const FACTORY_ADDRESS = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
 
 export async function GET() {
   try {
