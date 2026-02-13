@@ -273,7 +273,7 @@ export default function CasesPage() {
 
       {/* Case list */}
       {!loading && filtered.length > 0 && (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {hasPending && (
             <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-600">
               <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
