@@ -2,9 +2,9 @@ import { createPublicClient, http, parseAbi } from "viem";
 import { base, baseSepolia } from "viem/chains";
 
 export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS ||
-  "0x0cE49079fB4b0EDE327F2b8919f7aaD9C7dabE41") as `0x${string}`;
+  "0x25d7a47f270bAb26485665C340e912E60a26d7D5") as `0x${string}`;
 export const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
-  "0x16F8984440E9951eF3f54Da176A3F431E827e086") as `0x${string}`;
+  "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f") as `0x${string}`;
 
 // Human-readable ABI fragments used by viem
 export const AGREEMENT_ABI = parseAbi([

@@ -31,6 +31,17 @@
 
 ## Done
 
+### Docket / Case Timeline feature
+- Full event timeline for case detail page showing all on-chain events
+- Docket API: `/api/cases/[id]/docket` with chunked getLogs (10k block limit), contract state enrichment
+- Deep link tabs: `?tab=docket` URL parameter support
+- Source labels: Base (blue), GenLayer (purple), LayerZero (amber) color-coded badges
+- Court record UI: serif headers, numbered timeline circles, staggered fade-in animations
+- Rich data: inline evidence blocks, LayerZero Scan + Basescan links, verdict reasoning, escrow amounts
+- 10-event lifecycle: Created → Accepted → Disputed → Evidence (A/B) → Resolution → Bridge → Verdict → Received → Claimed
+- Fixed event signature mismatches (indexed vs non-indexed params in ABI items)
+- Optimized block range queries (find creation block first, then narrow search)
+
 ### USDC Escrow Refactor + API + MCP
 - ETH → USDC (ERC-20) escrow, one-sided deposit (creator only)
 - Join deadline with auto-expiry (`reclaimOnExpiry`)

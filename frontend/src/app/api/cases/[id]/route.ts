@@ -14,29 +14,68 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const caseId = parseInt(id, 10);
 
-    if (isNaN(caseId) || caseId < 0) {
-      return NextResponse.json(
-        { error: "Invalid case ID" },
-        { status: 400 },
+    let agreementAddress: `0x${string}`;
+    let caseId: number;
+
+    // Support both numeric IDs and contract addresses
+    if (id.startsWith("0x") && id.length === 42) {
+      // Lookup by address — find the ID by scanning factory
+      agreementAddress = id as `0x${string}`;
+      caseId = -1;
+
+      const total = Number(
+        await publicClient.readContract({
+          address: FACTORY_ADDRESS,
+          abi: FACTORY_ABI,
+          functionName: "nextAgreementId",
+        }),
       );
-    }
 
-    const agreementAddress = await publicClient.readContract({
-      address: FACTORY_ADDRESS,
-      abi: FACTORY_ABI,
-      functionName: "agreements",
-      args: [BigInt(caseId)],
-    });
+      for (let i = 0; i < total; i++) {
+        const addr = await publicClient.readContract({
+          address: FACTORY_ADDRESS,
+          abi: FACTORY_ABI,
+          functionName: "agreements",
+          args: [BigInt(i)],
+        });
+        if (addr.toLowerCase() === agreementAddress.toLowerCase()) {
+          caseId = i;
+          break;
+        }
+      }
 
-    if (
-      agreementAddress === "0x0000000000000000000000000000000000000000"
-    ) {
-      return NextResponse.json(
-        { error: "Case not found" },
-        { status: 404 },
-      );
+      if (caseId === -1) {
+        return NextResponse.json(
+          { error: "Case not found" },
+          { status: 404 },
+        );
+      }
+    } else {
+      caseId = parseInt(id, 10);
+
+      if (isNaN(caseId) || caseId < 0) {
+        return NextResponse.json(
+          { error: "Invalid case ID" },
+          { status: 400 },
+        );
+      }
+
+      agreementAddress = await publicClient.readContract({
+        address: FACTORY_ADDRESS,
+        abi: FACTORY_ABI,
+        functionName: "agreements",
+        args: [BigInt(caseId)],
+      });
+
+      if (
+        agreementAddress === "0x0000000000000000000000000000000000000000"
+      ) {
+        return NextResponse.json(
+          { error: "Case not found" },
+          { status: 404 },
+        );
+      }
     }
 
     // Read all fields via multicall
