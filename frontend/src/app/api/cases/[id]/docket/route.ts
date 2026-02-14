@@ -28,19 +28,19 @@ interface DocketEntry {
 // This helper chunks a log query into 10k-block windows and combines results.
 async function getLogsChunked(params: {
   address: `0x${string}`;
-  event: ReturnType<typeof parseAbiItem>;
+  event: any;
   args?: Record<string, unknown>;
   fromBlock: bigint;
   toBlock: bigint;
 }) {
-  const CHUNK_SIZE = 9_999n;
+  const CHUNK_SIZE = BigInt(9999);
   const { fromBlock, toBlock, ...rest } = params;
   const logs: any[] = [];
 
-  for (let start = fromBlock; start <= toBlock; start += CHUNK_SIZE + 1n) {
+  for (let start = fromBlock; start <= toBlock; start += CHUNK_SIZE + BigInt(1)) {
     const end = start + CHUNK_SIZE > toBlock ? toBlock : start + CHUNK_SIZE;
     const chunk = await publicClient.getLogs({
-      ...rest,
+      ...(rest as any),
       fromBlock: start,
       toBlock: end,
     });
@@ -117,10 +117,14 @@ export async function GET(
       }
     }
 
-    // Find the creation block by querying AgreementCreated from factory
+    // Use factory's deploymentBlock for efficient event indexing
     const currentBlock = await publicClient.getBlockNumber();
-    // Start with a 50k block lookback (~28 hours on Base Sepolia at 2s/block)
-    let fromBlock = currentBlock > 50_000n ? currentBlock - 50_000n : 0n;
+    const deployBlock = await publicClient.readContract({
+      address: FACTORY_ADDRESS,
+      abi: FACTORY_ABI,
+      functionName: "deploymentBlock",
+    });
+    let fromBlock = deployBlock as bigint;
 
     // Search for creation event to narrow subsequent queries
     const creationLogs = await getLogsChunked({
@@ -311,10 +315,10 @@ export async function GET(
       publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "statement" }).catch(() => ""),
       publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyA" }).catch(() => ""),
       publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyB" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "escrowAmount" }).catch(() => 0n),
+      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "escrowAmount" }).catch(() => BigInt(0)),
       publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceA" }).catch(() => ""),
       publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceB" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceDeadlineSeconds" }).catch(() => 0n),
+      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceDeadlineSeconds" }).catch(() => BigInt(0)),
     ]);
 
     const escrowFormatted = formatUnits(escrowAmount as bigint, 6);

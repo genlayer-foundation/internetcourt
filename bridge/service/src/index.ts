@@ -71,6 +71,7 @@ app.listen(PORT, () => {
   console.log(`  EVM poll:         every ${config.EVM_POLL_INTERVAL}ms`);
   console.log(`  GL relay cron:    ${config.GL_RELAY_CRON}`);
   console.log(`  Factory (Base):   ${config.FACTORY_ADDRESS}`);
+  console.log(`  GL Factory:       ${config.GL_FACTORY_ADDRESS}`);
   console.log(`  BridgeSender (GL): ${config.BRIDGE_SENDER}`);
   console.log(`  BridgeForwarder:  ${config.BRIDGE_FORWARDER}`);
   console.log(`  LZ dst EID:       ${config.LZ_DST_EID}`);

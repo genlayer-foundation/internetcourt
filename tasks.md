@@ -31,6 +31,16 @@
 
 ## Done
 
+### GenLayer Cross-Chain Registry + Factory Redeploy
+- Added `deploymentBlock` immutable field to InternetCourtFactory.sol
+- Deployed new factory to Base Sepolia: `0xb981298fb5E1D27ade6f88014C2f24c30137BC9a`
+- Updated all hardcoded factory addresses across codebase (7 files)
+- Extended relay service to register Base cases on GenLayer registry via AgreementCreated events
+- Updated frontend ABI and docket route to use `deploymentBlock` (eliminates 50k block lookback)
+- Updated cases list API with chain routing (Base vs GenLayer-native cases)
+- Added chain badges (Base blue, GenLayer purple) to cases list page with live status fetch
+- E2E verified: test case created, docket works instantly, case detail loads
+
 ### Docket / Case Timeline feature
 - Full event timeline for case detail page showing all on-chain events
 - Docket API: `/api/cases/[id]/docket` with chunked getLogs (10k block limit), contract state enrichment

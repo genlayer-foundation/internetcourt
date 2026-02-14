@@ -30,10 +30,13 @@ const AGREEMENT_ABI = [
   "function getEvidenceB() view returns (string)",
   "function getPartyA() view returns (address)",
   "function getPartyB() view returns (address)",
+  "function statement() view returns (string)",
+  "function escrowAmount() view returns (uint256)",
 ];
 
 const FACTORY_ABI = [
   "event DisputeRequested(address indexed agreementAddress, uint256 timestamp)",
+  "event AgreementCreated(uint256 indexed id, address agreementAddress, address partyA, address partyB)",
 ];
 
 // ----- Constants -----
@@ -55,6 +58,7 @@ export class EvmToGenLayer {
   private glClient: ReturnType<typeof createClient>;
   private lastBlock: number = 0;
   private processedDisputes: Set<string> = new Set();
+  private registeredCases: Set<string> = new Set();
 
   constructor() {
     this.baseProvider = new ethers.JsonRpcProvider(config.BASE_RPC_URL);
@@ -109,6 +113,38 @@ export class EvmToGenLayer {
       } catch (err) {
         console.error(
           `[EvmToGenLayer] Failed to process dispute ${agreementAddress}:`,
+          err,
+        );
+      }
+    }
+
+    // Query for AgreementCreated events in the same block range
+    const createdFilter = this.factory.filters.AgreementCreated();
+    const createdEvents = await this.factory.queryFilter(
+      createdFilter,
+      this.lastBlock,
+      currentBlock,
+    );
+
+    for (const event of createdEvents) {
+      const log = event as ethers.EventLog;
+      const caseId = Number(log.args[0]);
+      const agreementAddress: string = log.args[1];
+      const partyA: string = log.args[2];
+      const partyB: string = log.args[3];
+
+      if (this.registeredCases.has(agreementAddress)) continue;
+
+      console.log(
+        `[EvmToGenLayer] New agreement detected: ${agreementAddress} (case #${caseId}, block ${log.blockNumber})`,
+      );
+
+      try {
+        await this.registerCase(caseId, agreementAddress, partyA, partyB);
+        this.registeredCases.add(agreementAddress);
+      } catch (err) {
+        console.error(
+          `[EvmToGenLayer] Failed to register case ${agreementAddress}:`,
           err,
         );
       }
@@ -214,5 +250,51 @@ export class EvmToGenLayer {
     console.error(
       `[EvmToGenLayer] Oracle did not finalize within ${MAX_FINALIZATION_WAIT_MS / 1000}s: ${txHash}`,
     );
+  }
+
+  /**
+   * Read case data from Base and register it on the GenLayer factory.
+   */
+  private async registerCase(
+    caseId: number,
+    agreementAddress: string,
+    partyA: string,
+    partyB: string,
+  ): Promise<void> {
+    // Read case data from Base
+    const agreement = new ethers.Contract(
+      agreementAddress,
+      AGREEMENT_ABI,
+      this.baseProvider,
+    );
+
+    const [statement, escrowAmount] = await Promise.all([
+      agreement.statement() as Promise<string>,
+      agreement.escrowAmount() as Promise<bigint>,
+    ]);
+
+    // Register on GenLayer factory
+    const params = JSON.stringify({
+      chain_id: 84532,
+      chain_name: "base-sepolia",
+      base_factory: config.FACTORY_ADDRESS,
+      factory_id: caseId,
+      statement,
+      party_a: partyA,
+      party_b: partyB,
+      escrow_amount: escrowAmount.toString(),
+    });
+
+    console.log(
+      `[EvmToGenLayer] Registering case ${caseId} on GenLayer: ${agreementAddress}`,
+    );
+
+    const txHash = await this.glClient.writeContract({
+      address: config.GL_FACTORY_ADDRESS as `0x${string}`,
+      functionName: "register_contract",
+      args: [agreementAddress, "internetcourt", params],
+    });
+
+    console.log(`[EvmToGenLayer] Registration tx: ${txHash}`);
   }
 }

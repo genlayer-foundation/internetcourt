@@ -432,6 +432,25 @@ describe("InternetCourtFactory", function () {
 
       expect(await factory.nextAgreementId()).to.equal(0);
     });
+
+    it("sets deploymentBlock to the block when factory was deployed", async function () {
+      const { factory } = await loadFixture(deployFactoryFixture);
+
+      const deploymentBlock = await factory.deploymentBlock();
+      expect(deploymentBlock).to.be.greaterThan(0);
+    });
+
+    it("deploymentBlock is immutable and matches actual deployment block", async function () {
+      const [owner, bridgeReceiver] = await ethers.getSigners();
+
+      const Factory = await ethers.getContractFactory("InternetCourtFactory");
+      const factory = await Factory.deploy(bridgeReceiver.address, owner.address);
+      const deployTx = factory.deploymentTransaction();
+      const receipt = await deployTx!.wait();
+
+      const deploymentBlock = await factory.deploymentBlock();
+      expect(deploymentBlock).to.equal(receipt!.blockNumber);
+    });
   });
 
   // ─── Multiple Concurrent Agreements ─────────────

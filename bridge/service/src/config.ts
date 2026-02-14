@@ -13,6 +13,8 @@ export const config = {
   GENLAYER_RPC_URL: process.env.GENLAYER_RPC_URL!,
   /** BridgeSender contract address on GenLayer */
   BRIDGE_SENDER: process.env.BRIDGE_SENDER_ADDRESS!,
+  /** GenLayer InternetCourtFactory registry address */
+  GL_FACTORY_ADDRESS: process.env.GL_FACTORY_ADDRESS || "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738",
 
   // ---------- zkSync Era ----------
   /** zkSync Era JSON-RPC endpoint */

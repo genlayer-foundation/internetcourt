@@ -2,7 +2,7 @@ import { createPublicClient, http, parseAbi } from "viem";
 import { base, baseSepolia } from "viem/chains";
 
 export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS ||
-  "0x25d7a47f270bAb26485665C340e912E60a26d7D5") as `0x${string}`;
+  "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a") as `0x${string}`;
 export const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
   "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f") as `0x${string}`;
 
@@ -34,6 +34,7 @@ export const FACTORY_ABI = parseAbi([
   "function createAgreement(address,string,string,string,uint256,address,uint256,uint256,uint256,string) returns (address)",
   "function nextAgreementId() view returns (uint256)",
   "function agreements(uint256) view returns (address)",
+  "function deploymentBlock() view returns (uint256)",
 ]);
 
 export const ERC20_ABI = parseAbi([

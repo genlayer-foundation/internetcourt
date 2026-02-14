@@ -272,6 +272,12 @@ describe("E2E: Internet Court Bridge & USDC Escrow System", function () {
       const { factory } = await loadFixture(deployFullInfraFixture);
       expect(await factory.nextAgreementId()).to.equal(0);
     });
+
+    it("factory has a valid deploymentBlock", async function () {
+      const { factory } = await loadFixture(deployFullInfraFixture);
+      const deploymentBlock = await factory.deploymentBlock();
+      expect(deploymentBlock).to.be.greaterThan(0);
+    });
   });
 
   // ──────────────────────────────────────────────

@@ -360,8 +360,9 @@ contract Agreement {
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Resolve by default judgment when no evidence was submitted after the deadline.
-     *         The dispute initiator wins by default.
+     * @notice Resolve by default judgment after evidence deadline passes.
+     *         Neither party submitted → UNDETERMINED; only initiator submitted → initiator wins;
+     *         only non-initiator submitted → non-initiator wins.
      */
     function resolveByDefault() external inStatus(Status.DISPUTED) {
         require(evidenceDeadlineSeconds > 0, "No deadline set");

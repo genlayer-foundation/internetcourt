@@ -331,6 +331,21 @@ function ContractCard({
   contract: MoltContract;
   highlight?: boolean;
 }) {
+  const [liveStatus, setLiveStatus] = useState<string | null>(null);
+  const isBase = !!c.chainId;
+
+  useEffect(() => {
+    if (!isBase) return;
+    fetch(`/api/cases/${c.address}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.status) setLiveStatus(data.status);
+      })
+      .catch(() => {});
+  }, [c.address, isBase]);
+
+  const displayStatus = liveStatus || c.status;
+
   return (
     <Link href={`/cases/${c.address}`}>
       <Card
@@ -342,11 +357,23 @@ function ContractCard({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-2 flex items-center gap-3">
+                {/* Chain badge */}
                 <Badge
                   variant="outline"
-                  className={`text-xs ${STATUS_COLORS[c.status] || ""}`}
+                  className={`text-[10px] font-medium ${
+                    isBase
+                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                      : "bg-purple-50 text-purple-700 border-purple-200"
+                  }`}
                 >
-                  {STATUS_LABELS[c.status] || c.status.toUpperCase()}
+                  {isBase ? "Base" : "GenLayer"}
+                </Badge>
+                {/* Status badge */}
+                <Badge
+                  variant="outline"
+                  className={`text-xs ${STATUS_COLORS[displayStatus] || ""}`}
+                >
+                  {STATUS_LABELS[displayStatus] || displayStatus.toUpperCase()}
                 </Badge>
                 {c.verdict && (
                   <Badge
@@ -356,7 +383,7 @@ function ContractCard({
                     {c.verdict}
                   </Badge>
                 )}
-                {c.status === "created" && (
+                {displayStatus === "created" && (
                   <span className="text-xs text-blue-600">
                     Awaiting Party B
                   </span>
@@ -375,6 +402,11 @@ function ContractCard({
                 <span className="font-mono text-xs opacity-60">
                   {formatAddress(c.address)}
                 </span>
+                {isBase && c.escrowAmount && c.escrowAmount !== "0" && (
+                  <span className="text-xs text-muted-foreground">
+                    Escrow: {(Number(c.escrowAmount) / 1e6).toFixed(2)} USDC
+                  </span>
+                )}
               </div>
               {(c.proposedOutcomeA || c.proposedOutcomeB) && (
                 <div className="mt-2 flex gap-3 text-xs text-muted-foreground">

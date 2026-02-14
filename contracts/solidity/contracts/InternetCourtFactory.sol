@@ -35,6 +35,9 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
     /// @notice Agreement ID -> Agreement address
     mapping(uint256 => address) public agreements;
 
+    /// @notice Block number at which the factory was deployed (for efficient event indexing)
+    uint256 public immutable deploymentBlock;
+
     // ──────────────────────────────────────────────
     //  Events
     // ──────────────────────────────────────────────
@@ -65,6 +68,7 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
      * @param _owner Admin address
      */
     constructor(address _bridgeReceiver, address _owner) Ownable(_owner) {
+        deploymentBlock = block.number;
         bridgeReceiver = _bridgeReceiver;
     }
 

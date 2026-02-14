@@ -82,12 +82,12 @@ export async function POST(req: NextRequest) {
         statement,
         guidelines || "",
         evidenceDefs || "",
-        escrow,
-        tokenAddress,
-        BigInt(joinDeadline || "0"),
-        BigInt(evidenceDeadlineSeconds || "0"),
-        BigInt(maxEvidenceLength || "0"),
-        constraints || "",
+        BigInt(evidenceDeadlineSeconds || "0"),  // pos 5 - evidenceDeadlineSeconds
+        tokenAddress,                             // pos 6 - usdcToken
+        escrow,                                   // pos 7 - escrowAmount
+        BigInt(joinDeadline || "0"),             // pos 8 - joinDeadline
+        BigInt(maxEvidenceLength || "0"),         // pos 9
+        constraints || "",                        // pos 10
       ],
     });
 

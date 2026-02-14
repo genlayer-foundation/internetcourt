@@ -37,4 +37,10 @@ export interface MoltContract {
   reasoning: string;
   proposedOutcomeA: string;
   proposedOutcomeB: string;
+  // Chain routing (optional — present for cross-chain cases)
+  chainId?: number;
+  chainName?: string;
+  factoryId?: number;
+  baseFactory?: string;
+  escrowAmount?: string;
 }

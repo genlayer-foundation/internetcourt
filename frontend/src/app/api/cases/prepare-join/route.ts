@@ -5,8 +5,6 @@ import {
   FACTORY_ADDRESS,
   FACTORY_ABI,
   AGREEMENT_ABI,
-  ERC20_ABI,
-  USDC_ADDRESS,
 } from "@/lib/contracts";
 
 interface JoinBody {
@@ -41,51 +39,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Read escrow amount to determine if USDC approval is needed
-    const escrowAmount = await publicClient.readContract({
-      address: agreementAddress,
-      abi: AGREEMENT_ABI,
-      functionName: "escrowAmount",
-    });
-
-    const transactions: Array<{
-      step: number;
-      description: string;
-      to: string;
-      data: string;
-      value: string;
-    }> = [];
-
-    // Step 1: If escrow > 0, approve USDC for the agreement contract
-    if (escrowAmount > BigInt(0)) {
-      const approveData = encodeFunctionData({
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [agreementAddress, escrowAmount],
-      });
-
-      transactions.push({
-        step: 1,
-        description: "Approve USDC spending for escrow",
-        to: USDC_ADDRESS,
-        data: approveData,
-        value: "0",
-      });
-    }
-
-    // Step 2: acceptAgreement
+    // Party B does NOT pay escrow - only acceptAgreement() is needed
     const joinData = encodeFunctionData({
       abi: AGREEMENT_ABI,
       functionName: "acceptAgreement",
     });
 
-    transactions.push({
-      step: escrowAmount > BigInt(0) ? 2 : 1,
-      description: "Join the agreement as Party B",
-      to: agreementAddress,
-      data: joinData,
-      value: "0",
-    });
+    const transactions = [
+      {
+        step: 1,
+        description: "Join the agreement as Party B",
+        to: agreementAddress,
+        data: joinData,
+        value: "0",
+      },
+    ];
 
     return NextResponse.json({ transactions });
   } catch (err) {

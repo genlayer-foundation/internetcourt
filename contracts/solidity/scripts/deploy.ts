@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 /**
- * Deploy InternetCourtFactory and MockUSDL to the target chain.
+ * Deploy InternetCourtFactory and MockUSDC to the target chain.
  *
  * Usage:
  *   npx hardhat run scripts/deploy.ts --network baseSepolia
@@ -24,20 +24,20 @@ async function main() {
     "ETH"
   );
 
-  // ── 1. Deploy MockUSDL (testnet only — skip on mainnet) ──
+  // ── 1. Deploy MockUSDC (testnet only — skip on mainnet) ──
 
   const network = await ethers.provider.getNetwork();
   const chainId = Number(network.chainId);
   const isMainnet = chainId === 8453 || chainId === 324; // Base Mainnet or zkSync Mainnet
 
   if (!isMainnet) {
-    console.log("\n--- Deploying MockUSDL (testnet) ---");
-    const MockUSDL = await ethers.getContractFactory("MockUSDL");
-    const mockUsdl = await MockUSDL.deploy();
-    await mockUsdl.waitForDeployment();
-    console.log("MockUSDL deployed to:", await mockUsdl.getAddress());
+    console.log("\n--- Deploying MockUSDC (testnet) ---");
+    const MockUSDC = await ethers.getContractFactory("MockUSDC");
+    const mockUsdc = await MockUSDC.deploy();
+    await mockUsdc.waitForDeployment();
+    console.log("MockUSDC deployed to:", await mockUsdc.getAddress());
   } else {
-    console.log("\nSkipping MockUSDL deployment on mainnet");
+    console.log("\nSkipping MockUSDC deployment on mainnet");
   }
 
   // ── 2. Deploy InternetCourtFactory ──
