@@ -24,7 +24,7 @@ export const MOCK_USDC_ADDRESS =
   (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
     "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3") as `0x${string}`;
 
-export const DEPLOYMENT_BLOCK = 37666090;
+export const DEPLOYMENT_BLOCK = 37666093;
 
 export const BASE_CHAIN_ID = 84532;
 export const GENLAYER_CHAIN_ID = 61999;

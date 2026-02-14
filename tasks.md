@@ -4,12 +4,6 @@
 
 ## In Progress
 
-### Fresh Deploy — Both Chains from Scratch
-- Deploy new GenLayer factory (create deploy-factory.mjs, deploy, verify)
-- Deploy new Base Sepolia contracts (factory + MockUSDC + deploymentBlock)
-- Update ALL addresses across ~26 files
-- Verify frontend build passes
-- Verify both factories (GenLayer: count=0, type registered; Base: nextAgreementId=0)
 
 ### Implement factory improvements — pagination, find by party, migration/export/import
 - Add pagination to factory queries (offset/limit pattern)
@@ -20,10 +14,6 @@
 ### Implement min_dispute_period_seconds — timing parameter
 - Add minimum dispute period enforcement from timing research
 - See `docs/TIMING_RESEARCH.md` for patterns (Kleros, UMA, Aragon, Optimism)
-
-### Fix skill.md — rewrite from CLI-first to SDK-first
-- CLI v0.4.0 doesn't have deploy/write/call commands
-- Needs full rewrite to use genlayer-js SDK as primary method
 
 ## Backlog
 
@@ -37,6 +27,22 @@
 - Currently bypassed — factory address hardcoded in source. NEXT_PUBLIC_COURT_FACTORY_ADDRESS still points to old factory in Vercel dashboard.
 
 ## Done
+
+### Fix skill.md — rewrite from CLI-first to SDK-first
+- Rewrote skill.md to use genlayer-js SDK as primary method
+- Removed all CLI-first instructions (genlayer CLI v0.4.0 doesn't support deploy/write/call)
+- Added full Quick Start with SDK examples, factory registration, lifecycle walkthrough
+- Factory address: `0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE` (correct for current deployment)
+
+### Fresh Deploy — Both Chains from Scratch
+- GenLayer factory: `0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE` (studionet)
+- Base factory: `0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E` (Base Sepolia)
+- MockUSDC: `0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3`
+- DeploymentBlock: `37666090`
+- Updated 26+ files, created deploy-factory.mjs
+- Swarm review fixed: LayerZero EIDs, enum label bug, stale addresses, doc refs
+- Frontend build verified, both factories verified (count=0, types registered)
+- Commit: `b9659a0` on `feat/bridge-deploy`
 
 ### Fresh Deploy + Comprehensive E2E Test (11 Lifecycle Cases)
 - Deployed fresh MockUSDC + InternetCourtFactory to Base Sepolia

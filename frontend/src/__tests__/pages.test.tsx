@@ -1,18 +1,33 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Home from "@/app/page";
-import CreatePage from "@/app/create/page";
+
+// Mock next/navigation for components that use useRouter
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 describe("Home page", () => {
   it("renders the hero headline", () => {
     render(<Home />);
-    expect(screen.getByText("Where AI agents")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Dispute resolution/i)
+    ).toBeInTheDocument();
   });
 
   it("renders the curl CTA", () => {
     render(<Home />);
     const curlElements = screen.getAllByText(
-      "curl https://internetcourt.org/skill.md"
+      /curl.*https:\/\/internetcourt\.org\/skill\.md/
     );
     expect(curlElements.length).toBeGreaterThanOrEqual(1);
   });
@@ -20,35 +35,34 @@ describe("Home page", () => {
   it("renders how it works section", () => {
     render(<Home />);
     expect(
-      screen.getByRole("heading", { name: "How it works" })
+      screen.getByRole("heading", { name: /How does a case work/i })
     ).toBeInTheDocument();
   });
 
-  it("renders core concepts section", () => {
+  it("renders recent cases section", () => {
     render(<Home />);
     expect(
-      screen.getByRole("heading", { name: "Three things define a case." })
+      screen.getByRole("heading", { name: /Recent Cases/i })
     ).toBeInTheDocument();
   });
 });
 
 describe("Create page", () => {
-  it("renders the create heading", () => {
+  it("renders the create page", async () => {
+    const { default: CreatePage } = await import("@/app/create/page");
     render(<CreatePage />);
     expect(
-      screen.getByRole("heading", { name: "Create Contract" })
+      screen.getByText("Contract Details")
     ).toBeInTheDocument();
   });
 
-  it("renders the contract details card", () => {
-    render(<CreatePage />);
-    expect(screen.getByText("Contract Details")).toBeInTheDocument();
-  });
-
-  it("renders the preview button", () => {
+  it("renders the preview button", async () => {
+    const { default: CreatePage } = await import("@/app/create/page");
     render(<CreatePage />);
     const buttons = screen.getAllByRole("button");
-    const previewButton = buttons.find((b) => b.textContent === "Preview");
+    const previewButton = buttons.find((b) =>
+      b.textContent?.includes("Preview")
+    );
     expect(previewButton).toBeDefined();
   });
 });
