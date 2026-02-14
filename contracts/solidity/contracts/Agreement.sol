@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface IInternetCourtFactory {
     function requestDispute(address agreementAddress) external;
@@ -22,6 +23,8 @@ interface IInternetCourtFactory {
  *   2. Dispute path: Evidence submitted -> AI jury evaluates -> verdict delivered via bridge
  */
 contract Agreement {
+    using SafeERC20 for IERC20;
+
     // ──────────────────────────────────────────────
     //  Enums
     // ──────────────────────────────────────────────
@@ -218,10 +221,10 @@ contract Agreement {
 
         emit Cancelled(partyA);
 
-        if (escrowAmount > 0) {
+        if (escrowAmount > 0 && address(usdcToken) != address(0)) {
             uint256 amount = escrowAmount;
             escrowAmount = 0;
-            require(usdcToken.transfer(partyA, amount), "USDC transfer failed");
+            usdcToken.safeTransfer(partyA, amount);
         }
     }
 
@@ -363,17 +366,27 @@ contract Agreement {
     function resolveByDefault() external inStatus(Status.DISPUTED) {
         require(evidenceDeadlineSeconds > 0, "No deadline set");
         require(block.timestamp > disputeTimestamp + evidenceDeadlineSeconds, "Deadline not passed");
-        require(!evidenceASubmitted && !evidenceBSubmitted, "Evidence was submitted");
+        require(!(evidenceASubmitted && evidenceBSubmitted), "Both parties submitted evidence");
         require(disputeInitiator != address(0), "No dispute initiator");
 
-        if (disputeInitiator == partyA) {
-            verdict = Verdict.TRUE_;
+        if (!evidenceASubmitted && !evidenceBSubmitted) {
+            verdict = Verdict.UNDETERMINED;
+            reasoning = "Resolved by default - no evidence submitted by either party";
         } else {
-            verdict = Verdict.FALSE_;
+            address nonInitiator = disputeInitiator == partyA ? partyB : partyA;
+            bool initiatorSubmitted = (disputeInitiator == partyA) ? evidenceASubmitted : evidenceBSubmitted;
+            bool nonInitiatorSubmitted = (nonInitiator == partyA) ? evidenceASubmitted : evidenceBSubmitted;
+
+            if (initiatorSubmitted && !nonInitiatorSubmitted) {
+                verdict = (disputeInitiator == partyA) ? Verdict.TRUE_ : Verdict.FALSE_;
+                reasoning = "Resolved by default - only dispute initiator submitted evidence";
+            } else {
+                verdict = (nonInitiator == partyA) ? Verdict.TRUE_ : Verdict.FALSE_;
+                reasoning = "Resolved by default - only non-initiator submitted evidence";
+            }
         }
 
         status = Status.RESOLVED;
-        reasoning = "Resolved by default judgment - no evidence submitted";
 
         emit Resolved(verdict, reasoning);
 
@@ -415,10 +428,10 @@ contract Agreement {
 
         emit Cancelled(msg.sender);
 
-        if (escrowAmount > 0) {
+        if (escrowAmount > 0 && address(usdcToken) != address(0)) {
             uint256 amount = escrowAmount;
             escrowAmount = 0;
-            require(usdcToken.transfer(partyA, amount), "USDC transfer failed");
+            usdcToken.safeTransfer(partyA, amount);
         }
     }
 
@@ -486,7 +499,7 @@ contract Agreement {
      *      UNDETERMINED -> refund to party A (creator)
      */
     function _releaseEscrow() internal {
-        if (escrowAmount == 0) return;
+        if (escrowAmount == 0 || address(usdcToken) == address(0)) return;
 
         uint256 amount = escrowAmount;
         escrowAmount = 0;
@@ -511,7 +524,8 @@ contract Agreement {
 
         pendingWithdrawals[msg.sender] = 0;
 
-        require(usdcToken.transfer(msg.sender, amount), "USDC transfer failed");
+        require(address(usdcToken) != address(0), "No USDC token set");
+        usdcToken.safeTransfer(msg.sender, amount);
 
         emit FundsClaimed(msg.sender, amount);
     }

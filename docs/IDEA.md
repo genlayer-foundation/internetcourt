@@ -252,9 +252,10 @@ PHASE 2: Resolution
 Everything in V1, plus:
 
 ### Escrow
-- Parties lock funds when creating/acknowledging the contract
+- Creator deposits USDC escrow when creating the agreement (one-sided deposit)
+- PartyB joins free via `acceptAgreement()` (no deposit required)
 - Funds auto-release per resolution outcome (TRUE/FALSE)
-- On UNDETERMINED: configurable behavior (return, additional round, etc.)
+- On UNDETERMINED: escrow returned to creator
 
 ### Agent SDK
 - Python SDK for agent integration (pip install internetcourt)
@@ -291,19 +292,21 @@ Everything in V1, plus:
 ### V2 Contract Sketch (Additions)
 
 ```python
-@gl.public.write.payable
+@gl.public.write
 def create_with_escrow(self, agent_b: str, statement: str,
-                       guidelines: str, evidence_defs: str, deadline: int):
-    """Agent A creates contract with escrow."""
-    self.escrow_a = gl.message.value
+                       guidelines: str, evidence_defs: str,
+                       escrow_amount: int, deadline: int):
+    """Agent A creates contract with USDC escrow (one-sided deposit)."""
+    self.escrow_amount = escrow_amount
     self.deadline = deadline
+    # Factory pulls USDC from caller via transferFrom
     # ...
 
-@gl.public.write.payable
-def acknowledge_with_escrow(self):
-    """Agent B acknowledges and matches escrow."""
+@gl.public.write
+def accept_agreement(self):
+    """Agent B accepts the agreement (no deposit required)."""
     assert gl.message.sender_account == self.agent_b
-    self.escrow_b = gl.message.value
+    # PartyB joins free
     # ...
 
 @gl.public.write
@@ -340,7 +343,7 @@ Every internetcourt contract has three components. This is the definitive format
 | Agent A | text, json, url | 10,000 | Must include the original audit report and specific deficiencies |
 | Agent B | text, json, url | 10,000 | Must include the delivered report and explanation of coverage |
 
-**Escrow:** 50 USDL each
+**Escrow:** 50 USDC (deposited by creator)
 
 ---
 
@@ -358,7 +361,7 @@ Every internetcourt contract has three components. This is the definitive format
 | Agent A (Requester) | text, json | 20,000 | Must specify which entries are deficient and why |
 | Agent B (Worker) | text, json | 20,000 | Must include the delivered dataset or summary |
 
-**Escrow:** 100 USDL each
+**Escrow:** 100 USDC (deposited by creator)
 
 ---
 
@@ -376,7 +379,7 @@ Every internetcourt contract has three components. This is the definitive format
 | Agent A (Yes) | text, url | 5,000 | Must cite sources confirming the landing |
 | Agent B (No) | text, url | 5,000 | Must cite sources showing no qualifying landing occurred |
 
-**Escrow:** 0.1 ETH each
+**Escrow:** 10 USDC (deposited by creator)
 
 ---
 
@@ -394,7 +397,7 @@ Every internetcourt contract has three components. This is the definitive format
 | Party A (Client) | text, url, screenshot | 10,000 | Must specify which requirements were not met |
 | Party B (Freelancer) | text, url, screenshot | 10,000 | Must provide the live URL and evidence of compliance |
 
-**Escrow:** 0.5 ETH
+**Escrow:** 500 USDC (deposited by creator)
 
 ---
 
@@ -408,8 +411,8 @@ Every internetcourt contract has three components. This is the definitive format
                     |   evidence defs)|
                     +--------+--------+
                              |
-                    Agent B acknowledges
-                    (deposits escrow)
+                    Agent B accepts
+                    (joins free, no deposit)
                              |
                     +--------v--------+
                     |     ACTIVE      |
@@ -530,9 +533,9 @@ V3 (Month 1):  Agent reputation marketplace, prediction oracle mode,
 | `gl.eq_principle_strict_eq()` | Ensure validators agree on verdict | V1 binary |
 | `gl.get_webpage()` | Fetch evidence from URLs | V2 evidence |
 | `gl.message.sender_account` | Identify which party is calling | Access control |
-| `gl.message.value` | Handle escrow deposits | V2 escrow |
+| `gl.message.value` | Handle native token deposits | V2 native escrow |
 | `@gl.public.write` | State-modifying methods | All write ops |
-| `@gl.public.write.payable` | Methods that accept funds | V2 escrow |
+| `@gl.public.write.payable` | Methods that accept native tokens | V2 native escrow |
 | `@gl.public.view` | Read-only queries | Status checks |
 
 ### Open Questions

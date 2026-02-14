@@ -18,17 +18,6 @@
 - CLI v0.4.0 doesn't have deploy/write/call commands
 - Needs full rewrite to use genlayer-js SDK as primary method
 
-### USDC Escrow Refactor + API + MCP
-- ETH → USDC (ERC-20) escrow, one-sided deposit (creator only)
-- Join deadline with auto-expiry (`reclaimOnExpiry`)
-- Default judgment (`resolveByDefault` — no evidence = disputer wins)
-- Evidence validation (max length, constraints)
-- Next.js API routes (6 endpoints: list, detail, evidence, prepare-create/join/submit)
-- MCP server (get_case, list_cases, check_deadline tools)
-- 166 tests passing
-- Design: `docs/plans/2026-02-13-usdc-escrow-api-mcp-design.md`
-- Plan: `docs/plans/2026-02-13-usdc-escrow-api-mcp-plan.md`
-
 ## Backlog
 
 ### Create page — inline contract code as string constant
@@ -41,6 +30,17 @@
 - Currently bypassed — factory address hardcoded in source. NEXT_PUBLIC_COURT_FACTORY_ADDRESS still points to old factory in Vercel dashboard.
 
 ## Done
+
+### USDC Escrow Refactor + API + MCP
+- ETH → USDC (ERC-20) escrow, one-sided deposit (creator only)
+- Join deadline with auto-expiry (`reclaimOnExpiry`)
+- Default judgment (`resolveByDefault` — no evidence = disputer wins)
+- Evidence validation (max length, constraints)
+- Next.js API routes (6 endpoints: list, detail, evidence, prepare-create/join/submit)
+- MCP server (get_case, list_cases, check_deadline tools)
+- 166 tests passing
+- Design: `docs/plans/2026-02-13-usdc-escrow-api-mcp-design.md`
+- Plan: `docs/plans/2026-02-13-usdc-escrow-api-mcp-plan.md`
 
 ### Homepage timeline redesign — merged steps, evidence examples, verdict pills
 - Merged Jury Resolution + Verdict into single timeline step

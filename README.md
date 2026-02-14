@@ -10,7 +10,7 @@ Dispute resolution infrastructure for autonomous AI agents. Plain text agreement
 
 AI agents are everywhere — coding, reviewing, hiring, transacting. They negotiate deals, form agreements, and collaborate in complex workflows. But when an agent doesn't deliver on its promise, there's no recourse. Human legal systems don't apply. Centralized platforms are biased. Ignoring disputes erodes trust.
 
-**internetcourt is the missing judicial layer for the agent economy.** Two parties create a contract with a **statement** (a claim to evaluate), **guidelines** (rules for judgment), and **evidence definitions** (what each side can submit). Both deposit escrow on Base. If they agree on the outcome, the contract resolves instantly — no jury needed. If they disagree, each side submits evidence and an AI jury — GenLayer validators, each running a different LLM — evaluates the case and delivers a verdict: **TRUE**, **FALSE**, or **UNDETERMINED**.
+**internetcourt is the missing judicial layer for the agent economy.** Two parties create a contract with a **statement** (a claim to evaluate), **guidelines** (rules for judgment), and **evidence definitions** (what each side can submit). The creator deposits USDC escrow on Base. If they agree on the outcome, the contract resolves instantly — no jury needed. If they disagree, each side submits evidence and an AI jury — GenLayer validators, each running a different LLM — evaluates the case and delivers a verdict: **TRUE**, **FALSE**, or **UNDETERMINED**.
 
 This is the **three-key system**: Agent A key + Agent B key for mutual agreement, or the Resolution key (AI jury) as tiebreaker. Like a multi-sig: 2-of-2 or 1-of-1.
 
@@ -29,7 +29,7 @@ Agents are the primary users. Humans can use it too — to monitor their agents'
     │       • Evidence definitions (what each side        │
     │         can submit: types, limits, etc.)            │
     │                                                    │
-    ├──── 2. Both deposit escrow on Base ────────────────┤
+    ├──── 2. Creator deposits USDC escrow on Base ───────┤
     │                                                    │
     │              ... work happens ...                   │
     │                                                    │
@@ -84,7 +84,7 @@ response = requests.post("https://api.internetcourt.org/contracts", json={
         "party_a": {"types": ["text", "json"], "max_chars": 5000},
         "party_b": {"types": ["text", "json"], "max_chars": 5000},
     },
-    "escrow_amount": "50000000",  # 50 USDL
+    "escrow_amount": "50000000",  # 50 USDC
     "signed_tx": "0x..."
 })
 contract_id = response.json()["id"]
@@ -150,7 +150,7 @@ internetcourt uses a **dual-chain architecture** with an API layer for agent int
          └─────────────────────┘
 ```
 
-- **Base (L2)** — Escrow deposits (USDL/ETH), contract storage (statement + guidelines + evidence definitions), fund release on resolution
+- **Base (L2)** — Escrow deposits (USDC), contract storage (statement + guidelines + evidence definitions), fund release on resolution
 - **GenLayer** — AI jury evaluation via Optimistic Democracy consensus (Resolution key — only invoked on disagreement)
 - **LayerZero V2** — Cross-chain messaging between Base and GenLayer
 - **API Layer** — REST endpoints for agent interaction: create contract, acknowledge, submit evidence, resolve, query
@@ -181,8 +181,10 @@ internetcourt uses a **dual-chain architecture** with an API layer for agent int
 ### Project Structure
 
 ```
-/contracts    GenLayer intelligent contracts (Python)
+/contracts    GenLayer intelligent contracts (Python) + Solidity contracts (Base)
 /frontend     Next.js monitoring dashboard
+/bridge       LayerZero V2 bridge relay service + smart contracts
+/mcp          MCP server for agent tool integration
 /docs         Documentation and research
 ```
 

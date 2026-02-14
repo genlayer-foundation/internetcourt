@@ -44,7 +44,7 @@ internetcourt.org is dispute resolution infrastructure for the AI agent economy.
 
 ## Why This Architecture?
 
-- **Base** is a mature, low-cost L2 with established DeFi tooling — ideal for holding escrow funds (USDL/ETH) and storing agreement data on-chain
+- **Base** is a mature, low-cost L2 with established DeFi tooling — ideal for holding escrow funds (USDC) and storing agreement data on-chain
 - **GenLayer** provides the AI jury system (Optimistic Democracy) — no other chain has protocol-level AI validation with multi-model consensus
 - **LayerZero V2** connects them — reuses the cross-chain pattern from argue.fun and pm-kit
 - **API layer** makes the platform agent-native — AI agents interact via REST/SDK, not a web browser
@@ -64,7 +64,7 @@ The API is the primary interface for AI agents. Every operation available throug
 ```
 API Endpoints (v1):
 POST   /contracts                     - Create contract (statement + guidelines + evidence defs)
-POST   /contracts/:id/acknowledge     - Agent B acknowledges contract
+POST   /contracts/:id/accept          - Agent B accepts agreement (no deposit)
 POST   /contracts/:id/propose-outcome - Propose outcome (mutual agreement path)
 POST   /contracts/:id/confirm-outcome - Confirm proposed outcome (mutual agreement path)
 POST   /contracts/:id/dispute         - Initiate dispute (disagreement path)
@@ -90,8 +90,8 @@ The web UI is for humans monitoring their agents' cases, not the primary interac
 The Base contract manages funds and contract lifecycle:
 
 - Store contract data (parties, statement, guidelines, evidence definitions, status)
-- Acknowledge contract flow (Agent B)
-- Hold escrow deposits (USDL or ETH)
+- Accept agreement flow (Agent B joins free, no deposit)
+- Hold escrow deposit (USDC, deposited by creator only)
 - Handle mutual agreement resolution (2-of-2 — no bridge needed)
 - Record dispute initiation and evidence submissions
 - Validate evidence against pre-defined evidence definitions
@@ -151,8 +151,7 @@ struct Contract {
     // Three components
     string statement;            // Claim to evaluate (true/false)
     string guidelines;           // Instructions for AI jury evaluation
-    EvidenceDefinition evidenceDefA;  // What Agent A can submit
-    EvidenceDefinition evidenceDefB;  // What Agent B can submit
+    string evidenceDefs;             // Evidence definitions (JSON, describes what each party can submit)
 
     // Evidence submissions
     string evidenceA;            // Agent A's submitted evidence
@@ -163,20 +162,12 @@ struct Contract {
     string reasoning;            // AI jury's reasoning (if jury invoked)
 
     // Escrow
-    uint256 escrowA;             // Agent A's escrow deposit
-    uint256 escrowB;             // Agent B's escrow deposit
+    uint256 escrowAmount;        // Escrow deposit (USDC, deposited by creator only)
 
     // Metadata
-    Status status;               // CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED
+    Status status;               // CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED / CANCELLED
     uint256 evidenceWindow;      // Time window for evidence submission
     uint256 createdAt;
-}
-
-struct EvidenceDefinition {
-    string[] allowedTypes;       // ["text", "json", "url", ...]
-    string[] allowedInfo;        // Types of information permitted
-    uint256 maxChars;            // Maximum characters
-    string constraints;          // Any other constraints (plain text)
 }
 
 enum Resolution { NONE, TRUE, FALSE, UNDETERMINED }
@@ -237,7 +228,7 @@ class InternetCourtJury(gl.Contract):
 ### State Machine
 
 ```
- ┌─────────┐  acknowledge()  ┌────────┐  disagree()  ┌──────────┐  evaluate()  ┌───────────┐  verdict  ┌──────────┐
+ ┌─────────┐  acceptAgreement()  ┌────────┐  disagree()  ┌──────────┐  evaluate()  ┌───────────┐  verdict  ┌──────────┐
  │ CREATED │───────────────>│ ACTIVE │────────────>│ DISPUTED │───────────>│ RESOLVING │────────>│ RESOLVED │
  └─────────┘                └────────┘              └──────────┘            └───────────┘         └──────────┘
       │                        │                                                                       ▲
@@ -249,8 +240,8 @@ class InternetCourtJury(gl.Contract):
 ```
 
 **States**:
-- **CREATED** — Contract deployed with statement + guidelines + evidence definitions. Agent A escrow deposited. Waiting for Agent B.
-- **ACTIVE** — Agent B has acknowledged and deposited escrow. Contract is live but dormant — waiting for outcome assessment.
+- **CREATED** — Contract deployed with statement + guidelines + evidence definitions. Creator's USDC escrow deposited. Waiting for Agent B. Optional `joinDeadline` — if set and passed, anyone can call `reclaimOnExpiry()` to refund creator.
+- **ACTIVE** — Agent B has accepted the agreement (no deposit required). Contract is live but dormant — waiting for outcome assessment.
 - **DISPUTED** — Agents disagree on the outcome. Evidence submission window is open. Each side submits evidence per the pre-defined evidence definitions.
 - **RESOLVING** — Evidence window closed (or both submitted). AI jury (Resolution key) is evaluating.
 - **RESOLVED** — Verdict delivered: TRUE, FALSE, or UNDETERMINED. Escrow released per outcome.
@@ -275,16 +266,16 @@ class InternetCourtJury(gl.Contract):
 
 ```
 Agent A -> API -> Base.createContract(agentB, statement, guidelines, evidenceDefs)
-  -> Agent A deposits escrow (USDL/ETH) in same transaction
+  -> Agent A deposits escrow (USDC) via factory transferFrom
   -> Contract stored on Base with status: CREATED
   -> Agent B notified (webhook or polling)
 ```
 
-### Acknowledge Contract
+### Accept Agreement
 
 ```
-Agent B -> API -> Base.acknowledgeContract(contractId)
-  -> Agent B deposits escrow in same transaction
+Agent B -> API -> Base.acceptAgreement(contractId)
+  -> Agent B joins free (no deposit required)
   -> Status: CREATED -> ACTIVE
   -> Contract is now live but dormant
 ```
@@ -358,7 +349,7 @@ response = requests.post("https://api.internetcourt.org/contracts", json={
         "party_a": {"types": ["text", "json", "url"], "max_chars": 10000},
         "party_b": {"types": ["text", "json", "url"], "max_chars": 10000},
     },
-    "escrow_amount": "100000000",  # 100 USDL
+    "escrow_amount": "100000000",  # 100 USDC
     "signed_tx": "0x..."  # Signed Base transaction
 })
 contract_id = response.json()["id"]
@@ -408,13 +399,14 @@ Standard EVM integration with viem/wagmi:
 import { useWriteContract, useReadContract } from 'wagmi';
 
 // Create contract with statement + guidelines + evidence definitions
+// First approve USDC spend by factory, then create agreement
 const { writeContract } = useWriteContract();
 writeContract({
   address: INTERNETCOURT_BASE_ADDRESS,
   abi: internetcourtAbi,
-  functionName: 'createContract',
-  args: [agentBAddress, statement, guidelines, evidenceDefinitions],
-  value: escrowAmount, // ETH
+  functionName: 'createAgreement',
+  args: [agentBAddress, statement, guidelines, evidenceDefinitions, escrowAmount],
+  // No value — escrow is USDC (ERC-20), pulled via transferFrom
 });
 ```
 
@@ -439,20 +431,22 @@ const appealTx = await glClient.appealTransaction({ txId });
 
 ## Escrow Pattern
 
-### v1 — Full Escrow on Base
+### v1 — USDC Escrow on Base (One-Sided Deposit)
 
-- Both parties deposit equal escrow when creating/acknowledging contract
-- Funds held in Base smart contract
+- Creator (partyA) deposits USDC escrow when creating the agreement via factory
+- Factory pulls USDC from caller via `transferFrom`, deploys Agreement, transfers USDC to the new Agreement contract
+- PartyB joins free via `acceptAgreement()` (no deposit required)
 - On mutual agreement (2-of-2): escrow released per agreed outcome
 - On jury verdict (TRUE/FALSE): escrow released per verdict
-- On UNDETERMINED: possible additional round or escrow returned
-- On cancel (before activation): escrow returned to depositor
-- Protocol fee: configurable basis points (e.g., 2.5%)
+- On UNDETERMINED: escrow returned to creator
+- On cancel (before activation): escrow returned to creator
+- On join deadline expiry: anyone can call `reclaimOnExpiry()` to refund creator
+- On evidence deadline expiry with no counter-evidence: `resolveByDefault()` awards escrow to dispute initiator
+- Pull-based withdrawals via `pendingWithdrawals` mapping + `claimFunds()`
 
 ### Supported Assets
 
-- ETH (native)
-- USDL (or other stablecoin) — preferred for predictable value
+- USDC (ERC-20) — stable value for predictable escrow
 
 ## Deployment
 

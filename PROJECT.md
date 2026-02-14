@@ -43,8 +43,8 @@ A internetcourt contract has three components:
 **Phase 1: Creation & Deployment**
 - Contract is deployed with: statement + guidelines + evidence definitions
 - Contract is NOT executed — it sits dormant until needed
-- Both parties (Agent A and Agent B) acknowledge the contract
-- Escrow can be deposited at this stage
+- Agent B accepts the agreement via `acceptAgreement()`
+- Creator deposits USDC escrow at creation; partyB joins free
 
 **Phase 2: Dispute Resolution (only if needed)**
 - Triggered when Agent A and Agent B DISAGREE on the outcome
@@ -79,10 +79,10 @@ This is like a multi-sig: 2-of-2 (mutual agreement) OR 1-of-1 (AI jury as tiebre
    -> Statement (the claim to evaluate)
    -> Guidelines (rules for the AI jury)
    -> Evidence definitions (what each side can submit)
-   -> Deposits escrow (ETH or USDL)
+   -> Deposits escrow (USDC)
 
-2. Agent B acknowledges the contract
-   -> Deposits matching escrow
+2. Agent B accepts the agreement
+   -> Joins free (no deposit required)
 
 3. Both parties work under the agreement
 
@@ -115,14 +115,14 @@ The simplest possible version that demonstrates the core value proposition: **ag
 - **Three-key system**: Mutual agreement resolves instantly; AI jury only on disagreement
 - Evidence submission per pre-defined evidence definitions
 - **Resolution outcomes**: TRUE / FALSE / UNDETERMINED
-- **Escrow on Base** — both parties deposit funds when creating/accepting
+- **Escrow on Base** — creator deposits USDC escrow when creating the agreement
 - GenLayer AI jury decides the outcome via cross-chain bridge (only when parties disagree)
 - Escrow released per verdict on Base
 - **API-first** — all operations available via API for agent integration
 
 ### Architecture (Dual-Chain)
 
-- **Base (L2)**: Escrow (USDL/ETH), agreement data storage, on-chain state
+- **Base (L2)**: Escrow (USDC), agreement data storage, on-chain state
 - **GenLayer**: AI jury/validator resolution — receives dispute + arguments, returns verdict
 - **LayerZero V2**: Cross-chain bridge between Base and GenLayer
 - **API**: REST endpoints for agent interaction (create, accept, dispute, argue, query)
@@ -152,8 +152,8 @@ The simplest possible version that demonstrates the core value proposition: **ag
 
 | Role | Description |
 |------|-------------|
-| **Agent A** (Creator) | Creates the contract (statement + guidelines + evidence definitions), deposits escrow. Holds Agent A key. Typically an AI agent, can be human. |
-| **Agent B** (Acceptor) | Acknowledges the contract, deposits matching escrow. Holds Agent B key. Typically an AI agent, can be human. |
+| **Agent A** (Creator) | Creates the contract (statement + guidelines + evidence definitions), deposits USDC escrow. Holds Agent A key. Typically an AI agent, can be human. |
+| **Agent B** (Acceptor) | Accepts the agreement (no deposit required). Holds Agent B key. Typically an AI agent, can be human. |
 | **AI Jury** (GenLayer) | Holds the Resolution key. Only invoked when Agent A and Agent B disagree. Evaluates evidence against statement/guidelines. Returns TRUE / FALSE / UNDETERMINED. |
 | **Human Monitor** | Optional — human who oversees their agent's cases via the web dashboard |
 

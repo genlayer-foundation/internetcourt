@@ -266,7 +266,7 @@ contracts/solidity/
 │   ├── interfaces/
 │   │   └── IInternetCourtFactory.sol
 │   └── mocks/
-│       └── MockUSDL.sol
+│       └── MockUSDC.sol
 ├── scripts/
 │   ├── deploy.ts
 │   ├── configure-bridge.ts
@@ -308,8 +308,7 @@ struct AgreementData {
     string evidenceB;           // Party B's evidence
     string verdict;             // "TRUE" | "FALSE" | "UNDETERMINED"
     string reasoning;           // AI jury reasoning
-    uint256 escrowA;            // Party A's escrow deposit
-    uint256 escrowB;            // Party B's escrow deposit
+    uint256 escrowAmount;       // Escrow deposit (USDC, deposited by creator only)
     bool partyAAgrees;          // Three-key: Party A manual vote
     bool partyBAgrees;          // Three-key: Party B manual vote
     uint256 createdAt;
@@ -322,7 +321,7 @@ enum Status { CREATED, ACTIVE, DISPUTED, RESOLVING, RESOLVED, CANCELLED }
 
 | Method | Access | Description |
 |--------|--------|-------------|
-| `accept()` | Party B | Accept agreement + deposit escrow. CREATED -> ACTIVE |
+| `acceptAgreement()` | Party B | Accept agreement (no deposit). CREATED -> ACTIVE |
 | `raiseDispute(string evidence)` | Either party | Raise dispute with evidence. ACTIVE -> DISPUTED |
 | `submitEvidence(string evidence)` | Other party | Submit counter-evidence |
 | `mutualResolve(string verdict)` | Either party | Three-key resolution without AI jury |
@@ -332,11 +331,12 @@ enum Status { CREATED, ACTIVE, DISPUTED, RESOLVING, RESOLVED, CANCELLED }
 | `getDetails()` | Public view | Return all agreement data |
 
 **Escrow logic:**
-- Party A deposits ETH/USDL when creating (via factory)
-- Party B deposits matching amount when accepting
-- On resolution: winner receives both deposits minus protocol fee
-- On cancel: escrow returned to depositor
-- USDL: ERC-20 token transfer via `transferFrom` (approval pattern from argue.fun factory)
+- Creator (partyA) deposits USDC when creating (factory pulls via `transferFrom`)
+- PartyB joins free via `acceptAgreement()` (no deposit required)
+- On resolution: escrow released per verdict via pull-based withdrawals (`claimFunds()`)
+- On cancel: escrow returned to creator
+- On join deadline expiry: `reclaimOnExpiry()` refunds creator
+- On evidence deadline with no counter-evidence: `resolveByDefault()` awards dispute initiator
 
 **Three-key system:**
 - If both parties call `mutualResolve` with the same verdict -> resolved immediately, no AI needed
@@ -359,7 +359,7 @@ Adapted from `arguedotfun/contracts/contracts/DebateFactoryCOFI.sol`.
 // 1. Create Agreement instances
 // 2. Route bridge verdicts to correct agreements
 // 3. Track agreement status arrays for queries
-// 4. Single USDL approval (users approve factory, factory routes to agreements)
+// 4. Single USDC approval (users approve factory, factory pulls USDC via transferFrom)
 // 5. Protocol fee management
 
 // Key state:
@@ -369,7 +369,7 @@ uint256[] public activeAgreements;
 uint256[] public disputedAgreements;
 uint256[] public resolvedAgreements;
 address public bridgeReceiver;                          // LayerZero bridge
-address public usdlToken;                               // USDL ERC-20
+address public usdcToken;                               // USDC ERC-20
 uint256 public protocolFeeBps;                          // e.g., 250 = 2.5%
 address public feeRecipient;
 ```
@@ -378,8 +378,7 @@ address public feeRecipient;
 
 | Method | Access | Description |
 |--------|--------|-------------|
-| `createAgreement(partyB, statement, guidelines, evidenceDefs)` | Public payable | Deploy Agreement, deposit escrow |
-| `createAgreementUSDL(partyB, statement, guidelines, evidenceDefs, amount)` | Public | Create with USDL (ERC-20) |
+| `createAgreement(partyB, statement, guidelines, evidenceDefs, amount)` | Public | Deploy Agreement, pull USDC escrow via transferFrom |
 | `forwardResolutionRequest(agreementId)` | Agreement only | Emit event for bridge service |
 | `processBridgeMessage(sourceChainId, sender, data)` | Bridge only | Receive verdict from GenLayer |
 | `getActiveAgreements()` | Public view | List active agreement IDs |
@@ -403,11 +402,11 @@ event EscrowReleased(uint256 indexed id, address winner, uint256 amount);
 - `processBridgeMessage` dispatch pattern
 - Single token approval via factory
 
-### 2.4 MockUSDL.sol
+### 2.4 MockUSDC.sol
 
-**File:** `contracts/solidity/contracts/mocks/MockUSDL.sol`
+**File:** `contracts/solidity/contracts/mocks/MockUSDC.sol`
 
-Direct reuse from `arguedotfun/contracts/contracts/mocks/MockUSDL.sol`:
+ERC-20 mock for testnet:
 - ERC-20 with 6 decimals
 - Rate-limited faucet for testnet
 - Mint function for testing
@@ -520,9 +519,9 @@ class CourtVerdict(gl.Contract):
 describe("Agreement", () => {
     // Lifecycle
     it("should create with correct initial state")
-    it("should allow party B to accept with escrow")
+    it("should allow party B to accept agreement")
     it("should reject accept from non-party-B")
-    it("should reject accept without sufficient escrow")
+    it("should reject accept after already active")
 
     // Dispute
     it("should allow either party to raise dispute")
@@ -545,9 +544,8 @@ describe("Agreement", () => {
     it("should reject cancel after activation")
 
     // Escrow
-    it("should hold ETH escrow correctly")
-    it("should hold USDL escrow correctly")
-    it("should release to winner minus protocol fee")
+    it("should hold USDC escrow correctly")
+    it("should release escrow per verdict via pull-based withdrawal")
     it("should reject claim before resolution")
 });
 ```
@@ -561,7 +559,7 @@ describe("InternetCourtFactory", () => {
     it("should process bridge message and set resolution")
     it("should reject bridge message from non-receiver")
     it("should emit correct events")
-    it("should handle USDL creation with approval")
+    it("should handle USDC creation with approval")
     it("should collect protocol fees")
 });
 ```
@@ -571,8 +569,8 @@ describe("InternetCourtFactory", () => {
 **File:** `contracts/solidity/scripts/deploy.ts`
 
 ```typescript
-// 1. Deploy MockUSDL
-// 2. Deploy InternetCourtFactory(usdlAddress, protocolFeeBps, feeRecipient)
+// 1. Deploy MockUSDC (testnet only)
+// 2. Deploy InternetCourtFactory(bridgeReceiverAddress, ownerAddress)
 // 3. Deploy BridgeReceiver(factoryAddress)
 // 4. Configure factory.setBridgeReceiver(bridgeReceiverAddress)
 // 5. Log all deployed addresses
@@ -582,7 +580,7 @@ describe("InternetCourtFactory", () => {
 ### Definition of Done — Phase 2
 - [ ] `contracts/solidity/contracts/Agreement.sol` — Full agreement contract with escrow
 - [ ] `contracts/solidity/contracts/InternetCourtFactory.sol` — Factory with bridge receiver
-- [ ] `contracts/solidity/contracts/mocks/MockUSDL.sol` — Test token
+- [ ] `contracts/solidity/contracts/mocks/MockUSDC.sol` — Test token
 - [ ] `contracts/solidity/test/` — 20+ Hardhat tests passing
 - [ ] `bridge/smart-contracts/` — Bridge contracts deployed
 - [ ] `bridge/service/` — Bridge relay service running
@@ -636,7 +634,7 @@ frontend/
 | `POST` | `/api/agreements` | Create agreement + deposit escrow | API key or wallet sig |
 | `GET` | `/api/agreements` | List agreements (filter by party) | API key |
 | `GET` | `/api/agreements/:id` | Get agreement details | API key |
-| `POST` | `/api/agreements/:id/accept` | Accept agreement + deposit escrow | API key or wallet sig |
+| `POST` | `/api/agreements/:id/accept` | Accept agreement (no deposit) | API key or wallet sig |
 | `POST` | `/api/agreements/:id/dispute` | Raise dispute with evidence | API key or wallet sig |
 | `POST` | `/api/agreements/:id/evidence` | Submit counter-evidence | API key or wallet sig |
 | `POST` | `/api/agreements/:id/resolve` | Trigger mutual resolution | API key or wallet sig |
@@ -693,7 +691,7 @@ export async function authenticateRequest(req: Request): Promise<AuthResult> {
         "party_b": { "types": ["text"], "max_length": 50000 }
     },
     "escrow_amount": "50000000",
-    "escrow_token": "USDL",
+    "escrow_token": "USDC",
     "signed_tx": "0x..."
 }
 
@@ -704,7 +702,7 @@ export async function authenticateRequest(req: Request): Promise<AuthResult> {
     "party_a": "0x...",
     "party_b": "0x...",
     "statement": "...",
-    "escrow_a": "50000000",
+    "escrow_amount": "50000000",
     "tx_hash": "0x..."
 }
 ```
@@ -980,7 +978,7 @@ export async function getAgreement(id: number): Promise<AgreementDetail> { ... }
 export async function createAgreement(params: CreateParams): Promise<string> { ... }
 
 // Accept agreement (write)
-export async function acceptAgreement(id: number, escrowAmount: bigint): Promise<string> { ... }
+export async function acceptAgreement(id: number): Promise<string> { ... }
 ```
 
 **File:** `frontend/src/lib/chain/genlayer-client.ts`
@@ -1013,7 +1011,7 @@ export async function appealVerdict(txId: string) { ... }
 ```
 NEXT_PUBLIC_PRIVY_APP_ID=
 NEXT_PUBLIC_FACTORY_ADDRESS=
-NEXT_PUBLIC_USDL_ADDRESS=
+NEXT_PUBLIC_USDC_ADDRESS=
 NEXT_PUBLIC_BASE_SEPOLIA_RPC=
 NEXT_PUBLIC_GENLAYER_RPC=
 NEXT_PUBLIC_GENLAYER_CONTRACT=
@@ -1071,7 +1069,7 @@ agreement = court.create_agreement(
     statement="Agent B will deliver a security audit by Feb 10",
     guidelines="Evaluate completeness against OWASP Top 10",
     evidence_defs={"party_a": {"types": ["text"]}, "party_b": {"types": ["text"]}},
-    escrow_amount=50_000000,  # 50 USDL
+    escrow_amount=50_000000,  # 50 USDC
 )
 
 # Raise dispute
@@ -1153,7 +1151,7 @@ agreement = court.create_agreement(
         "party_a": {"types": ["text"], "max_length": 10000},
         "party_b": {"types": ["text"], "max_length": 50000}
     },
-    escrow_amount=40_000000,  # 40 USDL
+    escrow_amount=40_000000,  # 40 USDC
 )
 
 print(f"Agreement created: {agreement.id}")
@@ -1194,7 +1192,7 @@ Interactive API documentation page with:
 - [ ] Contract addresses recorded
 
 # Base Sepolia
-- [ ] MockUSDL deployed
+- [ ] MockUSDC deployed
 - [ ] InternetCourtFactory deployed
 - [ ] BridgeReceiver deployed
 - [ ] Bridge peers configured
@@ -1263,7 +1261,7 @@ All files to create, organized by phase:
 | `contracts/solidity/contracts/Agreement.sol` | Individual agreement |
 | `contracts/solidity/contracts/InternetCourtFactory.sol` | Factory + bridge |
 | `contracts/solidity/contracts/interfaces/IInternetCourtFactory.sol` | Interface |
-| `contracts/solidity/contracts/mocks/MockUSDL.sol` | Test token |
+| `contracts/solidity/contracts/mocks/MockUSDC.sol` | Test token |
 | `contracts/solidity/test/Agreement.test.ts` | Agreement tests |
 | `contracts/solidity/test/InternetCourtFactory.test.ts` | Factory tests |
 | `contracts/solidity/scripts/deploy.ts` | Deployment script |
@@ -1368,7 +1366,7 @@ BASESCAN_API_KEY=                       # Contract verification
 
 # === Contract Addresses (after deployment) ===
 NEXT_PUBLIC_FACTORY_ADDRESS=            # InternetCourtFactory on Base Sepolia
-NEXT_PUBLIC_USDL_ADDRESS=              # MockUSDL on Base Sepolia
+NEXT_PUBLIC_USDC_ADDRESS=              # MockUSDC on Base Sepolia
 NEXT_PUBLIC_GENLAYER_CONTRACT=         # InternetCourt on GenLayer
 BRIDGE_RECEIVER_ADDRESS=               # BridgeReceiver on Base Sepolia
 BRIDGE_FORWARDER_ADDRESS=              # BridgeForwarder on zkSync

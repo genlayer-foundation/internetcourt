@@ -433,4 +433,161 @@ describe("InternetCourtFactory", function () {
       expect(await factory.nextAgreementId()).to.equal(0);
     });
   });
+
+  // ─── Multiple Concurrent Agreements ─────────────
+
+  describe("Multiple concurrent factory agreements", function () {
+    it("creates 3 agreements in sequence with unique IDs and addresses", async function () {
+      const { factory, usdc, partyA, partyB } =
+        await loadFixture(deployFactoryFixture);
+
+      const usdcAddr = await usdc.getAddress();
+      const addresses: string[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const tx = await factory
+          .connect(partyA)
+          .createAgreement(
+            partyB.address,
+            `Statement ${i}`,
+            GUIDELINES,
+            EVIDENCE_DEFS,
+            EVIDENCE_DEADLINE,
+            usdcAddr,
+            ESCROW,
+            0,
+            0,
+            ""
+          );
+        const receipt = await tx.wait();
+
+        const event = receipt!.logs.find((log: any) => {
+          try {
+            return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+          } catch {
+            return false;
+          }
+        });
+        const parsed = factory.interface.parseLog(event as any);
+        addresses.push(parsed!.args.agreementAddress);
+      }
+
+      // Each gets a unique address
+      expect(addresses[0]).to.not.equal(addresses[1]);
+      expect(addresses[1]).to.not.equal(addresses[2]);
+      expect(addresses[0]).to.not.equal(addresses[2]);
+
+      // Each gets the correct ID in the agreements mapping
+      expect(await factory.agreements(0)).to.equal(addresses[0]);
+      expect(await factory.agreements(1)).to.equal(addresses[1]);
+      expect(await factory.agreements(2)).to.equal(addresses[2]);
+
+      // All are tracked as deployed
+      expect(await factory.deployedAgreements(addresses[0])).to.be.true;
+      expect(await factory.deployedAgreements(addresses[1])).to.be.true;
+      expect(await factory.deployedAgreements(addresses[2])).to.be.true;
+    });
+
+    it("query agreements by different parties — correct filtering via deployedAgreements", async function () {
+      const { factory, usdc, partyA, partyB, outsider } =
+        await loadFixture(deployFactoryFixture);
+
+      const usdcAddr = await usdc.getAddress();
+
+      // Mint and approve USDC for outsider to create an agreement too
+      await usdc.mint(outsider.address, ESCROW * 10n);
+      await usdc.connect(outsider).approve(await factory.getAddress(), ESCROW * 10n);
+
+      // partyA creates agreement with partyB
+      const tx1 = await factory
+        .connect(partyA)
+        .createAgreement(
+          partyB.address,
+          "Agreement by partyA",
+          GUIDELINES,
+          EVIDENCE_DEFS,
+          EVIDENCE_DEADLINE,
+          usdcAddr,
+          ESCROW,
+          0,
+          0,
+          ""
+        );
+      const receipt1 = await tx1.wait();
+      const event1 = receipt1!.logs.find((log: any) => {
+        try {
+          return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+        } catch {
+          return false;
+        }
+      });
+      const addr1 = factory.interface.parseLog(event1 as any)!.args.agreementAddress;
+
+      // outsider creates agreement with partyA
+      const tx2 = await factory
+        .connect(outsider)
+        .createAgreement(
+          partyA.address,
+          "Agreement by outsider",
+          GUIDELINES,
+          EVIDENCE_DEFS,
+          EVIDENCE_DEADLINE,
+          usdcAddr,
+          ESCROW,
+          0,
+          0,
+          ""
+        );
+      const receipt2 = await tx2.wait();
+      const event2 = receipt2!.logs.find((log: any) => {
+        try {
+          return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+        } catch {
+          return false;
+        }
+      });
+      const addr2 = factory.interface.parseLog(event2 as any)!.args.agreementAddress;
+
+      // Verify both are different agreements deployed by the factory
+      expect(addr1).to.not.equal(addr2);
+      expect(await factory.deployedAgreements(addr1)).to.be.true;
+      expect(await factory.deployedAgreements(addr2)).to.be.true;
+
+      // Verify partyA roles differ in each agreement
+      const agreement1 = await ethers.getContractAt("Agreement", addr1);
+      const agreement2 = await ethers.getContractAt("Agreement", addr2);
+
+      expect(await agreement1.partyA()).to.equal(partyA.address);
+      expect(await agreement1.partyB()).to.equal(partyB.address);
+      expect(await agreement2.partyA()).to.equal(outsider.address);
+      expect(await agreement2.partyB()).to.equal(partyA.address);
+    });
+
+    it("nextAgreementId increments correctly across 3 agreements", async function () {
+      const { factory, usdc, partyA, partyB } =
+        await loadFixture(deployFactoryFixture);
+
+      const usdcAddr = await usdc.getAddress();
+
+      expect(await factory.nextAgreementId()).to.equal(0);
+
+      await factory.connect(partyA).createAgreement(
+        partyB.address, "S1", GUIDELINES, EVIDENCE_DEFS, EVIDENCE_DEADLINE,
+        usdcAddr, ESCROW, 0, 0, ""
+      );
+      expect(await factory.nextAgreementId()).to.equal(1);
+
+      await factory.connect(partyA).createAgreement(
+        partyB.address, "S2", GUIDELINES, EVIDENCE_DEFS, EVIDENCE_DEADLINE,
+        usdcAddr, ESCROW, 0, 0, ""
+      );
+      expect(await factory.nextAgreementId()).to.equal(2);
+
+      await factory.connect(partyA).createAgreement(
+        partyB.address, "S3", GUIDELINES, EVIDENCE_DEFS, EVIDENCE_DEADLINE,
+        usdcAddr, ESCROW, 0, 0, ""
+      );
+      expect(await factory.nextAgreementId()).to.equal(3);
+    });
+  });
 });

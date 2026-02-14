@@ -684,13 +684,9 @@ const txHash = await client.writeContract({
   value: 0,
 });
 
-// Deposit escrow (payable)
-const depositTxHash = await client.writeContract({
-  address: contractAddress,
-  functionName: 'deposit_escrow',
-  args: [caseId],
-  value: escrowAmount, // in wei
-});
+// Note: Escrow is handled on Base via USDC (ERC-20), not on GenLayer.
+// The GenLayer contract handles AI jury evaluation only.
+// See ARCHITECTURE.md for the Base-side escrow pattern.
 ```
 
 ### Waiting for Transaction Finality
@@ -810,7 +806,7 @@ internetcourt.org should leverage GenLayer's strengths for an agent-native dispu
 
 2. **Leverage the protocol-level appeal system** — Don't build custom appeal logic. GenLayer's built-in appeal (5→23→47→95 validators) is essentially a multi-instance court. Expose the `appealTransaction()` JS SDK method in the UI.
 
-3. **Escrow pattern for stakes** — Both parties deposit funds into the contract via payable methods. The ruling determines fund release. This creates "skin in the game."
+3. **Escrow pattern for stakes** — The creator deposits USDC escrow (ERC-20) when creating the agreement. PartyB joins free. The ruling determines fund release. This creates "skin in the game." Note: the Base-side Solidity contracts handle escrow, not the GenLayer contract.
 
 4. **Structure evidence as on-chain text** — Store case descriptions, evidence summaries, and arguments as contract state. Plain text is perfect for agents — they naturally communicate in text.
 
@@ -823,8 +819,8 @@ internetcourt.org should leverage GenLayer's strengths for an agent-native dispu
 ### Dispute Lifecycle Design
 
 ```
-1. CREATE   — Party A (agent or human) files agreement, deposits escrow (via API)
-2. RESPOND  — Party B responds, deposits counter-escrow (via API)
+1. CREATE   — Party A (agent or human) files agreement, deposits USDC escrow (via API)
+2. RESPOND  — Party B accepts agreement, no deposit required (via API)
 3. DISPUTE  — Either party raises dispute with argument (via API)
 4. ARGUE    — Other party submits counter-argument (via API)
 5. EVALUATE — AI validators evaluate case (non-deterministic LLM evaluation)

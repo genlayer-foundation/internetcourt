@@ -314,9 +314,11 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         string calldata statement,
         string calldata guidelines,
         string calldata evidenceDefs,
+        uint256 escrowAmount,
         uint256 evidenceDeadlineSeconds
-    ) external payable returns (address) {
-        Agreement agreement = new Agreement{value: msg.value}(
+    ) external returns (address) {
+        // Factory pulls USDC from caller via transferFrom, then transfers to new Agreement
+        Agreement agreement = new Agreement(
             msg.sender,
             partyB,
             statement,
@@ -431,16 +433,16 @@ contract Agreement {
     }
 
     function _releaseEscrow() internal {
+        // USDC escrow released via pull-based withdrawals (pendingWithdrawals + claimFunds)
         // TRUE  -> escrow to party A
         // FALSE -> escrow to party B
-        // UNDETERMINED -> return escrow to both parties
+        // UNDETERMINED -> return escrow to creator (partyA)
         if (verdict == Verdict.TRUE_) {
-            payable(partyA).transfer(totalEscrow);
+            pendingWithdrawals[partyA] += escrowAmount;
         } else if (verdict == Verdict.FALSE_) {
-            payable(partyB).transfer(totalEscrow);
+            pendingWithdrawals[partyB] += escrowAmount;
         } else {
-            payable(partyA).transfer(escrowA);
-            payable(partyB).transfer(escrowB);
+            pendingWithdrawals[partyA] += escrowAmount;
         }
     }
 
@@ -1208,7 +1210,7 @@ The 1M gas allocation covers the full call chain:
   BridgeReceiver.lzReceive()
     -> InternetCourtFactory.processBridgeMessage()
       -> Agreement.setResolution()
-        -> _releaseEscrow() (ETH transfers)
+        -> _releaseEscrow() (USDC pull-based withdrawals)
 ```
 
 ### Gas Allocation Code
@@ -1320,8 +1322,8 @@ Step 10: Fund relay wallet
 
 ```
 Step 11: End-to-end test
-  a. Create a test agreement on Base via Factory
-  b. Both parties deposit escrow
+  a. Create a test agreement on Base via Factory (creator deposits USDC escrow)
+  b. PartyB accepts agreement (no deposit)
   c. Initiate dispute
   d. Submit evidence from both parties
   e. Verify DisputeRequested event emitted
@@ -1371,13 +1373,13 @@ The `InternetCourtFactory.sol` must:
 ```
 1. CREATION (Base only)
    Agent A -> InternetCourtFactory.createAgreement(
-     partyB, statement, guidelines, evidenceDefs, deadlineSeconds
-   ) + escrow deposit
+     partyB, statement, guidelines, evidenceDefs, escrowAmount, deadlineSeconds
+   ) -> Factory pulls USDC via transferFrom, deploys Agreement, transfers USDC to it
    -> Agreement.sol deployed on Base
    -> Status: CREATED
 
 2. ACCEPTANCE (Base only)
-   Agent B -> Agreement.acceptContract() + escrow deposit
+   Agent B -> Agreement.acceptAgreement() (no deposit required)
    -> Status: ACTIVE
 
 3a. MUTUAL AGREEMENT (Base only, no bridge)
@@ -1431,10 +1433,10 @@ The `InternetCourtFactory.sol` must:
    -> Factory decodes inner message, verifies agreement
    -> Calls Agreement.setResolution(verdict, reasoning)
    -> Status: RESOLVED
-   -> Escrow released per verdict:
+   -> Escrow released per verdict via pull-based withdrawals (claimFunds):
       TRUE -> Party A gets escrow
       FALSE -> Party B gets escrow
-      UNDETERMINED -> both get their deposits back
+      UNDETERMINED -> Creator (Party A) gets escrow back
 ```
 
 ---
@@ -1504,10 +1506,10 @@ await expect(
     .processBridgeMessage(61998, oracleAddress, fakeMessage)
 ).to.be.revertedWith("Unknown agreement");
 
-// Test: escrow released correctly per verdict
-// TRUE -> Party A gets all escrow
-// FALSE -> Party B gets all escrow
-// UNDETERMINED -> each party gets their deposit back
+// Test: escrow released correctly per verdict via pull-based withdrawals
+// TRUE -> Party A gets escrow
+// FALSE -> Party B gets escrow
+// UNDETERMINED -> Creator (Party A) gets escrow back
 ```
 
 #### Relay Service (Vitest)
@@ -1534,9 +1536,9 @@ await expect(
 **File**: `bridge/service/scripts/test-bridge-direct.ts`
 
 ```typescript
-// 1. Deploy a test agreement on Base
-// 2. Fund both parties, deposit escrow
-// 3. Accept contract as Party B
+// 1. Deploy a test agreement on Base (creator deposits USDC escrow)
+// 2. Fund creator with USDC, approve factory
+// 3. PartyB accepts agreement (no deposit)
 // 4. Initiate dispute
 // 5. Submit evidence from both parties
 // 6. Wait for DisputeRequested event

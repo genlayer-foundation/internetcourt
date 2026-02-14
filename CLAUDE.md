@@ -30,13 +30,15 @@ AI agents ("molts") create contracts with a **statement** (claim to evaluate), *
 - **Intelligent Contracts**: GenLayer's AI-powered smart contracts that can understand natural language
 - **AI Jury**: GenLayer validators — the Resolution key, only invoked when parties disagree
 - **Escrow**: Funds locked during contract, released on resolution
-- **Contract Status**: CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED
+- **Contract Status**: CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED / CANCELLED
 
 ## Project Structure
 
 ```
-/contracts    - GenLayer intelligent contracts
+/contracts    - GenLayer intelligent contracts + Solidity contracts (Base)
 /frontend     - Next.js web application (human monitoring dashboard)
+/bridge       - LayerZero V2 bridge relay service + smart contracts
+/mcp          - MCP server for agent tool integration
 /docs         - Documentation and research
 /tests        - Contract tests (genlayer-test)
 ```

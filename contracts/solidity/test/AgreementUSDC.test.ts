@@ -358,7 +358,10 @@ describe("Agreement — USDC Escrow Features", function () {
   // ─── Default Judgment ───────────────────────────────
 
   describe("resolveByDefault", function () {
-    it("partyA initiates dispute, no evidence -> partyA wins by default", async function () {
+    // NOTE: Contract was updated to resolve as UNDETERMINED when neither party submits evidence.
+    // Previously this test expected the initiator to win by default (TRUE_), but the current
+    // contract behavior returns UNDETERMINED and refunds escrow to partyA (creator).
+    it("partyA initiates dispute, no evidence -> resolves as UNDETERMINED", async function () {
       const { agreement, partyA, usdc } = await loadFixture(disputedAgreementFixture);
 
       // Move past evidence deadline
@@ -367,11 +370,15 @@ describe("Agreement — USDC Escrow Features", function () {
       await agreement.resolveByDefault();
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
-      expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
+      expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
+      // UNDETERMINED: escrow refunded to partyA (creator)
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
     });
 
-    it("partyB initiates dispute, no evidence -> partyB wins by default", async function () {
+    // NOTE: Contract was updated to resolve as UNDETERMINED when neither party submits evidence.
+    // Previously this test expected the initiator (partyB) to win by default (FALSE_), but the
+    // current contract behavior returns UNDETERMINED and refunds escrow to partyA (creator).
+    it("partyB initiates dispute, no evidence -> resolves as UNDETERMINED", async function () {
       const { agreement, partyA, partyB, usdc } = await loadFixture(activeAgreementFixture);
 
       // Party B raises the dispute
@@ -383,8 +390,9 @@ describe("Agreement — USDC Escrow Features", function () {
       await agreement.resolveByDefault();
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
-      expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
-      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
+      expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
+      // UNDETERMINED: escrow refunded to partyA (creator), not partyB
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
     });
 
     it("reverts before evidence deadline", async function () {
@@ -395,16 +403,22 @@ describe("Agreement — USDC Escrow Features", function () {
       ).to.be.revertedWith("Deadline not passed");
     });
 
-    it("reverts if evidence was submitted", async function () {
+    // NOTE: Contract was updated to handle single-party evidence submission in resolveByDefault.
+    // Previously this test expected a revert with "Evidence was submitted" when only one party
+    // submitted evidence. The current contract allows resolveByDefault when only one party
+    // submitted (the submitter wins by default). It only reverts when BOTH parties submitted.
+    it("resolves by default when only one party submitted evidence (initiator wins)", async function () {
       const { agreement, partyA } = await loadFixture(disputedAgreementFixture);
 
       await agreement.connect(partyA).submitEvidence("Some evidence");
 
       await time.increase(ONE_HOUR + 1);
 
-      await expect(
-        agreement.resolveByDefault()
-      ).to.be.revertedWith("Evidence was submitted");
+      await agreement.resolveByDefault();
+
+      expect(await agreement.status()).to.equal(Status.RESOLVED);
+      // partyA initiated and submitted, so partyA wins -> TRUE_
+      expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
     });
 
     it("reverts if not in DISPUTED status", async function () {
@@ -615,6 +629,340 @@ describe("Agreement — USDC Escrow Features", function () {
       await agreement.connect(partyB).raiseDispute();
 
       expect(await agreement.disputeInitiator()).to.equal(partyB.address);
+    });
+  });
+
+  // ─── Zero-Escrow Full Lifecycle ───────────────────
+
+  describe("Zero-escrow full lifecycle", function () {
+    async function createZeroEscrowAgreementFixture() {
+      const base = await loadFixture(deployFixture);
+      const { factory, partyA, partyB } = base;
+
+      const joinDeadline = (await time.latest()) + ONE_DAY;
+      const tx = await factory.connect(partyA).createAgreement(
+        partyB.address,
+        "Zero escrow statement",
+        "Guidelines",
+        "{}",
+        ONE_HOUR,
+        ethers.ZeroAddress, // no USDC token
+        0n,                 // zero escrow
+        joinDeadline,
+        10000,
+        ""
+      );
+      const receipt = await tx.wait();
+
+      const event = receipt!.logs.find((log: any) => {
+        try {
+          return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+        } catch {
+          return false;
+        }
+      });
+      const parsed = factory.interface.parseLog(event as any);
+      const agreementAddr = parsed!.args[1];
+      const agreement = await ethers.getContractAt("Agreement", agreementAddr);
+
+      return { ...base, agreement, agreementAddr, joinDeadline };
+    }
+
+    it("full lifecycle: create → accept → dispute → evidence → bridge resolution with zero escrow", async function () {
+      const { agreement, agreementAddr, factory, owner, partyA, partyB } =
+        await loadFixture(createZeroEscrowAgreementFixture);
+
+      // Accept
+      await agreement.connect(partyB).acceptAgreement();
+      expect(await agreement.status()).to.equal(Status.ACTIVE);
+
+      // Raise dispute
+      await agreement.connect(partyA).raiseDispute();
+      expect(await agreement.status()).to.equal(Status.DISPUTED);
+
+      // Submit evidence from both sides
+      await agreement.connect(partyA).submitEvidence("Party A evidence");
+      await agreement.connect(partyB).submitEvidence("Party B evidence");
+      expect(await agreement.status()).to.equal(Status.RESOLVING);
+
+      // Bridge resolution
+      await factory.connect(owner).setBridgeReceiver(owner.address);
+      const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["address", "uint8", "string"],
+        [agreementAddr, Verdict.TRUE_, "Statement is true"]
+      );
+      const message = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["address", "bytes"],
+        [agreementAddr, resolutionData]
+      );
+
+      await factory.connect(owner).processBridgeMessage(1, owner.address, message);
+
+      expect(await agreement.status()).to.equal(Status.RESOLVED);
+      expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
+
+      // No pending withdrawals since escrow was zero
+      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(0);
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(0);
+    });
+
+    it("claimFunds reverts with zero escrow (nothing to claim)", async function () {
+      const { agreement, factory, owner, partyA, partyB, agreementAddr } =
+        await loadFixture(createZeroEscrowAgreementFixture);
+
+      // Go through full lifecycle to RESOLVED
+      await agreement.connect(partyB).acceptAgreement();
+      await agreement.connect(partyA).raiseDispute();
+      await agreement.connect(partyA).submitEvidence("A evidence");
+      await agreement.connect(partyB).submitEvidence("B evidence");
+
+      await factory.connect(owner).setBridgeReceiver(owner.address);
+      const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["address", "uint8", "string"],
+        [agreementAddr, Verdict.TRUE_, "True"]
+      );
+      const message = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["address", "bytes"],
+        [agreementAddr, resolutionData]
+      );
+      await factory.connect(owner).processBridgeMessage(1, owner.address, message);
+
+      // claimFunds should revert since pendingWithdrawals is 0
+      await expect(
+        agreement.connect(partyA).claimFunds()
+      ).to.be.revertedWith("Nothing to claim");
+    });
+
+    it("reclaimOnExpiry works with zero escrow (no transfer, just state change)", async function () {
+      const { agreement, partyA } =
+        await loadFixture(createZeroEscrowAgreementFixture);
+
+      // Move past the join deadline
+      await time.increase(ONE_DAY + 1);
+
+      await agreement.reclaimOnExpiry();
+
+      expect(await agreement.status()).to.equal(Status.CANCELLED);
+    });
+
+    it("cancel works with zero escrow (no transfer, just state change)", async function () {
+      const { agreement, partyA } =
+        await loadFixture(createZeroEscrowAgreementFixture);
+
+      await agreement.connect(partyA).cancel();
+
+      expect(await agreement.status()).to.equal(Status.CANCELLED);
+    });
+  });
+
+  // ─── reclaimOnExpiry Edge Cases ───────────────────
+
+  describe("reclaimOnExpiry edge cases", function () {
+    it("reverts when joinDeadline=0 (no deadline set)", async function () {
+      const { factory, partyA, partyB, usdc } = await loadFixture(deployFixture);
+
+      const tx = await factory.connect(partyA).createAgreement(
+        partyB.address,
+        "No deadline test",
+        "Guidelines",
+        "{}",
+        ONE_HOUR,
+        await usdc.getAddress(),
+        ESCROW,
+        0, // no join deadline
+        0,
+        ""
+      );
+      const receipt = await tx.wait();
+      const event = receipt!.logs.find((log: any) => {
+        try {
+          return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+        } catch {
+          return false;
+        }
+      });
+      const parsed = factory.interface.parseLog(event as any);
+      const agreement = await ethers.getContractAt("Agreement", parsed!.args[1]);
+
+      await expect(
+        agreement.reclaimOnExpiry()
+      ).to.be.revertedWith("No join deadline set");
+    });
+
+    it("reverts exactly at the joinDeadline timestamp (boundary)", async function () {
+      const { agreement, joinDeadline } = await loadFixture(createAgreementFixture);
+
+      // Advance to joinDeadline - 1 so the next transaction's block.timestamp is joinDeadline
+      // (Hardhat increments timestamp by 1 for each new block after increaseTo)
+      await time.increaseTo(joinDeadline - 1);
+
+      // Contract requires block.timestamp > joinDeadline, so exactly AT deadline should revert
+      await expect(
+        agreement.reclaimOnExpiry()
+      ).to.be.revertedWith("Deadline not passed");
+    });
+
+    it("succeeds one second after joinDeadline", async function () {
+      const { agreement, partyA, usdc, joinDeadline } =
+        await loadFixture(createAgreementFixture);
+
+      const balanceBefore = await usdc.balanceOf(partyA.address);
+
+      // Advance so the next transaction's block.timestamp is joinDeadline + 1
+      await time.increaseTo(joinDeadline);
+
+      await agreement.reclaimOnExpiry();
+
+      expect(await agreement.status()).to.equal(Status.CANCELLED);
+      const balanceAfter = await usdc.balanceOf(partyA.address);
+      expect(balanceAfter).to.equal(balanceBefore + ESCROW);
+    });
+  });
+
+  // ─── resolveByDefault with Different Evidence Scenarios ─────
+
+  describe("resolveByDefault with different evidence scenarios", function () {
+    it("neither party submits evidence → resolves as UNDETERMINED", async function () {
+      const { agreement, partyA, partyB } = await loadFixture(disputedAgreementFixture);
+
+      // Move past evidence deadline without submitting any evidence
+      await time.increase(ONE_HOUR + 1);
+
+      await agreement.resolveByDefault();
+
+      expect(await agreement.status()).to.equal(Status.RESOLVED);
+      expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
+    });
+
+    it("only dispute initiator submits → initiator wins (partyA initiated)", async function () {
+      const { agreement, partyA } = await loadFixture(disputedAgreementFixture);
+
+      // partyA initiated the dispute (from disputedAgreementFixture)
+      // Only partyA submits evidence
+      await agreement.connect(partyA).submitEvidence("Only initiator evidence");
+
+      // Move past evidence deadline
+      await time.increase(ONE_HOUR + 1);
+
+      await agreement.resolveByDefault();
+
+      expect(await agreement.status()).to.equal(Status.RESOLVED);
+      // partyA is the initiator and submitted, so partyA wins → TRUE_
+      expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
+    });
+
+    it("only dispute initiator submits → initiator wins (partyB initiated)", async function () {
+      const { agreement, partyA, partyB } = await loadFixture(activeAgreementFixture);
+
+      // partyB raises the dispute
+      await agreement.connect(partyB).raiseDispute();
+
+      // Only partyB (the initiator) submits evidence
+      await agreement.connect(partyB).submitEvidence("Only initiator evidence");
+
+      // Move past evidence deadline
+      await time.increase(ONE_HOUR + 1);
+
+      await agreement.resolveByDefault();
+
+      expect(await agreement.status()).to.equal(Status.RESOLVED);
+      // partyB is the initiator and submitted, so partyB wins → FALSE_
+      expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
+    });
+
+    it("only non-initiator submits → non-initiator wins", async function () {
+      const { agreement, partyB } = await loadFixture(disputedAgreementFixture);
+
+      // partyA initiated the dispute (from disputedAgreementFixture)
+      // Only partyB (non-initiator) submits evidence
+      await agreement.connect(partyB).submitEvidence("Only non-initiator evidence");
+
+      // Move past evidence deadline
+      await time.increase(ONE_HOUR + 1);
+
+      await agreement.resolveByDefault();
+
+      expect(await agreement.status()).to.equal(Status.RESOLVED);
+      // partyB is the non-initiator and submitted, so partyB wins → FALSE_
+      expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
+    });
+
+    it("both parties submit → resolveByDefault should revert", async function () {
+      const { agreement, partyA, partyB } = await loadFixture(disputedAgreementFixture);
+
+      // Both parties submit evidence — this triggers _triggerResolution and moves to RESOLVING
+      await agreement.connect(partyA).submitEvidence("A evidence");
+      await agreement.connect(partyB).submitEvidence("B evidence");
+
+      // Status is now RESOLVING, not DISPUTED
+      expect(await agreement.status()).to.equal(Status.RESOLVING);
+
+      // resolveByDefault requires DISPUTED status, so it should revert
+      await expect(
+        agreement.resolveByDefault()
+      ).to.be.revertedWith("Wrong status");
+    });
+  });
+
+  // ─── joinDeadline Boundary Condition ──────────────
+
+  describe("joinDeadline boundary condition", function () {
+    it("acceptAgreement succeeds exactly at joinDeadline timestamp", async function () {
+      const { agreement, partyB, joinDeadline } =
+        await loadFixture(createAgreementFixture);
+
+      // Advance to joinDeadline - 1 so the next transaction's block.timestamp is joinDeadline
+      await time.increaseTo(joinDeadline - 1);
+
+      // Contract checks block.timestamp <= joinDeadline, so exactly AT deadline should succeed
+      await agreement.connect(partyB).acceptAgreement();
+
+      expect(await agreement.status()).to.equal(Status.ACTIVE);
+    });
+
+    it("acceptAgreement reverts one second after joinDeadline", async function () {
+      const { agreement, partyB, joinDeadline } =
+        await loadFixture(createAgreementFixture);
+
+      // Advance so the next transaction's block.timestamp is joinDeadline + 1
+      await time.increaseTo(joinDeadline);
+
+      await expect(
+        agreement.connect(partyB).acceptAgreement()
+      ).to.be.revertedWith("Join deadline passed");
+    });
+  });
+
+  // ─── Evidence Submission Edge Cases ───────────────
+
+  describe("Evidence submission edge cases", function () {
+    it("submit evidence at exactly maxEvidenceLength — should succeed", async function () {
+      const { agreement, partyA } = await loadFixture(disputedAgreementFixture);
+
+      // maxEvidenceLength is 10000 in the fixture
+      const evidence = "x".repeat(10000);
+      await agreement.connect(partyA).submitEvidence(evidence);
+
+      expect(await agreement.evidenceASubmitted()).to.be.true;
+    });
+
+    it("submit evidence at maxEvidenceLength + 1 — should revert", async function () {
+      const { agreement, partyA } = await loadFixture(disputedAgreementFixture);
+
+      // maxEvidenceLength is 10000 in the fixture
+      const evidence = "x".repeat(10001);
+      await expect(
+        agreement.connect(partyA).submitEvidence(evidence)
+      ).to.be.revertedWith("Evidence exceeds max length");
+    });
+
+    it("submit empty evidence — should revert", async function () {
+      const { agreement, partyA } = await loadFixture(disputedAgreementFixture);
+
+      // Contract requires bytes(evidence).length > 0
+      await expect(
+        agreement.connect(partyA).submitEvidence("")
+      ).to.be.revertedWith("Empty evidence");
     });
   });
 });

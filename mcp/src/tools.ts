@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, zeroAddress } from "viem";
 import { base, baseSepolia } from "viem/chains";
 import { z } from "zod";
 
@@ -32,6 +32,7 @@ const AGREEMENT_ABI = [
   { name: "evidenceBSubmitted", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "bool" }] },
   { name: "maxEvidenceLength", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
   { name: "constraints", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
+  { name: "evidenceDefs", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
 ] as const;
 
 const STATUS_NAMES = ["CREATED", "ACTIVE", "DISPUTED", "RESOLVING", "RESOLVED", "CANCELLED"];
@@ -49,10 +50,14 @@ export function registerTools(server: McpServer) {
         functionName: "agreements", args: [BigInt(case_id)],
       });
 
+      if (addr === zeroAddress) {
+        return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
+      }
+
       const fields = ["status", "partyA", "partyB", "statement", "guidelines", "verdict", "reasoning",
         "escrowAmount", "joinDeadline", "evidenceDeadlineSeconds", "disputeTimestamp",
         "evidenceA", "evidenceB", "evidenceASubmitted", "evidenceBSubmitted",
-        "maxEvidenceLength", "constraints"] as const;
+        "maxEvidenceLength", "constraints", "evidenceDefs"] as const;
 
       const results = await Promise.all(
         fields.map(f => client.readContract({ address: addr, abi: AGREEMENT_ABI, functionName: f }))
@@ -101,7 +106,7 @@ export function registerTools(server: McpServer) {
           client.readContract({ address: addr, abi: AGREEMENT_ABI, functionName: "statement" }),
           client.readContract({ address: addr, abi: AGREEMENT_ABI, functionName: "escrowAmount" }),
         ]);
-        if (party && pA !== party && pB !== party) continue;
+        if (party && pA.toLowerCase() !== party.toLowerCase() && pB.toLowerCase() !== party.toLowerCase()) continue;
         cases.push({
           id: i, address: addr,
           status: Number(status), statusName: STATUS_NAMES[Number(status)],
@@ -124,6 +129,11 @@ export function registerTools(server: McpServer) {
         address: FACTORY_ADDRESS, abi: FACTORY_ABI,
         functionName: "agreements", args: [BigInt(case_id)],
       });
+
+      if (addr === zeroAddress) {
+        return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
+      }
+
       const [status, joinDl, evidenceDl, disputeTs] = await Promise.all([
         client.readContract({ address: addr, abi: AGREEMENT_ABI, functionName: "status" }),
         client.readContract({ address: addr, abi: AGREEMENT_ABI, functionName: "joinDeadline" }),

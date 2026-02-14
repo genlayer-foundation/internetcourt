@@ -5,6 +5,7 @@ import {IGenLayerBridgeReceiver} from "./bridge/IGenLayerBridgeReceiver.sol";
 import {Agreement} from "./Agreement.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title InternetCourtFactory
@@ -16,6 +17,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  *         2. Receive and route AI jury verdicts from GenLayer via the bridge
  */
 contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
+    using SafeERC20 for IERC20;
+
     // ──────────────────────────────────────────────
     //  State variables
     // ──────────────────────────────────────────────
@@ -96,7 +99,8 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         string calldata _constraints
     ) external returns (address) {
         if (_escrowAmount > 0) {
-            require(IERC20(_usdcToken).transferFrom(msg.sender, address(this), _escrowAmount), "USDC transfer to factory failed");
+            require(_usdcToken != address(0), "USDC token required for escrow");
+            IERC20(_usdcToken).safeTransferFrom(msg.sender, address(this), _escrowAmount);
         }
 
         Agreement agreement = new Agreement(
@@ -115,7 +119,7 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         );
 
         if (_escrowAmount > 0) {
-            require(IERC20(_usdcToken).transfer(address(agreement), _escrowAmount), "USDC transfer to agreement failed");
+            IERC20(_usdcToken).safeTransfer(address(agreement), _escrowAmount);
         }
 
         uint256 id = nextAgreementId++;
