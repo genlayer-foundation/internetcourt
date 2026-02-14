@@ -414,9 +414,9 @@ writeContract({
 
 ```typescript
 import { createClient } from 'genlayer-js';
-import { testnetAsimov } from 'genlayer-js/chains';
+import { studionet } from 'genlayer-js/chains';
 
-const glClient = createClient({ chain: testnetAsimov, account: userAddress });
+const glClient = createClient({ chain: studionet, account: userAddress });
 
 // Read verdict
 const verdict = await glClient.readContract({

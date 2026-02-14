@@ -641,18 +641,18 @@ npm install genlayer-js
 
 ```typescript
 import { createClient, createAccount } from 'genlayer-js';
-import { testnetAsimov } from 'genlayer-js/chains';
+import { studionet } from 'genlayer-js/chains';
 
 // Option 1: Direct signing (for server-side or dev)
 const account = createAccount(process.env.PRIVATE_KEY);
 const client = createClient({
-  chain: testnetAsimov,
+  chain: studionet,
   account,
 });
 
 // Option 2: External signing (MetaMask integration)
 const client = createClient({
-  chain: testnetAsimov,
+  chain: studionet,
   account: userWalletAddress, // string address for MetaMask
 });
 ```
@@ -730,7 +730,7 @@ The frontend is a monitoring dashboard for humans to oversee their agents' cases
 import { createClient } from 'genlayer-js';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-const client = createClient({ chain: testnetAsimov, account: userAddress });
+const client = createClient({ chain: studionet, account: userAddress });
 
 // Dashboard: view all cases for the user's agents
 export function useAgentCases(contractAddress: string) {
