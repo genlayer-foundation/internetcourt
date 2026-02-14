@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS } from "@/lib/constants";
+import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS, BASE_FACTORY_ADDRESS, GENLAYER_FACTORY_ADDRESS } from "@/lib/constants";
 import { formatAddress } from "@/lib/genlayer";
 import {
   getTrackedAddresses,
@@ -14,7 +14,7 @@ import {
   removeTrackedAddress,
 } from "@/lib/contract-store";
 import type { MoltContract, ContractStatus } from "@/lib/types";
-import { Plus, Trash2, RefreshCw, Loader2, AlertCircle, Copy, Check } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Loader2, AlertCircle, Copy, Check, X } from "lucide-react";
 
 const STATUSES: Array<ContractStatus | "ALL"> = [
   "ALL",
@@ -23,84 +23,271 @@ const STATUSES: Array<ContractStatus | "ALL"> = [
   "disputed",
   "resolving",
   "resolved",
+  "cancelled",
 ];
 
-const FACTORY_ADDRESS = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const CACHE_KEY = "internetcourt:cases:cache";
+const CACHE_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
+
+interface CachedCases {
+  contracts: MoltContract[];
+  timestamp: number;
+}
+
+function loadCache(): CachedCases | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed: CachedCases = JSON.parse(raw);
+    if (Date.now() - parsed.timestamp > CACHE_MAX_AGE_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveCache(contracts: MoltContract[]) {
+  try {
+    const data: CachedCases = { contracts, timestamp: Date.now() };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // localStorage full or unavailable — ignore
+  }
+}
+
+/**
+ * Format a date in legal/court docket style.
+ * Returns "Feb 14, 2026" for creation dates,
+ * or relative time ("2h ago") for recent updates.
+ */
+function formatCourtDate(isoString: string, relative = false): string {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return "";
+
+  if (relative) {
+    const now = Date.now();
+    const diffMs = now - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHr = Math.floor(diffMs / 3600000);
+    const diffDay = Math.floor(diffMs / 86400000);
+
+    if (diffMin < 1) return "just now";
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHr < 24) return `${diffHr}h ago`;
+    if (diffDay < 7) return `${diffDay}d ago`;
+
+    // Older than a week: show absolute with time
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  // Absolute date only (for filing date)
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/** Convert Base Sepolia API case to MoltContract format */
+const STATUS_MAP: Record<string, ContractStatus> = {
+  CREATED: "created",
+  ACTIVE: "active",
+  DISPUTED: "disputed",
+  RESOLVING: "resolving",
+  RESOLVED: "resolved",
+  CANCELLED: "cancelled",
+};
+
+function baseToMoltContract(c: Record<string, unknown>): MoltContract {
+  return {
+    address: c.address as string,
+    partyA: (c.partyA as string) || "",
+    partyB: (c.partyB as string) || "",
+    statement: (c.statement as string) || "",
+    guidelines: "",
+    evidenceDefs: {},
+    status: STATUS_MAP[(c.statusName as string) || ""] || "created",
+    evidenceA: "",
+    evidenceB: "",
+    verdict: "" as const,
+    reasoning: "",
+    proposedOutcomeA: "",
+    proposedOutcomeB: "",
+    chainId: 84532, // Base Sepolia
+    chainName: "Base Sepolia",
+    escrowAmount: (c.escrowAmount as string) || "0",
+    createdAt: (c.createdAt as string) || undefined,
+    updatedAt: (c.updatedAt as string) || undefined,
+  };
+}
+
+/** Deduplicate contracts by address (case-insensitive) */
+function deduplicateContracts(allContracts: MoltContract[]): MoltContract[] {
+  const seen = new Set<string>();
+  return allContracts.filter((c) => {
+    const key = c.address.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 export default function CasesPage() {
   const [filter, setFilter] = useState<ContractStatus | "ALL">("ALL");
   const [contracts, setContracts] = useState<MoltContract[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingGenLayer, setLoadingGenLayer] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [newAddress, setNewAddress] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showingCache, setShowingCache] = useState(false);
+  const [cacheAge, setCacheAge] = useState("");
+
+  // Track the current fetch generation to avoid stale updates
+  const fetchGenRef = useRef(0);
 
   const fetchContracts = useCallback(async (addrs: string[]) => {
-    setLoading(true);
+    const gen = ++fetchGenRef.current;
+
+    // Phase 0: Show cached data immediately (stale-while-revalidate)
+    const cached = loadCache();
+    if (cached) {
+      setContracts(cached.contracts);
+      setShowingCache(true);
+      const ageMin = Math.round((Date.now() - cached.timestamp) / 60000);
+      setCacheAge(ageMin < 1 ? "less than a minute" : `${ageMin} min`);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    // Helper: fetch JSON with proper error handling (check r.ok)
+    const fetchJson = async (url: string, opts?: RequestInit) => {
+      const r = await fetch(url, { ...opts, signal: controller.signal });
+      if (!r.ok) {
+        let detail = r.statusText;
+        try {
+          const errBody = await r.json();
+          detail = errBody.error || detail;
+        } catch {
+          // Response wasn't JSON — use status text
+        }
+        throw new Error(`HTTP ${r.status}: ${detail}`);
+      }
+      return r.json();
+    };
+
+    const allErrors: Record<string, string> = {};
+    const allWarnings: string[] = [];
+
+    // Phase 1: Fetch Base cases (fast) and show immediately
+    let baseCases: MoltContract[] = [];
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const baseCasesData = await fetchJson("/api/cases?limit=100");
+      if (gen !== fetchGenRef.current) return;
+      baseCases = (baseCasesData.cases || []).map(baseToMoltContract);
+      // Show Base cases immediately (replace cache if we had one)
+      setContracts(baseCases);
+      setShowingCache(false);
+      setLoading(false);
+    } catch (err) {
+      if (gen !== fetchGenRef.current) return;
+      if (err instanceof DOMException && err.name === "AbortError") {
+        clearTimeout(timeout);
+        if (!cached) {
+          setErrors({ _global: "Request timed out -- try again." });
+          setContracts([]);
+          setLoading(false);
+        }
+        return;
+      }
+      const msg = err instanceof Error ? err.message : "Base fetch failed";
+      console.warn("[cases] Base Sepolia fetch failed:", msg);
+      allErrors._base = `Base Sepolia: ${msg}`;
+      // If no cache, stop loading spinner anyway
+      if (!cached) setLoading(false);
+    }
 
-      // Always fetch factory contracts via GET
-      const factoryPromise = fetch("/api/contracts", {
-        signal: controller.signal,
-      }).then((r) => r.json());
+    // Phase 2: Fetch GenLayer + tracked contracts in background
+    setLoadingGenLayer(true);
 
-      // Also fetch manually tracked contracts via POST (if any)
+    try {
+      const genLayerPromise = fetchJson("/api/contracts")
+        .catch((err) => {
+          console.warn("[cases] GenLayer fetch failed:", err.message);
+          return { contracts: [], errors: {}, _glFetchError: err.message };
+        });
+
       const trackedPromise =
         addrs.length > 0
-          ? fetch("/api/contracts", {
+          ? fetchJson("/api/contracts", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ addresses: addrs }),
-              signal: controller.signal,
-            }).then((r) => r.json())
+            }).catch(() => ({ contracts: [], errors: {} }))
           : Promise.resolve({ contracts: [], errors: {} });
 
-      const [factoryData, trackedData] = await Promise.all([
-        factoryPromise,
+      const [genLayerData, trackedData] = await Promise.all([
+        genLayerPromise,
         trackedPromise,
       ]);
+
+      if (gen !== fetchGenRef.current) return;
       clearTimeout(timeout);
 
-      // Merge and deduplicate by address
-      const allContracts = [
-        ...(factoryData.contracts || []),
-        ...(trackedData.contracts || []),
-      ];
-      const seen = new Set<string>();
-      const deduplicated = allContracts.filter((c: MoltContract) => {
-        const key = c.address.toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-
-      const allErrors = {
-        ...(factoryData.errors || {}),
-        ...(trackedData.errors || {}),
-      };
-
-      if (factoryData.error && trackedData.error) {
-        setErrors({ _global: factoryData.error });
-        setContracts([]);
-      } else {
-        setContracts(deduplicated);
-        setErrors(allErrors);
+      // Merge GenLayer errors
+      Object.assign(allErrors, genLayerData.errors || {}, trackedData.errors || {});
+      if (genLayerData._glFetchError) {
+        allErrors._genlayer = `GenLayer: ${genLayerData._glFetchError}`;
       }
+      allWarnings.push(
+        ...(genLayerData.warnings || []),
+        ...(trackedData.warnings || []),
+      );
+
+      // Merge all sources and deduplicate
+      const merged = deduplicateContracts([
+        ...baseCases,
+        ...(genLayerData.contracts || []),
+        ...(trackedData.contracts || []),
+      ]);
+
+      setContracts(merged);
+      setShowingCache(false);
+      setErrors(allErrors);
+      setWarnings(allWarnings);
+
+      // Update localStorage cache with fresh data
+      saveCache(merged);
     } catch (err) {
-      const message =
-        err instanceof DOMException && err.name === "AbortError"
-          ? "Request timed out. The GenLayer RPC may be slow — try again."
-          : err instanceof Error
-            ? err.message
-            : "Fetch failed";
-      setErrors({ _global: message });
-      setContracts([]);
+      if (gen !== fetchGenRef.current) return;
+      clearTimeout(timeout);
+      // Phase 2 failed entirely — keep whatever we have (Base or cache)
+      if (err instanceof DOMException && err.name === "AbortError") {
+        allErrors._genlayer = "GenLayer request timed out";
+      }
+      setErrors((prev) => ({ ...prev, ...allErrors }));
+
+      // Still save whatever we have to cache
+      if (baseCases.length > 0) {
+        saveCache(baseCases);
+      }
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) {
+        setLoadingGenLayer(false);
+      }
     }
   }, []);
 
@@ -154,7 +341,7 @@ export default function CasesPage() {
             disabled={loading}
             className="gap-1 text-xs"
           >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={14} className={loading || loadingGenLayer ? "animate-spin" : ""} />
           </Button>
         </div>
       </div>
@@ -221,23 +408,72 @@ export default function CasesPage() {
         ))}
       </div>
 
-      {/* Errors */}
-      {Object.keys(errors).length > 0 && (
-        <div className="mb-6 space-y-2">
-          {Object.entries(errors).map(([addr, msg]) => (
+      {/* Stale cache indicator */}
+      {showingCache && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-700">
+          <Loader2 size={14} className="shrink-0 animate-spin text-blue-500" />
+          <span>Showing cached data from {cacheAge} ago. Updating...</span>
+        </div>
+      )}
+
+      {/* GenLayer loading indicator (Phase 2) */}
+      {!loading && loadingGenLayer && !showingCache && (
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 size={14} className="animate-spin" />
+          <span>Loading GenLayer cases...</span>
+        </div>
+      )}
+
+      {/* Warnings (transient issues like GenLayer server busy) */}
+      {warnings.length > 0 && (
+        <div className="mb-4">
+          {warnings.map((msg, i) => (
             <div
-              key={addr}
-              className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600"
+              key={i}
+              className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
             >
-              <AlertCircle size={14} />
-              <span className="font-mono text-xs">{addr === "_global" ? "" : `${formatAddress(addr)}: `}</span>
-              {msg}
+              <AlertCircle size={14} className="shrink-0 text-amber-500" />
+              <span className="flex-1">{msg}</span>
+              <button
+                onClick={() => setWarnings((prev) => prev.filter((_, idx) => idx !== i))}
+                className="shrink-0 rounded p-0.5 hover:bg-amber-100"
+                aria-label="Dismiss"
+              >
+                <X size={14} />
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Loading */}
+      {/* Errors (genuine failures, not transient busy errors) */}
+      {Object.keys(errors).length > 0 && (
+        <div className="mb-6 space-y-2">
+          {Object.entries(errors).map(([addr, msg]) => (
+            <div
+              key={addr}
+              className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+            >
+              <AlertCircle size={14} className="shrink-0" />
+              <span className="font-mono text-xs">{addr.startsWith("_") ? "" : `${formatAddress(addr)}: `}</span>
+              <span className="flex-1">{msg}</span>
+              <button
+                onClick={() => setErrors((prev) => {
+                  const next = { ...prev };
+                  delete next[addr];
+                  return next;
+                })}
+                className="shrink-0 rounded p-0.5 hover:bg-red-100"
+                aria-label="Dismiss"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Loading (only shows when no cache and no Base results yet) */}
       {loading && (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -278,22 +514,29 @@ export default function CasesPage() {
       {!loading && filtered.length > 0 && (
         <div className="flex flex-col gap-6">
           {hasPending && (
-            <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-600">
+            <h2 className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600">
               <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
               Pending Acceptance ({pending.length})
             </h2>
           )}
           {[...filtered]
             .sort((a, b) => {
+              // "created" cases float to top
               if (a.status === "created" && b.status !== "created") return -1;
               if (a.status !== "created" && b.status === "created") return 1;
+              // Within same group, most recently updated first
+              const aTime = a.updatedAt || a.createdAt || "";
+              const bTime = b.updatedAt || b.createdAt || "";
+              if (aTime > bTime) return -1;
+              if (aTime < bTime) return 1;
               return 0;
             })
-            .map((c) => (
+            .map((c, idx) => (
               <ContractCard
                 key={c.address}
                 contract={c}
                 highlight={hasPending && c.status === "created"}
+                index={idx}
               />
             ))}
         </div>
@@ -306,19 +549,22 @@ export default function CasesPage() {
       )}
 
       {/* Factory contract address */}
-      <div className="mt-12 border-t border-border/40 pt-4 text-center">
+      <div className="mt-12 border-t border-border/40 pt-4 text-center flex flex-col items-center gap-1">
         <button
           onClick={async () => {
-            await navigator.clipboard.writeText(FACTORY_ADDRESS);
+            await navigator.clipboard.writeText(BASE_FACTORY_ADDRESS);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           }}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-          title={FACTORY_ADDRESS}
+          title={BASE_FACTORY_ADDRESS}
         >
-          <span>Factory: <span className="font-mono">{formatAddress(FACTORY_ADDRESS)}</span></span>
+          <span>Base Factory: <span className="font-mono">{formatAddress(BASE_FACTORY_ADDRESS)}</span></span>
           {copied ? <Check size={11} /> : <Copy size={11} />}
         </button>
+        <span className="text-[10px] text-muted-foreground/40" title={GENLAYER_FACTORY_ADDRESS}>
+          GenLayer: <span className="font-mono">{formatAddress(GENLAYER_FACTORY_ADDRESS)}</span>
+        </span>
       </div>
     </div>
   );
@@ -327,33 +573,50 @@ export default function CasesPage() {
 function ContractCard({
   contract: c,
   highlight,
+  index = 0,
 }: {
   contract: MoltContract;
   highlight?: boolean;
+  index?: number;
 }) {
-  const [liveStatus, setLiveStatus] = useState<string | null>(null);
+  // Fix #6: Only fetch detail for RESOLVED Base cases to get verdict.
+  // Status is already known from the list API — skip redundant per-card refetch.
+  const [verdictName, setVerdictName] = useState<string | null>(null);
   const isBase = !!c.chainId;
 
   useEffect(() => {
-    if (!isBase) return;
+    if (!isBase || c.status !== "resolved") return;
+    // Only resolved Base cases need a detail fetch (to get verdict)
     fetch(`/api/cases/${c.address}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (data?.status) setLiveStatus(data.status);
+        if (data?.verdictName) {
+          setVerdictName(data.verdictName);
+        }
       })
       .catch(() => {});
-  }, [c.address, isBase]);
+  }, [c.address, isBase, c.status]);
 
-  const displayStatus = liveStatus || c.status;
+  // Fix #3: Show verdict for Base RESOLVED cases from detail fetch,
+  // or from contract data for GenLayer cases
+  const displayVerdict = c.verdict || verdictName || "";
+
+  // Fix #5: Only show date section when dates exist AND are valid
+  const createdAtValid = c.createdAt && !isNaN(new Date(c.createdAt).getTime());
+  const updatedAtValid = c.updatedAt && !isNaN(new Date(c.updatedAt).getTime());
+  const hasDates = createdAtValid || updatedAtValid;
+  const showUpdated =
+    updatedAtValid && createdAtValid && c.updatedAt !== c.createdAt;
 
   return (
     <Link href={`/cases/${c.address}`}>
       <Card
-        className={`bg-white transition-colors hover:bg-accent/50 border-border/80 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ${
+        className={`animate-fade-in-up opacity-0 bg-[#f7f7f7] border hover:shadow-lg transition-all duration-300 ${
           highlight ? "border-blue-200" : ""
         }`}
+        style={{ animationDelay: `${index * 60}ms` }}
       >
-        <CardContent className="p-6">
+        <CardContent className="p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-2 flex items-center gap-3">
@@ -371,25 +634,25 @@ function ContractCard({
                 {/* Status badge */}
                 <Badge
                   variant="outline"
-                  className={`text-xs ${STATUS_COLORS[displayStatus] || ""}`}
+                  className={`text-sm ${STATUS_COLORS[c.status] || ""}`}
                 >
-                  {STATUS_LABELS[displayStatus] || displayStatus.toUpperCase()}
+                  {STATUS_LABELS[c.status] || c.status.toUpperCase()}
                 </Badge>
-                {c.verdict && (
+                {displayVerdict && (
                   <Badge
                     variant="outline"
-                    className={`font-mono text-xs font-bold ${VERDICT_COLORS[c.verdict] || ""}`}
+                    className={`font-mono text-sm font-bold ${VERDICT_COLORS[displayVerdict] || ""}`}
                   >
-                    {c.verdict}
+                    {displayVerdict}
                   </Badge>
                 )}
-                {displayStatus === "created" && (
+                {c.status === "created" && (
                   <span className="text-xs text-blue-600">
                     Awaiting Party B
                   </span>
                 )}
               </div>
-              <p className="mb-2 text-sm text-foreground line-clamp-2">
+              <p className="mb-2 text-base text-foreground line-clamp-2">
                 {c.statement}
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -424,6 +687,26 @@ function ContractCard({
               )}
             </div>
           </div>
+
+          {/* Court docket timestamps */}
+          {hasDates && (
+            <div className="mt-4 flex items-center gap-6 border-t border-border/40 pt-3">
+              {createdAtValid && (
+                <span className="text-[12px] leading-none text-muted-foreground/70">
+                  <span className="font-serif italic tracking-wide">Filed</span>
+                  <span className="mx-1.5 text-border">|</span>
+                  <span>{formatCourtDate(c.createdAt!)}</span>
+                </span>
+              )}
+              {showUpdated && (
+                <span className="text-[12px] leading-none text-muted-foreground/70">
+                  <span className="font-serif italic tracking-wide">Updated</span>
+                  <span className="mx-1.5 text-border">|</span>
+                  <span>{formatCourtDate(c.updatedAt!, true)}</span>
+                </span>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>

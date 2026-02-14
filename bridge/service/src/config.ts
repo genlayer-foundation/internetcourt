@@ -14,7 +14,7 @@ export const config = {
   /** BridgeSender contract address on GenLayer */
   BRIDGE_SENDER: process.env.BRIDGE_SENDER_ADDRESS!,
   /** GenLayer InternetCourtFactory registry address */
-  GL_FACTORY_ADDRESS: process.env.GL_FACTORY_ADDRESS || "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738",
+  GL_FACTORY_ADDRESS: process.env.GL_FACTORY_ADDRESS || "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE",
 
   // ---------- zkSync Era ----------
   /** zkSync Era JSON-RPC endpoint */
@@ -29,8 +29,8 @@ export const config = {
   FACTORY_ADDRESS: process.env.FACTORY_ADDRESS!,
 
   // ---------- LayerZero ----------
-  /** LayerZero destination Endpoint ID (30184 = Base mainnet) */
-  LZ_DST_EID: parseInt(process.env.LZ_DST_EID || "30184"),
+  /** LayerZero destination Endpoint ID (40245 = Base Sepolia) */
+  LZ_DST_EID: parseInt(process.env.LZ_DST_EID || "40245"),
 
   // ---------- Wallet ----------
   /**

@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
-const FACTORY = "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a";
-const USDC = "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f";
+const FACTORY = "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E";
+const USDC = "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3";
 const ESCROW = 1000_000000n; // 1000 USDC (6 decimals)
 const PARTY_B_KEY = "0x31f35a8cc001278c0293a9a061e0e291b6379d3cc75982613770e4b7967ecfaf";
 
@@ -101,7 +101,7 @@ async function main() {
   console.log("   Party B evidence submitted");
 
   const status3 = await agreement.status();
-  console.log("   Status:", status3.toString(), status3 === 4n ? "(RESOLVING)" : "");
+  console.log("   Status:", status3.toString(), status3 === 4n ? "(RESOLVED)" : "");
 
   // 5. Verify on-chain data
   console.log("\n5. On-chain state:");

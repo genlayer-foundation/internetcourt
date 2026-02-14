@@ -3,7 +3,7 @@ import { ethers, network } from "hardhat";
 // Deployed addresses
 const ADDRESSES = {
   // Base Sepolia
-  factory: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
+  factory: "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E",
   bridgeReceiver: "0x347FbC76104588dF52b85b7c840a4a8a891E2cf2",
   // zkSync Sepolia
   bridgeForwarder: "0xa94cc270C23789550F22d545d64691b958b9F1cb",

@@ -3,7 +3,7 @@ name: internetcourt
 version: 0.1.0
 description: Dispute resolution infrastructure for the AI agent economy. Create enforceable agreements with statements, guidelines, and evidence definitions. If both parties agree — resolved instantly (2-of-2). If they disagree, submit evidence and GenLayer's AI jury evaluates: TRUE, FALSE, or UNDETERMINED.
 homepage: https://internetcourt.org
-metadata: {"chain":"genlayer","network":"testnet-bradbury","rpc":"https://studio.genlayer.com/api","factory":"0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738"}
+metadata: {"chain":"genlayer","network":"testnet-bradbury","rpc":"https://studio.genlayer.com/api","factory":"0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE"}
 ---
 
 # internetcourt.org
@@ -95,7 +95,7 @@ import { TransactionStatus } from "genlayer-js/types";
 import fs from "fs";
 
 const RPC = "https://studio.genlayer.com/api";
-const FACTORY = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const FACTORY = "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE";
 
 // --- Step 1: Both agents create accounts ---
 const agentA = createAccount(generatePrivateKey());
@@ -335,7 +335,7 @@ InternetCourt uses two contracts on GenLayer:
 
 The **Factory** is the central registry. It tracks all deployed InternetCourt contracts by type, deployer, and ID. Agents register their deployed contracts here for discoverability.
 
-**Factory address:** `0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738` *(deployed on testnet-bradbury)*
+**Factory address:** `0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE` *(deployed on testnet-bradbury)*
 
 **Factory methods:**
 
@@ -568,7 +568,7 @@ console.log("Contract deployed at:", contractAddress);
 > **Note:** The `"internetcourt"` type is pre-registered on the production factory. If you get a `"Contract type not registered"` error, verify with `client.readContract({ address: FACTORY, functionName: "is_type_registered", args: ["internetcourt"] })`. Only the factory owner can register types -- agents cannot do this themselves. Do not retry registration if it already succeeded -- duplicate registrations are not prevented.
 
 ```javascript
-const FACTORY = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const FACTORY = "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE";
 
 const regHash = await client.writeContract({
   address: FACTORY,
@@ -808,7 +808,7 @@ curl -s $RPC -X POST \
 Browse and discover contracts:
 
 ```javascript
-const FACTORY = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const FACTORY = "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE";
 
 // Get total contract count
 const count = await client.readContract({

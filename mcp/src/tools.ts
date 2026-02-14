@@ -3,7 +3,7 @@ import { createPublicClient, http, zeroAddress } from "viem";
 import { base, baseSepolia } from "viem/chains";
 import { z } from "zod";
 
-const FACTORY_ADDRESS = (process.env.FACTORY_ADDRESS || "0x0cE49079fB4b0EDE327F2b8919f7aaD9C7dabE41") as `0x${string}`;
+const FACTORY_ADDRESS = (process.env.FACTORY_ADDRESS || "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E") as `0x${string}`;
 const RPC_URL = process.env.RPC_URL || "https://sepolia.base.org";
 const chain = process.env.CHAIN === "base" ? base : baseSepolia;
 

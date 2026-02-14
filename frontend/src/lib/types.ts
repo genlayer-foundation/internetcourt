@@ -43,4 +43,7 @@ export interface MoltContract {
   factoryId?: number;
   baseFactory?: string;
   escrowAmount?: string;
+  // Timestamps (optional — derived from blockchain events)
+  createdAt?: string; // ISO 8601 string
+  updatedAt?: string; // ISO 8601 string
 }

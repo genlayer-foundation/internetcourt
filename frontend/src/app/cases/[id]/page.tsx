@@ -156,7 +156,7 @@ const SOURCE_STYLES: Record<string, { bg: string; text: string; dot: string; lab
   },
 };
 
-function DocketTab({ address }: { address: string }) {
+function DocketTab({ address, isBase }: { address: string; isBase: boolean }) {
   const [docket, setDocket] = useState<DocketEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,7 +180,7 @@ function DocketTab({ address }: { address: string }) {
       }
     }
     loadDocket();
-  }, [address]);
+  }, [address, isBase]);
 
   if (loading) {
     return (
@@ -407,6 +407,7 @@ export default function CaseDetailPage({
   const [contract, setContract] = useState<MoltContract | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBase, setIsBase] = useState(false);
 
   const tabParam = searchParams.get("tab");
   const activeTab = tabParam === "docket" ? "docket" : "overview";
@@ -435,9 +436,10 @@ export default function CaseDetailPage({
             CREATED: "created", ACTIVE: "active", DISPUTED: "disputed",
             RESOLVING: "resolving", RESOLVED: "resolved", CANCELLED: "cancelled",
           };
-          const verdictMap: Record<string, string> = {
-            TRUE: "TRUE", FALSE: "FALSE", UNDETERMINED: "UNDETERMINED",
-          };
+          const resolvedStatus = statusMap[casesData.statusName] || "created";
+          // Only show verdict if case is actually resolved
+          const showVerdict = resolvedStatus === "resolved" && casesData.verdictName;
+          setIsBase(true);
           setContract({
             address: casesData.address,
             partyA: casesData.partyA || "",
@@ -445,13 +447,14 @@ export default function CaseDetailPage({
             statement: casesData.statement || "",
             guidelines: casesData.guidelines || "",
             evidenceDefs: {},
-            status: statusMap[casesData.statusName] || "created",
+            status: resolvedStatus,
             evidenceA: casesData.evidenceA || "",
             evidenceB: casesData.evidenceB || "",
-            verdict: verdictMap[casesData.verdictName] || "",
+            verdict: showVerdict ? casesData.verdictName : "",
             reasoning: casesData.reasoning || "",
             proposedOutcomeA: "",
             proposedOutcomeB: "",
+            escrowAmount: casesData.escrowAmount || "0",
           } as MoltContract);
           return;
         }
@@ -516,12 +519,19 @@ export default function CaseDetailPage({
 
       {/* Top bar: status + address */}
       <div className="mb-6 flex items-center justify-between">
-        <Badge
-          variant="outline"
-          className={`text-[11px] font-bold tracking-wide px-3.5 py-1 rounded-md ${STATUS_COLORS[contract.status] || ""}`}
-        >
-          {STATUS_LABELS[contract.status] || contract.status.toUpperCase()}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge
+            variant="outline"
+            className={`text-[11px] font-bold tracking-wide px-3.5 py-1 rounded-md ${STATUS_COLORS[contract.status] || ""}`}
+          >
+            {STATUS_LABELS[contract.status] || contract.status.toUpperCase()}
+          </Badge>
+          {contract.escrowAmount && contract.escrowAmount !== "0" && (
+            <span className="text-[11px] font-mono text-muted-foreground">
+              Escrow: {(Number(contract.escrowAmount) / 1e6).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+            </span>
+          )}
+        </div>
         <CopyableAddress address={contract.address} />
       </div>
 
@@ -677,7 +687,7 @@ export default function CaseDetailPage({
       )}
 
       {/* Docket Tab */}
-      {activeTab === "docket" && <DocketTab address={address} />}
+      {activeTab === "docket" && <DocketTab address={address} isBase={isBase} />}
     </div>
   );
 }

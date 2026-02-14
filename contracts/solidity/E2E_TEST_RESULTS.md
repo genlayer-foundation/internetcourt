@@ -1,180 +1,83 @@
 # Internet Court E2E Test Results - Base Sepolia Testnet
 
-**Date**: 2025-02-14
+**Date**: February 14, 2026
 **Network**: Base Sepolia (Chain ID: 84532)
-**Test Script**: `/home/albert/internetcourt/contracts/solidity/scripts/full-e2e-test.ts`
+**Test Script**: `contracts/solidity/scripts/full-e2e-test.ts`
 
 ## Test Summary
 
-✅ **ALL STEPS COMPLETED SUCCESSFULLY**
+**11 / 11 PASSED** -- All Agreement lifecycle paths verified.
 
-The comprehensive end-to-end test verified the complete lifecycle of an Internet Court agreement on Base Sepolia testnet, from creation through dispute resolution to fund withdrawal.
+Comprehensive end-to-end test covering every Agreement lifecycle path: cancellation, deadline expiry, mutual agreement (TRUE/FALSE), confirm-other-party proposal, bridge verdicts (TRUE/FALSE/UNDETERMINED), and default judgments (none submitted, initiator wins, non-initiator wins).
 
 ## Deployed Contracts
 
 | Contract | Address | Link |
 |----------|---------|------|
-| MockUSDC | `0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f` | [Basescan](https://sepolia.basescan.org/address/0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f) |
-| Factory | `0xb981298fb5E1D27ade6f88014C2f24c30137BC9a` | [Basescan](https://sepolia.basescan.org/address/0xb981298fb5E1D27ade6f88014C2f24c30137BC9a) |
-| BridgeReceiver | `0x347FbC76104588dF52b85b7c840a4a8a891E2cf2` | [Basescan](https://sepolia.basescan.org/address/0x347FbC76104588dF52b85b7c840a4a8a891E2cf2) |
-| Test Agreement | `0x230D67B41e29be15eCB8747975A06617848E7705` | [Basescan](https://sepolia.basescan.org/address/0x230D67B41e29be15eCB8747975A06617848E7705) |
+| MockUSDC | `0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3` | [Basescan](https://sepolia.basescan.org/address/0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3) |
+| InternetCourtFactory | `0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E` | [Basescan](https://sepolia.basescan.org/address/0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E) |
 
-## Test Participants
+**deploymentBlock**: 37666090
 
-- **Party A (Deployer)**: `0x6b9FC69624db2aeF4533D6C329c4dCE09bf6aDac`
-  - Role: Agreement creator, dispute initiator
-  - Initial USDC: 40,000 USDC (after minting 10,000)
-  - Final USDC: 40,000 USDC (received 500 USDC escrow back after winning)
+## Test Accounts
 
+- **Party A (deployer)**: `0x6b9FC69624db2aeF4533D6C329c4dCE09bf6aDac`
 - **Party B**: `0xce413FFE2628b60cdaF4413d63d7838B8d4309AC`
-  - Role: Agreement acceptor, evidence submitter
-  - USDC: 0 USDC (no deposit required)
 
-## Test Steps & Results
+## Results
 
-### ✅ Step 1: Setup
-- Minted 10,000 USDC to Party A
-- Verified ETH balances for gas fees
-- **Tx**: `0x340c7bf524aa7d088d7bcad35f2e2fcb30455b8dc690ae7946a4d5eedadf97a9`
+| # | Case Name | Verdict / Status | Agreement Address | Link |
+|---|-----------|------------------|-------------------|------|
+| 1 | Cancel Before Acceptance | CANCELLED, escrow returned to A | `0xdd9D9e80cb2F66872a782551e3Bf23C2633CF4C4` | [Basescan](https://sepolia.basescan.org/address/0xdd9D9e80cb2F66872a782551e3Bf23C2633CF4C4) |
+| 2 | Join Deadline Expired | CANCELLED, escrow reclaimed by A | `0xB40f89166d92dB83fd4F97c12EB9463214B173d2` | [Basescan](https://sepolia.basescan.org/address/0xB40f89166d92dB83fd4F97c12EB9463214B173d2) |
+| 3 | Mutual Agreement Both TRUE | RESOLVED, verdict TRUE, escrow to A | `0x45581b24eD11EB787D4F4727957ebFe5EfD15279` | [Basescan](https://sepolia.basescan.org/address/0x45581b24eD11EB787D4F4727957ebFe5EfD15279) |
+| 4 | Mutual Agreement Both FALSE | RESOLVED, verdict FALSE, escrow to B | `0xb357d2D87074B851edfEa7Ccf7B98046a28AAEa2` | [Basescan](https://sepolia.basescan.org/address/0xb357d2D87074B851edfEa7Ccf7B98046a28AAEa2) |
+| 5 | Confirm Other Party Proposal | RESOLVED, verdict TRUE, escrow to A | `0xA47460FAFa335cC4f0d8e3889E7602978cdb48fC` | [Basescan](https://sepolia.basescan.org/address/0xA47460FAFa335cC4f0d8e3889E7602978cdb48fC) |
+| 6 | Dispute With Bridge Verdict TRUE | RESOLVED, verdict TRUE, escrow to A (claimed) | `0xb63fb24Db3eDF33fcFF261567A6222d32617a642` | [Basescan](https://sepolia.basescan.org/address/0xb63fb24Db3eDF33fcFF261567A6222d32617a642) |
+| 7 | Dispute With Bridge Verdict FALSE | RESOLVED, verdict FALSE, escrow to B (claimed) | `0x698a933bc039884cBBD36Dd6764F01425682776C` | [Basescan](https://sepolia.basescan.org/address/0x698a933bc039884cBBD36Dd6764F01425682776C) |
+| 8 | Dispute With Bridge Verdict UNDETERMINED | RESOLVED, verdict UNDETERMINED, escrow refunded to A | `0x078dD2d687f1032BC2386f85c5426DCAb23f5A7b` | [Basescan](https://sepolia.basescan.org/address/0x078dD2d687f1032BC2386f85c5426DCAb23f5A7b) |
+| 9 | Default Judgment Neither Submitted | RESOLVED, verdict UNDETERMINED, escrow refunded to A | `0xD9Fb070dF561923665649bA61b4016536cf94233` | [Basescan](https://sepolia.basescan.org/address/0xD9Fb070dF561923665649bA61b4016536cf94233) |
+| 10 | Default Judgment Initiator Wins | RESOLVED, verdict TRUE (initiator wins), escrow to A | `0x20a85F23150aB063E8b0656D3f670F05365A2813` | [Basescan](https://sepolia.basescan.org/address/0x20a85F23150aB063E8b0656D3f670F05365A2813) |
+| 11 | Default Judgment Non-Initiator Wins | RESOLVED, verdict FALSE (non-initiator wins), escrow to B | `0xEEfB6C1070a6475E144D70Cdef2514044E5B4b4C` | [Basescan](https://sepolia.basescan.org/address/0xEEfB6C1070a6475E144D70Cdef2514044E5B4b4C) |
 
-### ✅ Step 2: Create Agreement
-- Party A approved Factory to spend 500 USDC
-- Created agreement with:
-  - **Statement**: "The freelancer delivered the website as specified in the contract"
-  - **Escrow**: 500 USDC
-  - **Evidence deadline**: 1 hour
-  - **Join deadline**: 24 hours
-- Agreement deployed to: `0x230D67B41e29be15eCB8747975A06617848E7705`
-- **Status**: CREATED (0)
-- **Approval Tx**: `0xeb9cf6e2bc3e30d276b431b037aea0cdbe1715388b872d42dfbaa113431a9e09`
-- **Create Tx**: `0x2cb68cf8fb5e1fbffd6aab495907e6fc4be4c15de80be55e2af0f874be25effb`
+## Lifecycle Paths Covered
 
-### ✅ Step 3: Accept Agreement
-- Party B accepted agreement (no deposit required)
-- **Status**: ACTIVE (1)
-- Contract holds 500 USDC escrow
-- **Tx**: `0x5b720dccddf3744f9e3b3783d2134dd28aa1d782f28a7d66520c2aead6c42605`
+### Cancellation (Cases 1-2)
+- **Case 1**: Creator cancels before the other party accepts. Escrow returned immediately.
+- **Case 2**: Join deadline expires with no acceptance. Creator reclaims escrow via `reclaimOnExpiry`.
 
-### ✅ Step 4: Raise Dispute
-- Party A raised dispute
-- **Status**: DISPUTED (2)
-- Evidence submission window opened
-- **Tx**: `0xca1d3db34006b67fb3347ca6c948ce386992de3da92edc17a97c7651eee59447`
+### Mutual Agreement (Cases 3-5)
+- **Case 3**: Both parties propose TRUE. Resolved without jury, escrow to A.
+- **Case 4**: Both parties propose FALSE. Resolved without jury, escrow to B.
+- **Case 5**: One party proposes, the other confirms it. Resolved without jury.
 
-### ✅ Step 5: Submit Evidence
-- **Party A Evidence** (203 chars): "Here is the original project specification and screenshots showing the delivered work does not match: [spec.pdf] [screenshot1.png] [screenshot2.png]. The responsive design was not implemented for mobile."
-  - **Tx**: `0xe3d4a732ab6c4515427107e25fbfe86b8a6e8940c756235be7890571b493641c`
+### Bridge / AI Jury Verdicts (Cases 6-8)
+- **Case 6**: Dispute raised, evidence submitted, bridge delivers verdict TRUE. Escrow to A, claimed.
+- **Case 7**: Dispute raised, evidence submitted, bridge delivers verdict FALSE. Escrow to B, claimed.
+- **Case 8**: Dispute raised, evidence submitted, bridge delivers verdict UNDETERMINED. Escrow refunded to A.
 
-- **Party B Evidence** (161 chars): "Work logs show all requirements were met. Commit history: github.com/project/commits. Live deployment at staging.example.com demonstrates full responsive design."
-  - **Tx**: `0x2e3ab01b849e82cafb3eb1d42efd3684ee179839fa35d5a12766d154b8d444fb`
-
-- **Status**: RESOLVING (3)
-- Both evidence submissions confirmed
-- `DisputeRequested` event emitted by factory
-
-### ✅ Step 6: Deliver Verdict via Bridge
-Since Party A is the factory owner, we used the temporary bridgeReceiver update approach:
-
-1. **Set bridgeReceiver to Party A temporarily**
-   - **Tx**: `0x85d6bea79c52617620e8a3874da1929f70300b2e341e2ed10a934a9237fdf666`
-
-2. **Delivered verdict**
-   - **Verdict**: TRUE (1) - Statement confirmed, Party A wins
-   - **Reasoning**: "The evidence shows the delivered website meets all specified requirements. The responsive design is properly implemented as shown in the deployment proof."
-   - **Tx**: `0xaa1a3bec487fffece1dc0e982e9fe7d20ed618a8a11b2ffe55bafcd4a75142cf`
-
-3. **Restored original bridgeReceiver**
-   - **Tx**: `0xd6745e822f8c3a79531fa0897adb626b96160b6b6fbe14c373efa86e7225c750`
-
-- **Status**: RESOLVED (4)
-- Pending withdrawals set: Party A = 500 USDC, Party B = 0 USDC
-
-### ✅ Step 7: Claim Funds
-- Party A claimed 500 USDC escrow
-- **Before claim**: 39,500 USDC
-- **After claim**: 40,000 USDC
-- **Received**: 500 USDC
-- **Tx**: `0x812c9156eaf341e9741273ddf1d90c057fe55a2aa759d2e127b7ffaf23fa4df0`
-
-### ✅ Step 8: Final State Verification
-On-chain verification confirmed:
-- **Status**: RESOLVED (4)
-- **Verdict**: TRUE (1)
-- **Contract USDC balance**: 0 (all funds withdrawn)
-- **Pending withdrawals**: Both parties at 0
-- **Evidence A submitted**: ✅ true
-- **Evidence B submitted**: ✅ true
+### Default Judgments (Cases 9-11)
+- **Case 9**: Neither party submits evidence. Resolved as UNDETERMINED, escrow refunded to A.
+- **Case 10**: Only the dispute initiator submits evidence. Initiator wins by default (TRUE), escrow to A.
+- **Case 11**: Only the non-initiator submits evidence. Non-initiator wins by default (FALSE), escrow to B.
 
 ## Key Findings
 
-### ✅ Successes
+1. **State Machine**: All status transitions work correctly across all paths (CREATED, ACTIVE, DISPUTED, RESOLVING, RESOLVED, CANCELLED).
+2. **USDC Escrow**: Properly transferred, held, and distributed in every scenario -- winner takes all for TRUE/FALSE, refund to creator for UNDETERMINED/CANCELLED.
+3. **Mutual Agreement**: Three-key system works -- when both parties agree, no jury is needed.
+4. **Bridge Integration**: Factory correctly processes bridge messages and routes verdicts to agreements.
+5. **Default Judgment**: Automatic resolution when evidence deadline passes with missing evidence.
+6. **Pull-Based Withdrawal**: Safe claim pattern works for both parties across all verdict types.
+7. **On-Chain Statements**: Each case uses its descriptive name as the on-chain statement, visible on Basescan for easy identification.
 
-1. **State Machine**: All status transitions worked correctly (CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED)
-2. **USDC Escrow**: Properly transferred, held, and withdrawn via SafeERC20
-3. **Evidence Submission**: Both parties successfully submitted evidence, triggering automatic resolution
-4. **Bridge Integration**: Factory correctly processes bridge messages and routes verdicts to agreements
-5. **Verdict Distribution**: Winner (Party A) correctly received all escrowed funds
-6. **Pull-Based Withdrawal**: Safe claim pattern works as expected
-7. **Access Control**: Bridge receiver validation enforced correctly
-
-### 📝 Notes
-
-1. **Bridge Verdict Delivery**: On testnet, verdict delivery was simulated by:
-   - Temporarily updating `bridgeReceiver` to Party A (as factory owner)
-   - Calling `factory.processBridgeMessage()` to deliver verdict
-   - Restoring original `bridgeReceiver`
-
-   In production, this would be handled by:
-   - Bridge relay service monitoring `DisputeRequested` events
-   - GenLayer AI jury evaluation
-   - BridgeForwarder relaying verdict back via LayerZero
-
-2. **Nonce Management**: Manual nonce tracking was required for sequential transactions from the same account
-
-3. **Evidence Display**: Both evidence strings are stored on-chain and can be retrieved via `getEvidenceA()` and `getEvidenceB()` view functions
-
-## Transaction Summary
-
-Total transactions: 10
-- Mint: 1
-- Approve: 1
-- Create Agreement: 1
-- Accept: 1
-- Raise Dispute: 1
-- Submit Evidence: 2
-- Bridge Config: 2 (set + restore)
-- Deliver Verdict: 1
-- Claim Funds: 1
-
-All transactions succeeded with no reverts.
-
-## Test Script
-
-The test can be re-run with:
+## How to Re-Run
 
 ```bash
 cd /home/albert/internetcourt/contracts/solidity
 npx hardhat run scripts/full-e2e-test.ts --network baseSepolia
 ```
 
-To verify an existing agreement:
-
-```bash
-npx hardhat run scripts/verify-agreement.ts --network baseSepolia
-```
-
 ## Conclusion
 
-The Internet Court system successfully completed a full end-to-end lifecycle on Base Sepolia testnet. All core functionality is working as designed:
-
-- ✅ Agreement creation with USDC escrow
-- ✅ Party acceptance (no deposit)
-- ✅ Dispute raising
-- ✅ Evidence submission from both parties
-- ✅ Automatic transition to RESOLVING state
-- ✅ Verdict delivery via bridge
-- ✅ Fund distribution based on verdict
-- ✅ Pull-based withdrawal pattern
-- ✅ State machine integrity
-
-**System Status**: Ready for integration with bridge relay service and GenLayer AI jury.
+All 11 Agreement lifecycle paths pass on Base Sepolia. The system correctly handles cancellation, deadline expiry, mutual agreement, bridge-delivered verdicts (TRUE/FALSE/UNDETERMINED), and default judgments. Escrow distribution is correct in every case. System is ready for production bridge relay integration with GenLayer AI jury.

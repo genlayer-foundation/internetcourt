@@ -5,7 +5,7 @@ import { studionet } from "genlayer-js/chains";
 import type { GenLayerClient, GenLayerChain } from "genlayer-js/types";
 import { TransactionStatus } from "genlayer-js/types";
 
-const FACTORY_ADDRESS = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const FACTORY_ADDRESS = "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE";
 
 const SUCCESS_RESULTS = ["SUCCESS", "MAJORITY_AGREE", "AGREE"];
 

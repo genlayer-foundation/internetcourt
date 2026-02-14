@@ -1,10 +1,10 @@
 import { ethers, network } from "hardhat";
 
 const ADDRESSES = {
-  factory: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
+  factory: "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E",
   bridgeReceiver: "0x347FbC76104588dF52b85b7c840a4a8a891E2cf2",
   bridgeForwarder: "0xa94cc270C23789550F22d545d64691b958b9F1cb",
-  mockUSDC: "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f",
+  mockUSDC: "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3",
 };
 
 const EIDS = { zkSyncSepolia: 40165, baseSepolia: 40245 };

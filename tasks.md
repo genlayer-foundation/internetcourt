@@ -4,6 +4,13 @@
 
 ## In Progress
 
+### Fresh Deploy — Both Chains from Scratch
+- Deploy new GenLayer factory (create deploy-factory.mjs, deploy, verify)
+- Deploy new Base Sepolia contracts (factory + MockUSDC + deploymentBlock)
+- Update ALL addresses across ~26 files
+- Verify frontend build passes
+- Verify both factories (GenLayer: count=0, type registered; Base: nextAgreementId=0)
+
 ### Implement factory improvements — pagination, find by party, migration/export/import
 - Add pagination to factory queries (offset/limit pattern)
 - Add find-by-party-address lookup
@@ -30,6 +37,15 @@
 - Currently bypassed — factory address hardcoded in source. NEXT_PUBLIC_COURT_FACTORY_ADDRESS still points to old factory in Vercel dashboard.
 
 ## Done
+
+### Fresh Deploy + Comprehensive E2E Test (11 Lifecycle Cases)
+- Deployed fresh MockUSDC + InternetCourtFactory to Base Sepolia
+- Factory: `0x72b7544EeA6c81b434b3DD255f3EE29cC6Ca5231`, USDC: `0x852E780CBAB7fa5f88B24e51D2e6D32959DD15dF`
+- Updated addresses in 8 files (scripts, frontend, bridge, MCP)
+- Created comprehensive E2E script testing all 11 Agreement lifecycle paths
+- All 11 cases passed: cancel, deadline expiry, mutual TRUE/FALSE, confirm, bridge TRUE/FALSE/UNDETERMINED, default judgment (none/initiator/non-initiator)
+- Each case uses descriptive name as on-chain statement, visible on Basescan
+- Results: `contracts/solidity/E2E_TEST_RESULTS.md`
 
 ### GenLayer Cross-Chain Registry + Factory Redeploy
 - Added `deploymentBlock` immutable field to InternetCourtFactory.sol

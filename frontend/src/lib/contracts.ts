@@ -1,10 +1,12 @@
 import { createPublicClient, http, parseAbi } from "viem";
 import { base, baseSepolia } from "viem/chains";
+import {
+  BASE_FACTORY_ADDRESS,
+  MOCK_USDC_ADDRESS,
+} from "./constants";
 
-export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS ||
-  "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a") as `0x${string}`;
-export const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
-  "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f") as `0x${string}`;
+export const FACTORY_ADDRESS = BASE_FACTORY_ADDRESS;
+export const USDC_ADDRESS = MOCK_USDC_ADDRESS;
 
 // Human-readable ABI fragments used by viem
 export const AGREEMENT_ABI = parseAbi([
@@ -49,12 +51,5 @@ export const publicClient = createPublicClient({
   transport: http(process.env.NEXT_PUBLIC_RPC_URL),
 });
 
-export const STATUS_NAMES = [
-  "CREATED",
-  "ACTIVE",
-  "DISPUTED",
-  "RESOLVING",
-  "RESOLVED",
-  "CANCELLED",
-];
-export const VERDICT_NAMES = ["UNDETERMINED", "TRUE", "FALSE"];
+// Re-exported from constants for backward compatibility
+export { STATUS_NAMES, VERDICT_NAMES } from "./constants";

@@ -21,7 +21,9 @@ export default function WalletButton() {
                 onClick={openAccountModal}
                 className="bg-white rounded-lg px-4 py-2.5 font-mono text-sm text-foreground flex items-center gap-3 transition-colors hover:bg-[#DC2626] hover:text-white"
               >
-                <span className="text-muted-foreground">{account.displayBalance}</span>
+                {chain && (
+                  <span className="text-muted-foreground text-xs">{chain.name}</span>
+                )}
                 <span className="flex items-center gap-1.5">
                   {account.ensAvatar && (
                     <img src={account.ensAvatar} alt="" className="w-5 h-5 rounded-full" />

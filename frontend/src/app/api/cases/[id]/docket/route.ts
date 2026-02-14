@@ -7,6 +7,8 @@ import {
 } from "@/lib/contracts";
 import { parseAbiItem, formatUnits } from "viem";
 
+const GENLAYER_RPC = "https://studio.genlayer.com/api";
+
 interface DocketLink {
   label: string;
   url: string;
@@ -23,6 +25,183 @@ interface DocketEntry {
   source: string;
   links: DocketLink[];
 }
+
+// --- GenLayer transaction history helpers ---
+
+interface GenLayerTx {
+  hash: string;
+  from_address: string;
+  to_address: string;
+  data: { calldata?: string; contract_code?: string; contract_address?: string };
+  value: number;
+  type: number; // 1 = deploy, 2 = call
+  status: string;
+  result: string;
+  created_at: string;
+  leader_only: boolean;
+  consensus_data?: {
+    votes?: Record<string, string>;
+    validators?: Array<{ execution_result?: string }>;
+    leader_receipt?: Array<{ execution_result?: string }>;
+  };
+}
+
+function decodeCalldata(b64: string): { method: string; args: string[] } {
+  try {
+    const buf = Buffer.from(b64, "base64");
+    const parts: string[] = [];
+    let current = "";
+    for (const b of buf) {
+      if (b >= 32 && b < 127) {
+        current += String.fromCharCode(b);
+      } else {
+        if (current.length > 0) parts.push(current);
+        current = "";
+      }
+    }
+    if (current.length > 0) parts.push(current);
+
+    let method = "";
+    const args: string[] = [];
+    let nextIsMethod = false;
+
+    for (const p of parts) {
+      if (nextIsMethod) {
+        method = p;
+        nextIsMethod = false;
+        continue;
+      }
+      // "method|propose_outcome" or "method<resolve"
+      if (p.startsWith("method") && p.length > 6) {
+        method = p.replace(/^method[<|]/, "");
+      } else if (p === "method") {
+        // Next part is the method name
+        nextIsMethod = true;
+      } else if (p === "args") {
+        // skip label
+      } else if (p.length > 0) {
+        // Clean arg values: "$TRUE" → "TRUE", ", FALSE" → "FALSE"
+        const cleaned = p.replace(/^[,$\s]+/, "").trim();
+        if (cleaned.length > 0) args.push(cleaned);
+      }
+    }
+    return { method, args };
+  } catch {
+    return { method: "", args: [] };
+  }
+}
+
+function mapMethodToAction(
+  method: string,
+  args: string[],
+  txType: number,
+  fromAddr: string,
+): { action: string; details: string | null } {
+  if (txType === 1) {
+    return { action: "Contract deployed", details: `Deployed by ${fromAddr}` };
+  }
+  switch (method) {
+    case "accept_contract":
+      return { action: "Party B accepted the agreement", details: null };
+    case "propose_outcome": {
+      const outcome = args.find((a) => a === "TRUE" || a === "FALSE") || "unknown";
+      return { action: `Outcome proposed: ${outcome}`, details: null };
+    }
+    case "initiate_dispute":
+      return { action: "Dispute raised — evidence window opened", details: null };
+    case "submit_evidence": {
+      const evidenceText = args.find((a) => a.length > 10) || null;
+      return {
+        action: "Evidence submitted",
+        details: evidenceText ? evidenceText.substring(0, 500) : null,
+      };
+    }
+    case "resolve":
+      return {
+        action: "Resolution triggered — sent to AI jury",
+        details: "Case forwarded to GenLayer validators for judgment.",
+      };
+    case "cancel":
+      return { action: "Agreement cancelled", details: null };
+    default:
+      return { action: method || "Transaction", details: null };
+  }
+}
+
+async function fetchGenLayerDocket(address: string): Promise<{ docket: DocketEntry[]; note?: string }> {
+  const res = await fetch(GENLAYER_RPC, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "sim_getTransactionsForAddress",
+      params: [address],
+    }),
+  });
+
+  const data = await res.json();
+  if (data.error) {
+    return { docket: [], note: `GenLayer RPC error: ${data.error.message}` };
+  }
+
+  const txns: GenLayerTx[] = data.result || [];
+  if (txns.length === 0) {
+    return { docket: [], note: "No transactions found for this contract on GenLayer." };
+  }
+
+  // Sort by created_at ascending (oldest first)
+  txns.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+  const docket: DocketEntry[] = [];
+
+  for (const tx of txns) {
+    const { method, args } = decodeCalldata(tx.data?.calldata || "");
+    const { action, details: baseDetails } = mapMethodToAction(
+      method,
+      args,
+      tx.type,
+      tx.from_address,
+    );
+
+    const leaderResult =
+      tx.consensus_data?.leader_receipt?.[0]?.execution_result || "";
+    const isError = leaderResult === "ERROR" || tx.result?.includes("exit_code 1");
+
+    // Add execution status to details
+    let details = baseDetails;
+    if (isError) {
+      details = details
+        ? `${details}\nExecution: FAILED`
+        : "Execution: FAILED";
+    }
+
+    const validatorCount = tx.consensus_data?.votes
+      ? Object.keys(tx.consensus_data.votes).length
+      : 0;
+    if (validatorCount > 0) {
+      const suffix = `Consensus: ${validatorCount} validators`;
+      details = details ? `${details}\n${suffix}` : suffix;
+    }
+
+    const timestamp = Math.floor(new Date(tx.created_at).getTime() / 1000);
+
+    docket.push({
+      action: isError ? `${action} (failed)` : action,
+      txHash: tx.hash,
+      blockNumber: 0, // GenLayer doesn't use block numbers the same way
+      timestamp,
+      actor: tx.from_address,
+      details,
+      evidence: null,
+      source: "GenLayer",
+      links: [],
+    });
+  }
+
+  return { docket };
+}
+
 
 // Base Sepolia limits eth_getLogs to 10,000 blocks per query.
 // This helper chunks a log query into 10k-block windows and combines results.
@@ -87,8 +266,9 @@ export async function GET(
       }
 
       if (caseId === -1) {
-        // Case exists but isn't on Base Sepolia factory — return empty docket
-        return NextResponse.json({ docket: [], note: "This case is not on Base Sepolia. Docket events are only available for cases deployed through the Base Sepolia factory." });
+        // Not on Base — try GenLayer transaction history
+        const glResult = await fetchGenLayerDocket(agreementAddress);
+        return NextResponse.json(glResult);
       }
     } else {
       caseId = parseInt(id, 10);

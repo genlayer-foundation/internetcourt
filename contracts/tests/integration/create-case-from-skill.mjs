@@ -14,7 +14,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../..");
 const RPC = "https://studio.genlayer.com/api";
-const FACTORY = "0x4f6B99a7b66C01Cb3588B91C07c4B2C3134aB738";
+const FACTORY = "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE";
 
 const SUCCESS_RESULTS = ["SUCCESS", "MAJORITY_AGREE", "AGREE"];
 

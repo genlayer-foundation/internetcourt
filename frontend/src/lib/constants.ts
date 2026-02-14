@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export const SITE_NAME = "internetcourt.org";
 export const SITE_DESCRIPTION =
   "Dispute resolution infrastructure for the AI agent economy.";
@@ -8,6 +10,44 @@ export const NAV_LINKS = [
   { label: "Create", href: "/create" },
   { label: "Docs", href: "/docs" },
 ] as const;
+
+// --- Contract addresses (centralized) ---
+
+export const BASE_FACTORY_ADDRESS =
+  (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS ||
+    "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E") as `0x${string}`;
+
+export const GENLAYER_FACTORY_ADDRESS =
+  "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE" as `0x${string}`;
+
+export const MOCK_USDC_ADDRESS =
+  (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
+    "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3") as `0x${string}`;
+
+export const DEPLOYMENT_BLOCK = 37666090;
+
+export const BASE_CHAIN_ID = 84532;
+export const GENLAYER_CHAIN_ID = 61999;
+
+// --- Status / Verdict mappings ---
+
+export const ALL_STATUSES = [
+  "CREATED",
+  "ACTIVE",
+  "DISPUTED",
+  "RESOLVING",
+  "RESOLVED",
+  "CANCELLED",
+] as const;
+
+export const STATUS_NAMES: Record<number, string> = {
+  0: "CREATED",
+  1: "ACTIVE",
+  2: "DISPUTED",
+  3: "RESOLVING",
+  4: "RESOLVED",
+  5: "CANCELLED",
+};
 
 export const STATUS_COLORS: Record<string, string> = {
   created: "bg-transparent text-[#0a0a0a] border-[#0a0a0a]",
@@ -32,3 +72,17 @@ export const STATUS_LABELS: Record<string, string> = {
   resolved: "RESOLVED",
   cancelled: "CANCELLED",
 };
+
+export const VERDICT_NAMES = ["UNDETERMINED", "TRUE", "FALSE"] as const;
+
+// --- Utilities ---
+
+/** Validate an Ethereum-style hex address (0x + 40 hex chars). */
+export function isValidAddress(addr: string): boolean {
+  return /^0x[0-9a-fA-F]{40}$/.test(addr);
+}
+
+/** Return a standardized JSON error NextResponse. */
+export function apiError(message: string, status: number): NextResponse {
+  return NextResponse.json({ error: message }, { status });
+}

@@ -32,6 +32,7 @@ import {
   STATUS_LABELS,
   STATUS_COLORS,
   VERDICT_COLORS,
+  STATUS_NAMES,
 } from "@/lib/constants";
 
 function CopyButton({ text }: { text: string }) {
@@ -202,15 +203,15 @@ function HeroToggle() {
           <div className="mt-5 flex flex-col items-start gap-2.5 md:flex-row md:items-center md:justify-center md:gap-2.5 py-2">
             <div className="flex items-center gap-2.5">
               <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">1</span>
-              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
+              <span className="text-sm text-muted-foreground">Connect your wallet</span>
             </div>
             <div className="flex items-center gap-2.5">
               <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">2</span>
-              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet</span>
+              <span className="text-sm text-muted-foreground">Monitor your agents&apos; cases</span>
             </div>
             <div className="flex items-center gap-2.5">
               <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">3</span>
-              <span className="text-sm text-muted-foreground">Start resolving disputes and earning!</span>
+              <span className="text-sm text-muted-foreground">Review disputes and verdicts</span>
             </div>
           </div>
         </div>
@@ -362,6 +363,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
     contract.verdict && VERDICT_COLORS[contract.verdict]
       ? VERDICT_COLORS[contract.verdict]
       : "text-muted-foreground";
+  const isBase = contract.chainId === 84532;
 
   return (
     <Link
@@ -378,6 +380,11 @@ function CaseCard({ contract }: { contract: MoltContract }) {
           <span className={`font-mono text-sm font-semibold ${verdictColor}`}>
             {contract.verdict}
           </span>
+        )}
+        {isBase ? (
+          <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Base</span>
+        ) : (
+          <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">GenLayer</span>
         )}
       </div>
 
@@ -427,14 +434,72 @@ function LatestCases() {
   const fetchCases = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     try {
-      const res = await fetch("/api/contracts");
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      setCases(data.contracts || []);
-    } catch {
-      setError("Could not load cases");
+      // Fetch from both endpoints in parallel
+      const [glRes, baseRes] = await Promise.allSettled([
+        fetch("/api/contracts", { signal: controller.signal }),
+        fetch("/api/cases?limit=5", { signal: controller.signal }),
+      ]);
+
+      const allCases: MoltContract[] = [];
+
+      // GenLayer cases
+      if (glRes.status === "fulfilled" && glRes.value.ok) {
+        const glData = await glRes.value.json();
+        allCases.push(...(glData.contracts || []));
+      }
+
+      // Base Sepolia cases
+      if (baseRes.status === "fulfilled" && baseRes.value.ok) {
+        const baseData = await baseRes.value.json();
+        for (const c of baseData.cases || []) {
+          allCases.push({
+            address: c.address,
+            partyA: c.partyA || "",
+            partyB: c.partyB || "",
+            statement: c.statement || "",
+            guidelines: "",
+            evidenceDefs: {},
+            status: (STATUS_NAMES[c.status] || "UNKNOWN").toLowerCase() as MoltContract["status"],
+            evidenceA: "",
+            evidenceB: "",
+            verdict: "" as MoltContract["verdict"],
+            reasoning: "",
+            proposedOutcomeA: "",
+            proposedOutcomeB: "",
+            chainId: 84532,
+            chainName: "Base Sepolia",
+            escrowAmount: c.escrowAmount || "0",
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+          });
+        }
+      }
+
+      // Sort by date (newest first), then take top 3
+      allCases.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      if (allCases.length === 0 && glRes.status === "rejected" && baseRes.status === "rejected") {
+        throw new Error("Could not load cases");
+      }
+
+      setCases(allCases);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError("Could not load cases");
+      }
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   }, []);

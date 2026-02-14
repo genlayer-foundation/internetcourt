@@ -21,15 +21,15 @@ import { ethers } from "hardhat";
  *                           (if set, will configure BridgeReceiver as bridge receiver on factory)
  *
  * Known LayerZero V2 Endpoints:
- *   zkSync Sepolia: 0x6EDCE65403992e310A62460808c4b910D972f10f  (EID: 30165)
- *   Base Sepolia:   0x6EDCE65403992e310A62460808c4b910D972f10f  (EID: 30184)
+ *   zkSync Sepolia: 0x6EDCE65403992e310A62460808c4b910D972f10f  (EID: 40165)
+ *   Base Sepolia:   0x6EDCE65403992e310A62460808c4b910D972f10f  (EID: 40245)
  *   zkSync Mainnet: 0xd07C30aF3Ff30D96BDc9c6044958230Eb5b32a6c  (EID: 30165)
  *   Base Mainnet:   0x1a44076050125825900e736c501f859c50fE728c  (EID: 30184)
  */
 
 // LayerZero Endpoint IDs
-const EID_ZKSYNC_SEPOLIA = 30165;
-const EID_BASE_SEPOLIA = 30184;
+const EID_ZKSYNC_SEPOLIA = 40165;
+const EID_BASE_SEPOLIA = 40245;
 
 async function main() {
   const [deployer] = await ethers.getSigners();

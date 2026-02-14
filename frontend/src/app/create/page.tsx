@@ -12,6 +12,7 @@ import {
   deployAndRegister,
 } from "@/lib/genlayer-client";
 import { addTrackedAddress } from "@/lib/contract-store";
+import { isValidAddress } from "@/lib/constants";
 
 type DeployState =
   | { step: "idle" }
@@ -36,11 +37,20 @@ export default function CreatePage() {
 
   const [preview, setPreview] = useState(false);
   const [deploy, setDeploy] = useState<DeployState>({ step: "idle" });
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    if (name === "partyB") {
+      if (value && !isValidAddress(value)) {
+        setAddressError("Address must start with 0x and be 42 characters");
+      } else {
+        setAddressError(null);
+      }
+    }
   }
 
   function buildEvidenceDefs(): string {
@@ -171,6 +181,10 @@ export default function CreatePage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValidAddress(form.partyB)) {
+      setAddressError("Address must start with 0x and be 42 characters");
+      return;
+    }
     if (!preview) {
       setPreview(true);
       return;
@@ -180,7 +194,10 @@ export default function CreatePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-8 font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">Create Contract</h1>
+      <div className="mb-8 flex items-center gap-3 flex-wrap">
+        <h1 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">Create Contract</h1>
+        <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200">Deploys to GenLayer Studionet</span>
+      </div>
 
       {/* Success state */}
       {deploy.step === "success" && (
@@ -245,8 +262,11 @@ export default function CreatePage() {
                   onChange={handleChange}
                   required
                   disabled={preview}
-                  className="font-mono"
+                  className={`font-mono ${addressError ? "border-red-400" : ""}`}
                 />
+                {addressError && (
+                  <p className="mt-1 text-xs text-red-500">{addressError}</p>
+                )}
               </div>
 
               <div>

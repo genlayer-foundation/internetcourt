@@ -1,11 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseAbiItem } from "viem";
 import {
   publicClient,
   FACTORY_ADDRESS,
   FACTORY_ABI,
   AGREEMENT_ABI,
-  STATUS_NAMES,
 } from "@/lib/contracts";
+import { apiError, STATUS_NAMES, VERDICT_NAMES } from "@/lib/constants";
+
+// Base Sepolia limits eth_getLogs to 10,000 blocks per query.
+async function getLogsChunked(params: {
+  address: `0x${string}`;
+  event: ReturnType<typeof parseAbiItem>;
+  args?: Record<string, unknown>;
+  fromBlock: bigint;
+  toBlock: bigint;
+}) {
+  const CHUNK_SIZE = BigInt(9999);
+  const { fromBlock, toBlock, ...rest } = params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const logs: any[] = [];
+
+  for (
+    let start = fromBlock;
+    start <= toBlock;
+    start += CHUNK_SIZE + BigInt(1)
+  ) {
+    const end = start + CHUNK_SIZE > toBlock ? toBlock : start + CHUNK_SIZE;
+    const chunk = await publicClient.getLogs({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(rest as any),
+      fromBlock: start,
+      toBlock: end,
+    });
+    logs.push(...chunk);
+  }
+
+  return logs;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,7 +66,6 @@ export async function GET(req: NextRequest) {
 
     // Iterate from newest to oldest, collecting matching cases
     const cases: Array<Record<string, unknown>> = [];
-    let scanned = 0;
     let matched = 0;
     const skip = (page - 1) * limit;
 
@@ -80,6 +111,11 @@ export async function GET(req: NextRequest) {
             abi: AGREEMENT_ABI,
             functionName: "escrowAmount",
           },
+          {
+            address: agreementAddress,
+            abi: AGREEMENT_ABI,
+            functionName: "verdict",
+          },
         ],
       });
 
@@ -94,6 +130,8 @@ export async function GET(req: NextRequest) {
         results[4].status === "success"
           ? (results[4].result as bigint).toString()
           : "0";
+      const verdict =
+        results[5].status === "success" ? Number(results[5].result) : 0;
 
       // Apply filters
       if (statusFilter !== null && status !== statusFilter) {
@@ -107,7 +145,6 @@ export async function GET(req: NextRequest) {
         continue;
       }
 
-      scanned++;
       matched++;
 
       // Skip for pagination
@@ -124,12 +161,139 @@ export async function GET(req: NextRequest) {
         partyB,
         statement,
         escrowAmount,
+        verdict,
+        verdictName: VERDICT_NAMES[verdict] || "UNDETERMINED",
       });
     }
 
-    // For total count with filters, we need to know how many matched.
-    // Since we iterate from newest, the total is at least matched + remaining unchecked.
-    // For simplicity when filtering, we report what we've counted so far.
+    // --- Fetch timestamps for collected cases ---
+    // Get the factory's deploymentBlock for efficient event scanning
+    let deployBlock: bigint;
+    try {
+      deployBlock = (await publicClient.readContract({
+        address: FACTORY_ADDRESS,
+        abi: FACTORY_ABI,
+        functionName: "deploymentBlock",
+      })) as bigint;
+    } catch {
+      deployBlock = BigInt(0);
+    }
+
+    const currentBlock = await publicClient.getBlockNumber();
+
+    // For each case, fetch AgreementCreated event and latest agreement events
+    const timestampPromises = cases.map(async (c) => {
+      const caseId = c.id as number;
+      const agreementAddress = c.address as `0x${string}`;
+
+      try {
+        // Fetch creation event from factory
+        const creationLogs = await getLogsChunked({
+          address: FACTORY_ADDRESS,
+          event: parseAbiItem(
+            "event AgreementCreated(uint256 indexed id, address agreementAddress, address partyA, address partyB)",
+          ),
+          args: { id: BigInt(caseId) },
+          fromBlock: deployBlock,
+          toBlock: currentBlock,
+        });
+
+        let creationBlock: bigint | null = null;
+        let latestBlock: bigint | null = null;
+
+        if (creationLogs.length > 0) {
+          creationBlock = creationLogs[0].blockNumber;
+          latestBlock = creationBlock;
+        }
+
+        // Fetch the most recent event on the agreement contract itself
+        // Check a few key events to find the latest activity
+        const eventSearchStart = creationBlock || deployBlock;
+        const logFetch = (event: ReturnType<typeof parseAbiItem>) =>
+          getLogsChunked({
+            address: agreementAddress,
+            event,
+            fromBlock: eventSearchStart,
+            toBlock: currentBlock,
+          }).catch((err) => {
+            console.warn(`[cases] Failed to fetch logs for ${agreementAddress}:`, err instanceof Error ? err.message : err);
+            return [];
+          });
+
+        const latestEventLogs = await Promise.all([
+          logFetch(parseAbiItem("event AgreementAccepted(address indexed partyB, uint256 escrowAmount)")),
+          logFetch(parseAbiItem("event OutcomeProposed(address indexed proposer, bool statementIsTrue)")),
+          logFetch(parseAbiItem("event DisputeRaised(address indexed raisedBy, uint256 evidenceDeadline)")),
+          logFetch(parseAbiItem("event EvidenceSubmitted(address indexed submitter)")),
+          logFetch(parseAbiItem("event Resolved(uint8 verdict, string reasoning)")),
+          logFetch(parseAbiItem("event Cancelled(address indexed cancelledBy)")),
+        ]);
+
+        // Find the highest block number among all events
+        for (const logs of latestEventLogs) {
+          for (const log of logs) {
+            if (
+              log.blockNumber &&
+              (!latestBlock || log.blockNumber > latestBlock)
+            ) {
+              latestBlock = log.blockNumber;
+            }
+          }
+        }
+
+        // Fetch block timestamps for creation and latest blocks
+        const blocksToFetch = new Set<bigint>();
+        if (creationBlock) blocksToFetch.add(creationBlock);
+        if (latestBlock && latestBlock !== creationBlock)
+          blocksToFetch.add(latestBlock);
+
+        const blockData = await Promise.all(
+          [...blocksToFetch].map((bn) => publicClient.getBlock({ blockNumber: bn })),
+        );
+
+        const blockTimestamps = new Map<bigint, number>();
+        for (const block of blockData) {
+          blockTimestamps.set(block.number, Number(block.timestamp));
+        }
+
+        const createdAtTs = creationBlock
+          ? blockTimestamps.get(creationBlock)
+          : undefined;
+        const updatedAtTs = latestBlock
+          ? blockTimestamps.get(latestBlock)
+          : undefined;
+
+        return {
+          address: agreementAddress,
+          createdAt: createdAtTs
+            ? new Date(createdAtTs * 1000).toISOString()
+            : undefined,
+          updatedAt: updatedAtTs
+            ? new Date(updatedAtTs * 1000).toISOString()
+            : undefined,
+        };
+      } catch {
+        return { address: agreementAddress };
+      }
+    });
+
+    const timestamps = await Promise.all(timestampPromises);
+    const tsMap = new Map(
+      timestamps.map((t) => [
+        (t.address as string).toLowerCase(),
+        t,
+      ]),
+    );
+
+    // Merge timestamps into cases
+    for (const c of cases) {
+      const ts = tsMap.get((c.address as string).toLowerCase());
+      if (ts) {
+        if (ts.createdAt) c.createdAt = ts.createdAt;
+        if (ts.updatedAt) c.updatedAt = ts.updatedAt;
+      }
+    }
+
     const total =
       partyFilter || statusFilter !== null
         ? matched
@@ -137,13 +301,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ cases, total, page, limit });
   } catch (err) {
-    console.error(
-      "GET /api/cases error:",
-      err instanceof Error ? err.message : err,
-    );
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal error" },
-      { status: 500 },
-    );
+    console.error("GET /api/cases error:", err instanceof Error ? err.message : err);
+    return apiError(err instanceof Error ? err.message : "Internal error", 500);
   }
 }

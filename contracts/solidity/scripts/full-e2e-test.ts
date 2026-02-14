@@ -1,457 +1,992 @@
 import { ethers } from "hardhat";
 
 /**
- * Comprehensive manual end-to-end test for Internet Court system on Base Sepolia testnet.
+ * Comprehensive E2E test script for Internet Court Agreement.sol on Base Sepolia.
  *
- * Tests the complete lifecycle:
- * 1. Setup & mint USDC
- * 2. Create agreement with escrow
- * 3. Party B accepts
- * 4. Raise dispute
- * 5. Submit evidence from both parties
- * 6. Deliver verdict via bridge simulation
- * 7. Claim funds
- * 8. Verify final state
+ * Creates 11 named test cases covering every lifecycle path of the Agreement contract.
+ * Each case's `statement` field IS the test name, making them readable on Basescan.
+ *
+ * Run: npx hardhat run scripts/full-e2e-test.ts --network baseSepolia
  */
 
-// Contract addresses on Base Sepolia
-const MOCK_USDC = "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f";
-const FACTORY = "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a";
+// ──────────────────────────────────────────────────────────────
+//  Contract addresses on Base Sepolia (redeployed)
+// ──────────────────────────────────────────────────────────────
+const MOCK_USDC = "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3";
+const FACTORY = "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E";
 const BRIDGE_RECEIVER = "0x347FbC76104588dF52b85b7c840a4a8a891E2cf2";
-const DEPLOYER_KEY = process.env.DEPLOYER_PRIVATE_KEY!;
 
-// Party B's private key from e2e-testnet.ts
-const PARTY_B_KEY = "0x31f35a8cc001278c0293a9a061e0e291b6379d3cc75982613770e4b7967ecfaf";
+// Party B deterministic key (testnet only - no real funds)
+const PARTY_B_KEY =
+  "0x31f35a8cc001278c0293a9a061e0e291b6379d3cc75982613770e4b7967ecfaf";
 
-// Enums
+// ──────────────────────────────────────────────────────────────
+//  Enums (mirror Solidity)
+// ──────────────────────────────────────────────────────────────
 const Status = {
-  CREATED: 0,
-  ACTIVE: 1,
-  DISPUTED: 2,
-  RESOLVING: 3,
-  RESOLVED: 4,
-  CANCELLED: 5,
-};
+  CREATED: 0n,
+  ACTIVE: 1n,
+  DISPUTED: 2n,
+  RESOLVING: 3n,
+  RESOLVED: 4n,
+  CANCELLED: 5n,
+} as const;
 
-const Verdict = {
-  UNDETERMINED: 0,
-  TRUE_: 1,
-  FALSE_: 2,
-};
+const VerdictEnum = {
+  UNDETERMINED: 0n,
+  TRUE_: 1n,
+  FALSE_: 2n,
+} as const;
 
-async function main() {
-  console.log("\n═══════════════════════════════════════════════════════════════");
-  console.log("  Internet Court E2E Test - Base Sepolia Testnet");
-  console.log("═══════════════════════════════════════════════════════════════\n");
+// ──────────────────────────────────────────────────────────────
+//  Helpers
+// ──────────────────────────────────────────────────────────────
 
-  // ──────────────────────────────────────────────────────────────
-  // Step 1: Setup
-  // ──────────────────────────────────────────────────────────────
-  console.log("📋 STEP 1: Setup wallets and initial balances");
-  console.log("───────────────────────────────────────────────────────────────\n");
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const DELAY = 4000; // RPC propagation delay
 
-  const provider = ethers.provider;
-  const partyA = new ethers.Wallet(DEPLOYER_KEY, provider);
-  const partyB = new ethers.Wallet(PARTY_B_KEY, provider);
+async function waitTx(tx: any) {
+  const receipt = await tx.wait();
+  await sleep(DELAY);
+  return receipt;
+}
 
-  console.log(`Party A (deployer): ${partyA.address}`);
-  console.log(`Party B:            ${partyB.address}`);
+function formatUSDC(amount: bigint): string {
+  return (Number(amount) / 1e6).toFixed(2);
+}
 
-  const ethBalanceA = await provider.getBalance(partyA.address);
-  const ethBalanceB = await provider.getBalance(partyB.address);
+function statusName(s: bigint): string {
+  const names: Record<string, string> = {
+    "0": "CREATED",
+    "1": "ACTIVE",
+    "2": "DISPUTED",
+    "3": "RESOLVING",
+    "4": "RESOLVED",
+    "5": "CANCELLED",
+  };
+  return names[s.toString()] || "UNKNOWN";
+}
 
-  console.log(`\nETH Balances:`);
-  console.log(`  Party A: ${ethers.formatEther(ethBalanceA)} ETH`);
-  console.log(`  Party B: ${ethers.formatEther(ethBalanceB)} ETH`);
+function verdictName(v: bigint): string {
+  const names: Record<string, string> = {
+    "0": "UNDETERMINED",
+    "1": "TRUE",
+    "2": "FALSE",
+  };
+  return names[v.toString()] || "UNKNOWN";
+}
 
-  // Get contract instances
-  const usdc = await ethers.getContractAt("MockUSDC", MOCK_USDC);
-  const factory = await ethers.getContractAt("InternetCourtFactory", FACTORY);
+/**
+ * Mint USDC to a signer and approve the factory to spend it.
+ */
+async function mintAndApprove(
+  usdc: any,
+  factoryAddr: string,
+  signer: any,
+  amount: bigint,
+) {
+  await waitTx(await usdc.connect(signer).mint(signer.address, amount));
+  await waitTx(await usdc.connect(signer).approve(factoryAddr, amount));
+}
 
-  // Check current USDC balances
-  let usdcBalanceA = await usdc.balanceOf(partyA.address);
-  let usdcBalanceB = await usdc.balanceOf(partyB.address);
-
-  console.log(`\nUSDC Balances (before mint):`);
-  console.log(`  Party A: ${ethers.formatUnits(usdcBalanceA, 6)} USDC`);
-  console.log(`  Party B: ${ethers.formatUnits(usdcBalanceB, 6)} USDC`);
-
-  // Mint 10,000 USDC to Party A
-  console.log(`\n🪙 Minting 10,000 USDC to Party A...`);
-  const mintAmount = ethers.parseUnits("10000", 6); // 10,000 USDC with 6 decimals
-
-  // Get and set nonce manually to avoid nonce conflicts
-  let currentNonce = await provider.getTransactionCount(partyA.address, 'pending');
-  const mintTx = await usdc.connect(partyA).mint(partyA.address, mintAmount, { nonce: currentNonce });
-  await mintTx.wait();
-  console.log(`✅ Minted! Tx: ${mintTx.hash}`);
-  currentNonce++;
-
-  // Check updated balances
-  usdcBalanceA = await usdc.balanceOf(partyA.address);
-  usdcBalanceB = await usdc.balanceOf(partyB.address);
-
-  console.log(`\nUSDC Balances (after mint):`);
-  console.log(`  Party A: ${ethers.formatUnits(usdcBalanceA, 6)} USDC`);
-  console.log(`  Party B: ${ethers.formatUnits(usdcBalanceB, 6)} USDC`);
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 2: Create Agreement
-  // ──────────────────────────────────────────────────────────────
-  console.log("\n\n📝 STEP 2: Create Agreement");
-  console.log("───────────────────────────────────────────────────────────────\n");
-
-  const escrowAmount = ethers.parseUnits("500", 6); // 500 USDC
-  const statement = "The freelancer delivered the website as specified in the contract";
-  const guidelines = "Evaluate based on: 1) All pages implemented 2) Responsive design 3) Performance benchmarks met";
-  const evidenceDefs = "Party A: screenshots, deployment URL, original spec. Party B: work logs, commit history, deployment proof";
-  const evidenceDeadlineSeconds = 3600; // 1 hour
-  const joinDeadlineTimestamp = Math.floor(Date.now() / 1000) + 86400; // 24 hours from now
-  const maxEvidenceLength = 10000;
-  const constraints = "Evidence must be submitted in English";
-
-  // Approve factory to spend USDC
-  console.log(`💰 Approving factory to spend ${ethers.formatUnits(escrowAmount, 6)} USDC...`);
-  const approveTx = await usdc.connect(partyA).approve(FACTORY, escrowAmount, { nonce: currentNonce });
-  await approveTx.wait();
-  console.log(`✅ Approved! Tx: ${approveTx.hash}`);
-  currentNonce++;
-
-  // Create agreement
-  console.log(`\n🏗️  Creating agreement...`);
-  console.log(`  Party A: ${partyA.address}`);
-  console.log(`  Party B: ${partyB.address}`);
-  console.log(`  Escrow:  ${ethers.formatUnits(escrowAmount, 6)} USDC`);
-  console.log(`  Statement: "${statement}"`);
-
-  const createTx = await factory.connect(partyA).createAgreement(
-    partyB.address,
-    statement,
-    guidelines,
-    evidenceDefs,
-    evidenceDeadlineSeconds,
-    MOCK_USDC,
-    escrowAmount,
-    joinDeadlineTimestamp,
-    maxEvidenceLength,
-    constraints,
-    { nonce: currentNonce }
+/**
+ * Create an agreement via the factory. Returns the deployed Agreement address.
+ */
+async function createCase(
+  factory: any,
+  partyA: any,
+  partyBAddr: string,
+  name: string,
+  escrowAmount: bigint,
+  opts: {
+    usdcAddr: string;
+    evidenceDeadlineSeconds?: number;
+    joinDeadline?: number;
+    guidelines?: string;
+    evidenceDefs?: string;
+    maxEvidenceLength?: number;
+    constraints?: string;
+  },
+): Promise<string> {
+  const receipt = await waitTx(
+    await factory.connect(partyA).createAgreement(
+      partyBAddr,
+      name, // statement = test case name
+      opts.guidelines || "Test guidelines",
+      opts.evidenceDefs || "Test evidence definitions",
+      opts.evidenceDeadlineSeconds ?? 3600,
+      opts.usdcAddr,
+      escrowAmount,
+      opts.joinDeadline ?? 0,
+      opts.maxEvidenceLength ?? 0,
+      opts.constraints ?? "",
+    ),
   );
-  const createReceipt = await createTx.wait();
-  console.log(`✅ Agreement created! Tx: ${createTx.hash}`);
-  currentNonce++;
 
-  // Extract agreement address from event
-  const createEvent = createReceipt!.logs.find((log: any) => {
+  const event = receipt?.logs.find((log: any) => {
     try {
-      const parsed = factory.interface.parseLog(log as any);
-      return parsed?.name === "AgreementCreated";
+      return (
+        factory.interface.parseLog({
+          topics: log.topics as string[],
+          data: log.data,
+        })?.name === "AgreementCreated"
+      );
     } catch {
       return false;
     }
   });
 
-  if (!createEvent) {
-    throw new Error("AgreementCreated event not found");
-  }
-
-  const parsedEvent = factory.interface.parseLog(createEvent as any);
-  const agreementAddress = parsedEvent!.args.agreementAddress;
-  const agreement = await ethers.getContractAt("Agreement", agreementAddress);
-
-  console.log(`\n📍 Agreement deployed at: ${agreementAddress}`);
-  console.log(`   View on Basescan: https://sepolia.basescan.org/address/${agreementAddress}`);
-
-  // Check agreement status
-  const statusAfterCreate = await agreement.status();
-  const escrowInContract = await usdc.balanceOf(agreementAddress);
-
-  console.log(`\n📊 Agreement State:`);
-  console.log(`  Status: ${statusAfterCreate} (CREATED = 0)`);
-  console.log(`  Escrow in contract: ${ethers.formatUnits(escrowInContract, 6)} USDC`);
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 3: Accept Agreement
-  // ──────────────────────────────────────────────────────────────
-  console.log("\n\n✅ STEP 3: Party B accepts agreement");
-  console.log("───────────────────────────────────────────────────────────────\n");
-
-  const acceptTx = await agreement.connect(partyB).acceptAgreement();
-  await acceptTx.wait();
-  console.log(`✅ Agreement accepted! Tx: ${acceptTx.hash}`);
-
-  const statusAfterAccept = await agreement.status();
-  console.log(`\n📊 Agreement State:`);
-  console.log(`  Status: ${statusAfterAccept} (ACTIVE = 1)`);
-  console.log(`  Escrow in contract: ${ethers.formatUnits(await usdc.balanceOf(agreementAddress), 6)} USDC`);
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 4: Raise Dispute
-  // ──────────────────────────────────────────────────────────────
-  console.log("\n\n⚡ STEP 4: Party A raises dispute");
-  console.log("───────────────────────────────────────────────────────────────\n");
-
-  const disputeTx = await agreement.connect(partyA).raiseDispute({ nonce: currentNonce });
-  await disputeTx.wait();
-  console.log(`✅ Dispute raised! Tx: ${disputeTx.hash}`);
-  currentNonce++;
-
-  const statusAfterDispute = await agreement.status();
-  const disputeTimestamp = await agreement.disputeTimestamp();
-
-  console.log(`\n📊 Agreement State:`);
-  console.log(`  Status: ${statusAfterDispute} (DISPUTED = 2)`);
-  console.log(`  Dispute timestamp: ${disputeTimestamp}`);
-  console.log(`  Evidence deadline: ${Number(disputeTimestamp) + evidenceDeadlineSeconds}s from epoch`);
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 5: Submit Evidence
-  // ──────────────────────────────────────────────────────────────
-  console.log("\n\n📄 STEP 5: Submit evidence from both parties");
-  console.log("───────────────────────────────────────────────────────────────\n");
-
-  const evidenceA = "Here is the original project specification and screenshots showing the delivered work does not match: [spec.pdf] [screenshot1.png] [screenshot2.png]. The responsive design was not implemented for mobile.";
-  const evidenceB = "Work logs show all requirements were met. Commit history: github.com/project/commits. Live deployment at staging.example.com demonstrates full responsive design.";
-
-  console.log(`📤 Party A submitting evidence...`);
-  console.log(`   Evidence (${evidenceA.length} chars): "${evidenceA.substring(0, 80)}..."`);
-  const evidenceATx = await agreement.connect(partyA).submitEvidence(evidenceA, { nonce: currentNonce });
-  await evidenceATx.wait();
-  console.log(`✅ Party A evidence submitted! Tx: ${evidenceATx.hash}`);
-  currentNonce++;
-
-  console.log(`\n📤 Party B submitting evidence...`);
-  console.log(`   Evidence (${evidenceB.length} chars): "${evidenceB.substring(0, 80)}..."`);
-  const evidenceBTx = await agreement.connect(partyB).submitEvidence(evidenceB);
-  await evidenceBTx.wait();
-  console.log(`✅ Party B evidence submitted! Tx: ${evidenceBTx.hash}`);
-
-  const statusAfterEvidence = await agreement.status();
-  const evidenceASubmitted = await agreement.evidenceASubmitted();
-  const evidenceBSubmitted = await agreement.evidenceBSubmitted();
-
-  console.log(`\n📊 Agreement State:`);
-  console.log(`  Status: ${statusAfterEvidence} (RESOLVING = 3)`);
-  console.log(`  Evidence A submitted: ${evidenceASubmitted}`);
-  console.log(`  Evidence B submitted: ${evidenceBSubmitted}`);
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 6: Deliver Verdict via Bridge
-  // ──────────────────────────────────────────────────────────────
-  console.log("\n\n⚖️  STEP 6: Deliver verdict via bridge");
-  console.log("───────────────────────────────────────────────────────────────\n");
-
-  // On testnet, we need to simulate bridge verdict delivery.
-  // The factory has a processBridgeMessage() function that can only be called by bridgeReceiver.
-  // We'll check if the deployer (partyA) is the factory owner and can set a verdict directly,
-  // or if we need to impersonate the bridgeReceiver address.
-
-  const factoryOwner = await factory.owner();
-  const bridgeReceiver = await factory.bridgeReceiver();
-
-  console.log(`Factory owner: ${factoryOwner}`);
-  console.log(`Bridge receiver: ${bridgeReceiver}`);
-  console.log(`Party A is owner: ${factoryOwner.toLowerCase() === partyA.address.toLowerCase()}`);
-
-  // For this test, we'll use the factory's processBridgeMessage() by impersonating the bridge receiver
-  // Note: On testnet, we can't use hardhat_impersonateAccount, so we'll check if partyA has permission
-
-  const verdictValue = Verdict.TRUE_; // Party A wins
-  const reasoning = "The evidence shows the delivered website meets all specified requirements. The responsive design is properly implemented as shown in the deployment proof.";
-
-  console.log(`\n📋 Verdict details:`);
-  console.log(`  Verdict: ${verdictValue} (TRUE = 1)`);
-  console.log(`  Reasoning: "${reasoning}"`);
-
-  // Encode the resolution data
-  const resolutionData = ethers.AbiCoder.defaultAbiCoder().encode(
-    ["address", "uint8", "string"],
-    [agreementAddress, verdictValue, reasoning]
-  );
-
-  // For testnet, we'll try to call processBridgeMessage directly if partyA is the owner
-  // Otherwise, we need to use the bridge infrastructure properly
-
-  // On testnet, the proper flow is:
-  // BridgeForwarder.callRemoteArbitrary() -> (if local) -> Factory.processBridgeMessage() -> Agreement.setResolution()
-  //
-  // Since the factory is set up with bridgeReceiver = BridgeReceiver address (not BridgeForwarder),
-  // and we don't have the BridgeForwarder deployed address, we'll need to simulate this properly.
-  //
-  // For this test, we'll call processBridgeMessage directly from the bridgeReceiver address.
-  // On testnet, we need to either:
-  // 1. Have the BridgeReceiver make the call (requires access to that wallet)
-  // 2. Use hardhat_impersonateAccount (only works on local fork)
-  // 3. Run the actual bridge relay service
-
-  console.log(`\n🔗 Attempting to deliver verdict via bridge receiver...`);
-  console.log(`   NOTE: Factory expects calls from bridgeReceiver: ${bridgeReceiver}`);
-  console.log(`   Current caller would be: ${partyA.address}`);
-
-  // Prepare the message in the format expected by processBridgeMessage
-  const factoryMessage = ethers.AbiCoder.defaultAbiCoder().encode(
-    ["address", "bytes"],
-    [agreementAddress, resolutionData]
-  );
-
-  // Since Party A is the factory owner, we can use OPTION 3:
-  // Temporarily set bridgeReceiver to Party A, deliver verdict, then restore
-  let verdictDelivered = false;
-
-  if (factoryOwner.toLowerCase() === partyA.address.toLowerCase()) {
-    console.log(`\n✨ Party A is the factory owner! Using OPTION 3 to deliver verdict...`);
-    console.log(`   1. Temporarily set bridgeReceiver to Party A`);
-    console.log(`   2. Deliver the verdict`);
-    console.log(`   3. Restore original bridgeReceiver`);
-
-    try {
-      // Step 1: Set bridgeReceiver to Party A temporarily
-      console.log(`\n🔧 Setting bridgeReceiver to Party A...`);
-      const setBridgeTx = await factory.connect(partyA).setBridgeReceiver(partyA.address, { nonce: currentNonce });
-      await setBridgeTx.wait();
-      console.log(`✅ Bridge receiver updated! Tx: ${setBridgeTx.hash}`);
-      currentNonce++;
-
-      // Step 2: Deliver verdict
-      console.log(`\n⚖️  Delivering verdict...`);
-      const verdictTx = await factory.connect(partyA).processBridgeMessage(
-        42, // srcChainId (GenLayer chain ID placeholder)
-        partyA.address, // srcSender
-        factoryMessage,
-        { nonce: currentNonce }
-      );
-      await verdictTx.wait();
-      console.log(`✅ Verdict delivered! Tx: ${verdictTx.hash}`);
-      currentNonce++;
-      verdictDelivered = true;
-
-      // Step 3: Restore original bridgeReceiver
-      console.log(`\n🔄 Restoring original bridgeReceiver...`);
-      const restoreTx = await factory.connect(partyA).setBridgeReceiver(bridgeReceiver, { nonce: currentNonce });
-      await restoreTx.wait();
-      console.log(`✅ Bridge receiver restored! Tx: ${restoreTx.hash}`);
-      currentNonce++;
-
-    } catch (error: any) {
-      console.log(`\n❌ Verdict delivery failed:`);
-      console.log(`   Error: ${error.message}`);
-      verdictDelivered = false;
-    }
-  } else {
-    console.log(`\n❌ Direct verdict delivery not possible:`);
-    console.log(`   Party A is not the factory owner, so cannot use OPTION 3.`);
-    console.log(`\n📝 To deliver a verdict on testnet, you would need to:`);
-    console.log(`   OPTION 1 - Use the bridge relay service`);
-    console.log(`   OPTION 2 - Access BridgeReceiver private key`);
-  }
-
-  // Check if verdict was delivered
-  const statusAfterVerdict = await agreement.status();
-  const currentVerdict = await agreement.verdict();
-  const currentReasoning = await agreement.reasoning();
-
-  console.log(`\n📊 Agreement State After Verdict Attempt:`);
-  console.log(`  Status: ${statusAfterVerdict} (RESOLVED = 4, or still RESOLVING = 3)`);
-  console.log(`  Verdict: ${currentVerdict}`);
-  console.log(`  Reasoning: "${currentReasoning}"`);
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 7: Claim Funds (if verdict was delivered)
-  // ──────────────────────────────────────────────────────────────
-  if (verdictDelivered && Number(statusAfterVerdict) === Status.RESOLVED) {
-    console.log("\n\n💰 STEP 7: Claim funds");
-    console.log("───────────────────────────────────────────────────────────────\n");
-
-    const pendingA = await agreement.pendingWithdrawals(partyA.address);
-    const pendingB = await agreement.pendingWithdrawals(partyB.address);
-
-    console.log(`Pending withdrawals:`);
-    console.log(`  Party A: ${ethers.formatUnits(pendingA, 6)} USDC`);
-    console.log(`  Party B: ${ethers.formatUnits(pendingB, 6)} USDC`);
-
-    if (pendingA > 0n) {
-      const usdcBeforeClaim = await usdc.balanceOf(partyA.address);
-      console.log(`\n💸 Party A claiming funds...`);
-      const claimTx = await agreement.connect(partyA).claimFunds({ nonce: currentNonce });
-      await claimTx.wait();
-      console.log(`✅ Funds claimed! Tx: ${claimTx.hash}`);
-      currentNonce++;
-
-      const usdcAfterClaim = await usdc.balanceOf(partyA.address);
-      console.log(`\n📊 Party A USDC balance:`);
-      console.log(`  Before claim: ${ethers.formatUnits(usdcBeforeClaim, 6)} USDC`);
-      console.log(`  After claim:  ${ethers.formatUnits(usdcAfterClaim, 6)} USDC`);
-      console.log(`  Received:     ${ethers.formatUnits(usdcAfterClaim - usdcBeforeClaim, 6)} USDC`);
-    }
-  } else {
-    console.log("\n\n⏭️  STEP 7: Skipped (verdict not delivered yet)");
-    console.log("───────────────────────────────────────────────────────────────");
-  }
-
-  // ──────────────────────────────────────────────────────────────
-  // Step 8: Verify Final State
-  // ──────────────────────────────────────────────────────────────
-  console.log("\n\n📊 STEP 8: Final state verification");
-  console.log("───────────────────────────────────────────────────────────────\n");
-
-  const finalStatus = await agreement.status();
-  const finalVerdict = await agreement.verdict();
-  const finalReasoning = await agreement.reasoning();
-  const finalPartyA = await agreement.partyA();
-  const finalPartyB = await agreement.partyB();
-  const finalStatement = await agreement.statement();
-  const finalGuidelines = await agreement.guidelines();
-  const finalEvidenceDefs = await agreement.evidenceDefs();
-  const finalEvidenceA = await agreement.evidenceASubmitted() ?
-    (await agreement.getEvidenceA()).substring(0, 100) + "..." : "Not submitted";
-  const finalEvidenceB = await agreement.evidenceBSubmitted() ?
-    (await agreement.getEvidenceB()).substring(0, 100) + "..." : "Not submitted";
-  const finalEscrowInContract = await usdc.balanceOf(agreementAddress);
-  const finalPendingA = await agreement.pendingWithdrawals(partyA.address);
-  const finalPendingB = await agreement.pendingWithdrawals(partyB.address);
-
-  console.log(`Agreement Address: ${agreementAddress}`);
-  console.log(`\nParties:`);
-  console.log(`  Party A: ${finalPartyA}`);
-  console.log(`  Party B: ${finalPartyB}`);
-  console.log(`\nContract Terms:`);
-  console.log(`  Statement: "${finalStatement}"`);
-  console.log(`  Guidelines: "${finalGuidelines.substring(0, 100)}..."`);
-  console.log(`  Evidence Defs: "${finalEvidenceDefs.substring(0, 100)}..."`);
-  console.log(`\nEvidence:`);
-  console.log(`  Party A: "${finalEvidenceA}"`);
-  console.log(`  Party B: "${finalEvidenceB}"`);
-  console.log(`\nResolution:`);
-  console.log(`  Status: ${finalStatus} (${getStatusName(Number(finalStatus))})`);
-  console.log(`  Verdict: ${finalVerdict} (${getVerdictName(Number(finalVerdict))})`);
-  console.log(`  Reasoning: "${finalReasoning}"`);
-  console.log(`\nEscrow:`);
-  console.log(`  Contract balance: ${ethers.formatUnits(finalEscrowInContract, 6)} USDC`);
-  console.log(`  Pending A: ${ethers.formatUnits(finalPendingA, 6)} USDC`);
-  console.log(`  Pending B: ${ethers.formatUnits(finalPendingB, 6)} USDC`);
-
-  console.log(`\n🔗 View on Basescan:`);
-  console.log(`   Agreement: https://sepolia.basescan.org/address/${agreementAddress}`);
-  console.log(`   Factory:   https://sepolia.basescan.org/address/${FACTORY}`);
-
-  console.log("\n═══════════════════════════════════════════════════════════════");
-  console.log("  ✅ E2E Test Complete!");
-  console.log("═══════════════════════════════════════════════════════════════\n");
-}
-
-function getStatusName(status: number): string {
-  const names = ["CREATED", "ACTIVE", "DISPUTED", "RESOLVING", "RESOLVED", "CANCELLED"];
-  return names[status] || "UNKNOWN";
-}
-
-function getVerdictName(verdict: number): string {
-  const names = ["UNDETERMINED", "TRUE", "FALSE"];
-  return names[verdict] || "UNKNOWN";
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
+  if (!event) throw new Error("AgreementCreated event not found");
+  const parsed = factory.interface.parseLog({
+    topics: event.topics as string[],
+    data: event.data,
   });
+  return parsed!.args.agreementAddress;
+}
+
+/**
+ * Deliver a bridge verdict by temporarily swapping the bridgeReceiver to the owner.
+ * verdictValue: 0 = UNDETERMINED, 1 = TRUE, 2 = FALSE
+ */
+async function deliverVerdict(
+  factory: any,
+  owner: any,
+  agreementAddr: string,
+  verdictValue: number,
+  reasoning: string,
+) {
+  const currentBR = await factory.bridgeReceiver();
+
+  // Temporarily set bridgeReceiver to owner
+  await waitTx(
+    await factory.connect(owner).setBridgeReceiver(owner.address),
+  );
+
+  const innerResolution = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["address", "uint8", "string"],
+    [agreementAddr, verdictValue, reasoning],
+  );
+  const outerMessage = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["address", "bytes"],
+    [agreementAddr, innerResolution],
+  );
+  await waitTx(
+    await factory
+      .connect(owner)
+      .processBridgeMessage(0, ethers.ZeroAddress, outerMessage),
+  );
+
+  // Restore bridgeReceiver
+  await waitTx(
+    await factory.connect(owner).setBridgeReceiver(currentBR),
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+//  Assertion helpers
+// ──────────────────────────────────────────────────────────────
+
+function assert(condition: boolean, msg: string) {
+  if (!condition) throw new Error(`ASSERTION FAILED: ${msg}`);
+}
+
+function assertEqual(actual: any, expected: any, label: string) {
+  const a = typeof actual === "bigint" ? actual : BigInt(actual);
+  const e = typeof expected === "bigint" ? expected : BigInt(expected);
+  if (a !== e) {
+    throw new Error(
+      `ASSERTION FAILED [${label}]: expected ${e} but got ${a}`,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+//  Main
+// ──────────────────────────────────────────────────────────────
+
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  const partyB = new ethers.Wallet(PARTY_B_KEY, ethers.provider);
+
+  console.log(
+    "================================================================",
+  );
+  console.log(
+    "  Internet Court - Full E2E Test Suite (Base Sepolia)",
+  );
+  console.log(
+    "================================================================\n",
+  );
+  console.log("Party A (deployer):", deployer.address);
+  console.log("Party B:           ", partyB.address);
+  console.log(
+    "Factory:           ",
+    FACTORY,
+  );
+  console.log(
+    "MockUSDC:          ",
+    MOCK_USDC,
+  );
+
+  // Contracts
+  const usdc = await ethers.getContractAt("MockUSDC", MOCK_USDC);
+  const factory = await ethers.getContractAt(
+    "InternetCourtFactory",
+    FACTORY,
+  );
+
+  // Fund Party B with ETH for gas if needed
+  const partyBBal = await ethers.provider.getBalance(partyB.address);
+  if (partyBBal < ethers.parseEther("0.005")) {
+    console.log("\nFunding Party B with ETH for gas...");
+    await waitTx(
+      await deployer.sendTransaction({
+        to: partyB.address,
+        value: ethers.parseEther("0.01"),
+      }),
+    );
+  }
+  console.log(
+    "Party B ETH:",
+    ethers.formatEther(await ethers.provider.getBalance(partyB.address)),
+  );
+
+  const ESCROW = 100_000000n; // 100 USDC per case
+  let passed = 0;
+  let failed = 0;
+  const results: { name: string; status: string; addr: string }[] = [];
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 1: Cancel Before Acceptance
+  //  CREATED -> cancel() -> CANCELLED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 1: Cancel Before Acceptance";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      // Mint + approve
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      // Create agreement
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Verify CREATED
+      assertEqual(await agreement.status(), Status.CREATED, "status=CREATED");
+
+      // Record balances before cancel
+      const balBefore = await usdc.balanceOf(deployer.address);
+
+      // Party A cancels
+      await waitTx(await agreement.connect(deployer).cancel());
+
+      // Assert CANCELLED
+      assertEqual(await agreement.status(), Status.CANCELLED, "status=CANCELLED");
+
+      // Assert escrow returned to A
+      const balAfter = await usdc.balanceOf(deployer.address);
+      assertEqual(balAfter - balBefore, ESCROW, "escrow returned to A");
+
+      console.log("  Status: CANCELLED");
+      console.log("  Escrow returned to A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 2: Join Deadline Expired
+  //  CREATED -> (wait) -> reclaimOnExpiry() -> CANCELLED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 2: Join Deadline Expired";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      // Use a very short join deadline: now + 10 seconds
+      const block = await ethers.provider.getBlock("latest");
+      const joinDeadline = block!.timestamp + 10;
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+        joinDeadline,
+      });
+      console.log("  Agreement:", caseAddr);
+      console.log("  Join deadline:", joinDeadline, "(now + 10s)");
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+      assertEqual(await agreement.status(), Status.CREATED, "status=CREATED");
+
+      // Wait for deadline to pass
+      console.log("  Waiting 15s for join deadline to expire...");
+      await sleep(15000);
+
+      const balBefore = await usdc.balanceOf(deployer.address);
+
+      // Reclaim
+      await waitTx(await agreement.reclaimOnExpiry());
+
+      assertEqual(await agreement.status(), Status.CANCELLED, "status=CANCELLED");
+
+      const balAfter = await usdc.balanceOf(deployer.address);
+      assertEqual(balAfter - balBefore, ESCROW, "escrow returned to A");
+
+      console.log("  Status: CANCELLED");
+      console.log("  Escrow reclaimed by A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 3: Mutual Agreement Both TRUE
+  //  ACTIVE -> proposeOutcome(true) x2 -> RESOLVED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 3: Mutual Agreement Both TRUE";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Party B accepts
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      assertEqual(await agreement.status(), Status.ACTIVE, "status=ACTIVE");
+
+      // Party A proposes TRUE
+      await waitTx(await agreement.connect(deployer).proposeOutcome(true));
+      console.log("  Party A proposed: TRUE");
+
+      // Party B proposes TRUE -> should resolve
+      await waitTx(await agreement.connect(partyB).proposeOutcome(true));
+      console.log("  Party B proposed: TRUE");
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(await agreement.verdict(), VerdictEnum.TRUE_, "verdict=TRUE");
+
+      // Escrow to A (TRUE = party A wins)
+      const pendingA = await agreement.pendingWithdrawals(deployer.address);
+      assertEqual(pendingA, ESCROW, "pending A = escrow");
+
+      // Claim funds
+      const balBefore = await usdc.balanceOf(deployer.address);
+      await waitTx(await agreement.connect(deployer).claimFunds());
+      const balAfter = await usdc.balanceOf(deployer.address);
+      assertEqual(balAfter - balBefore, ESCROW, "A claimed escrow");
+
+      console.log("  Status: RESOLVED | Verdict: TRUE");
+      console.log("  Escrow to A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 4: Mutual Agreement Both FALSE
+  //  ACTIVE -> proposeOutcome(false) x2 -> RESOLVED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 4: Mutual Agreement Both FALSE";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Party B accepts
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      assertEqual(await agreement.status(), Status.ACTIVE, "status=ACTIVE");
+
+      // Both propose FALSE
+      await waitTx(await agreement.connect(deployer).proposeOutcome(false));
+      console.log("  Party A proposed: FALSE");
+      await waitTx(await agreement.connect(partyB).proposeOutcome(false));
+      console.log("  Party B proposed: FALSE");
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(await agreement.verdict(), VerdictEnum.FALSE_, "verdict=FALSE");
+
+      // Escrow to B (FALSE = party B wins)
+      const pendingB = await agreement.pendingWithdrawals(partyB.address);
+      assertEqual(pendingB, ESCROW, "pending B = escrow");
+
+      // Party B claims
+      const balBefore = await usdc.balanceOf(partyB.address);
+      await waitTx(await agreement.connect(partyB).claimFunds());
+      const balAfter = await usdc.balanceOf(partyB.address);
+      assertEqual(balAfter - balBefore, ESCROW, "B claimed escrow");
+
+      console.log("  Status: RESOLVED | Verdict: FALSE");
+      console.log("  Escrow to B:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 5: Confirm Other Party Proposal
+  //  ACTIVE -> proposeOutcome(true) -> confirmOutcome() -> RESOLVED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 5: Confirm Other Party Proposal";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Party B accepts
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      assertEqual(await agreement.status(), Status.ACTIVE, "status=ACTIVE");
+
+      // Party A proposes TRUE
+      await waitTx(await agreement.connect(deployer).proposeOutcome(true));
+      console.log("  Party A proposed: TRUE");
+
+      // Party B confirms (shorthand for proposing the same)
+      await waitTx(await agreement.connect(partyB).confirmOutcome());
+      console.log("  Party B confirmed A's proposal");
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(await agreement.verdict(), VerdictEnum.TRUE_, "verdict=TRUE");
+
+      // Escrow to A
+      const pendingA = await agreement.pendingWithdrawals(deployer.address);
+      assertEqual(pendingA, ESCROW, "pending A = escrow");
+
+      await waitTx(await agreement.connect(deployer).claimFunds());
+      console.log("  Status: RESOLVED | Verdict: TRUE");
+      console.log("  Escrow to A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 6: Dispute With Bridge Verdict TRUE
+  //  DISPUTED -> evidence x2 -> RESOLVING -> bridge TRUE -> RESOLVED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 6: Dispute With Bridge Verdict TRUE";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Accept
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      assertEqual(await agreement.status(), Status.ACTIVE, "status=ACTIVE");
+
+      // Raise dispute (Party A initiates)
+      await waitTx(await agreement.connect(deployer).raiseDispute());
+      assertEqual(await agreement.status(), Status.DISPUTED, "status=DISPUTED");
+      console.log("  Dispute raised by Party A");
+
+      // Both submit evidence -> auto-triggers RESOLVING
+      await waitTx(
+        await agreement
+          .connect(deployer)
+          .submitEvidence("Party A evidence: delivery proof, commit logs"),
+      );
+      console.log("  Party A submitted evidence");
+
+      await waitTx(
+        await agreement
+          .connect(partyB)
+          .submitEvidence("Party B evidence: bug reports, spec violations"),
+      );
+      console.log("  Party B submitted evidence");
+
+      assertEqual(await agreement.status(), Status.RESOLVING, "status=RESOLVING");
+
+      // Deliver verdict TRUE via bridge simulation
+      await deliverVerdict(
+        factory,
+        deployer,
+        caseAddr,
+        1, // TRUE
+        "AI jury: Party A delivered as specified.",
+      );
+      console.log("  Bridge verdict delivered: TRUE");
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(await agreement.verdict(), VerdictEnum.TRUE_, "verdict=TRUE");
+
+      // Claim funds (Party A)
+      const pendingA = await agreement.pendingWithdrawals(deployer.address);
+      assertEqual(pendingA, ESCROW, "pending A = escrow");
+
+      const balBefore = await usdc.balanceOf(deployer.address);
+      await waitTx(await agreement.connect(deployer).claimFunds());
+      const balAfter = await usdc.balanceOf(deployer.address);
+      assertEqual(balAfter - balBefore, ESCROW, "A claimed escrow");
+
+      console.log("  Status: RESOLVED | Verdict: TRUE");
+      console.log("  Escrow to A:", formatUSDC(ESCROW), "USDC (claimed)");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 7: Dispute With Bridge Verdict FALSE
+  //  DISPUTED -> evidence x2 -> RESOLVING -> bridge FALSE -> RESOLVED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 7: Dispute With Bridge Verdict FALSE";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      await waitTx(await agreement.connect(deployer).raiseDispute());
+      console.log("  Dispute raised");
+
+      await waitTx(
+        await agreement
+          .connect(deployer)
+          .submitEvidence("Party A evidence for case 7"),
+      );
+      await waitTx(
+        await agreement
+          .connect(partyB)
+          .submitEvidence("Party B evidence for case 7"),
+      );
+      console.log("  Both parties submitted evidence");
+
+      assertEqual(await agreement.status(), Status.RESOLVING, "status=RESOLVING");
+
+      // Deliver verdict FALSE
+      await deliverVerdict(
+        factory,
+        deployer,
+        caseAddr,
+        2, // FALSE
+        "AI jury: Statement is false. Party B wins.",
+      );
+      console.log("  Bridge verdict delivered: FALSE");
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(await agreement.verdict(), VerdictEnum.FALSE_, "verdict=FALSE");
+
+      // Party B claims
+      const pendingB = await agreement.pendingWithdrawals(partyB.address);
+      assertEqual(pendingB, ESCROW, "pending B = escrow");
+
+      const balBefore = await usdc.balanceOf(partyB.address);
+      await waitTx(await agreement.connect(partyB).claimFunds());
+      const balAfter = await usdc.balanceOf(partyB.address);
+      assertEqual(balAfter - balBefore, ESCROW, "B claimed escrow");
+
+      console.log("  Status: RESOLVED | Verdict: FALSE");
+      console.log("  Escrow to B:", formatUSDC(ESCROW), "USDC (claimed)");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 8: Dispute With Bridge Verdict UNDETERMINED
+  //  DISPUTED -> evidence x2 -> RESOLVING -> bridge UNDETERMINED -> RESOLVED
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 8: Dispute With Bridge Verdict UNDETERMINED";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      await waitTx(await agreement.connect(deployer).raiseDispute());
+      console.log("  Dispute raised");
+
+      await waitTx(
+        await agreement
+          .connect(deployer)
+          .submitEvidence("Party A evidence for case 8"),
+      );
+      await waitTx(
+        await agreement
+          .connect(partyB)
+          .submitEvidence("Party B evidence for case 8"),
+      );
+      console.log("  Both parties submitted evidence");
+
+      assertEqual(await agreement.status(), Status.RESOLVING, "status=RESOLVING");
+
+      // Deliver verdict UNDETERMINED
+      await deliverVerdict(
+        factory,
+        deployer,
+        caseAddr,
+        0, // UNDETERMINED
+        "AI jury: Insufficient evidence to determine outcome.",
+      );
+      console.log("  Bridge verdict delivered: UNDETERMINED");
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(
+        await agreement.verdict(),
+        VerdictEnum.UNDETERMINED,
+        "verdict=UNDETERMINED",
+      );
+
+      // UNDETERMINED -> escrow refunded to A
+      const pendingA = await agreement.pendingWithdrawals(deployer.address);
+      assertEqual(pendingA, ESCROW, "pending A = escrow (refund)");
+
+      const balBefore = await usdc.balanceOf(deployer.address);
+      await waitTx(await agreement.connect(deployer).claimFunds());
+      const balAfter = await usdc.balanceOf(deployer.address);
+      assertEqual(balAfter - balBefore, ESCROW, "A claimed refund");
+
+      console.log("  Status: RESOLVED | Verdict: UNDETERMINED");
+      console.log("  Escrow refunded to A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 9: Default Judgment Neither Submitted
+  //  DISPUTED -> deadline passes -> resolveByDefault() -> RESOLVED
+  //  Neither party submits -> UNDETERMINED, refund to A
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 9: Default Judgment Neither Submitted";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      // Short evidence deadline: 10 seconds
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+        evidenceDeadlineSeconds: 10,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Accept + raise dispute
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      await waitTx(await agreement.connect(deployer).raiseDispute());
+      assertEqual(await agreement.status(), Status.DISPUTED, "status=DISPUTED");
+      console.log("  Dispute raised (evidence deadline = 10s)");
+
+      // Neither party submits evidence - wait for deadline
+      console.log("  Waiting 15s for evidence deadline to pass...");
+      await sleep(15000);
+
+      // Resolve by default
+      const balBefore = await usdc.balanceOf(deployer.address);
+      await waitTx(await agreement.resolveByDefault());
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      assertEqual(
+        await agreement.verdict(),
+        VerdictEnum.UNDETERMINED,
+        "verdict=UNDETERMINED",
+      );
+
+      // Escrow refunded to A
+      const pendingA = await agreement.pendingWithdrawals(deployer.address);
+      // pendingA might be 0 if _releaseEscrow already transferred; check claim
+      if (pendingA > 0n) {
+        await waitTx(await agreement.connect(deployer).claimFunds());
+      }
+      const balAfter = await usdc.balanceOf(deployer.address);
+      assertEqual(balAfter - balBefore, ESCROW, "escrow refunded to A");
+
+      console.log("  Status: RESOLVED | Verdict: UNDETERMINED");
+      console.log("  Escrow refunded to A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 10: Default Judgment Initiator Wins
+  //  DISPUTED -> initiator submits -> deadline -> resolveByDefault() -> RESOLVED
+  //  Party A (initiator) submits, B does not -> A wins (TRUE)
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 10: Default Judgment Initiator Wins";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+        evidenceDeadlineSeconds: 10,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Accept + raise dispute (Party A = initiator)
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      await waitTx(await agreement.connect(deployer).raiseDispute());
+      assertEqual(await agreement.status(), Status.DISPUTED, "status=DISPUTED");
+      console.log("  Dispute raised by Party A (initiator)");
+
+      // Only initiator (Party A) submits evidence
+      await waitTx(
+        await agreement
+          .connect(deployer)
+          .submitEvidence("Initiator evidence: proof of delivery"),
+      );
+      console.log("  Party A (initiator) submitted evidence");
+      console.log("  Party B did NOT submit evidence");
+
+      // Wait for deadline
+      console.log("  Waiting 15s for evidence deadline to pass...");
+      await sleep(15000);
+
+      // Resolve by default -> initiator wins
+      await waitTx(await agreement.resolveByDefault());
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      // Initiator is Party A -> TRUE verdict
+      assertEqual(await agreement.verdict(), VerdictEnum.TRUE_, "verdict=TRUE (initiator wins)");
+
+      // Escrow to A
+      const pendingA = await agreement.pendingWithdrawals(deployer.address);
+      assertEqual(pendingA, ESCROW, "pending A = escrow");
+
+      await waitTx(await agreement.connect(deployer).claimFunds());
+
+      console.log("  Status: RESOLVED | Verdict: TRUE (initiator wins)");
+      console.log("  Escrow to A:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  CASE 11: Default Judgment Non-Initiator Wins
+  //  DISPUTED -> non-initiator submits -> deadline -> resolveByDefault() -> RESOLVED
+  //  Party A initiates dispute, only Party B (non-initiator) submits -> B wins (FALSE)
+  // ════════════════════════════════════════════════════════════
+  {
+    const name = "Case 11: Default Judgment Non-Initiator Wins";
+    console.log(`\n${"=".repeat(64)}`);
+    console.log(`  ${name}`);
+    console.log(`${"=".repeat(64)}`);
+    let caseAddr = "";
+    try {
+      await mintAndApprove(usdc, FACTORY, deployer, ESCROW);
+
+      caseAddr = await createCase(factory, deployer, partyB.address, name, ESCROW, {
+        usdcAddr: MOCK_USDC,
+        evidenceDeadlineSeconds: 10,
+      });
+      console.log("  Agreement:", caseAddr);
+
+      const agreement = await ethers.getContractAt("Agreement", caseAddr);
+
+      // Accept + raise dispute (Party A = initiator)
+      await waitTx(await agreement.connect(partyB).acceptAgreement());
+      await waitTx(await agreement.connect(deployer).raiseDispute());
+      assertEqual(await agreement.status(), Status.DISPUTED, "status=DISPUTED");
+      console.log("  Dispute raised by Party A (initiator)");
+
+      // Only non-initiator (Party B) submits evidence
+      await waitTx(
+        await agreement
+          .connect(partyB)
+          .submitEvidence("Non-initiator evidence: counter-proof"),
+      );
+      console.log("  Party A (initiator) did NOT submit evidence");
+      console.log("  Party B (non-initiator) submitted evidence");
+
+      // Wait for deadline
+      console.log("  Waiting 15s for evidence deadline to pass...");
+      await sleep(15000);
+
+      // Resolve by default -> non-initiator wins
+      await waitTx(await agreement.resolveByDefault());
+
+      assertEqual(await agreement.status(), Status.RESOLVED, "status=RESOLVED");
+      // Non-initiator is Party B -> FALSE verdict (Party B = partyB, so verdict = FALSE)
+      assertEqual(await agreement.verdict(), VerdictEnum.FALSE_, "verdict=FALSE (non-initiator wins)");
+
+      // Escrow to B
+      const pendingB = await agreement.pendingWithdrawals(partyB.address);
+      assertEqual(pendingB, ESCROW, "pending B = escrow");
+
+      const balBefore = await usdc.balanceOf(partyB.address);
+      await waitTx(await agreement.connect(partyB).claimFunds());
+      const balAfter = await usdc.balanceOf(partyB.address);
+      assertEqual(balAfter - balBefore, ESCROW, "B claimed escrow");
+
+      console.log("  Status: RESOLVED | Verdict: FALSE (non-initiator wins)");
+      console.log("  Escrow to B:", formatUSDC(ESCROW), "USDC");
+      console.log("  https://sepolia.basescan.org/address/" + caseAddr);
+      console.log("  ** PASS **");
+      passed++;
+      results.push({ name, status: "PASS", addr: caseAddr });
+    } catch (e: any) {
+      console.error("  ** FAIL **:", e.message);
+      failed++;
+      results.push({ name, status: "FAIL", addr: caseAddr });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  Summary
+  // ════════════════════════════════════════════════════════════
+  console.log(`\n${"=".repeat(64)}`);
+  console.log("  RESULTS SUMMARY");
+  console.log(`${"=".repeat(64)}\n`);
+
+  for (const r of results) {
+    const icon = r.status === "PASS" ? "PASS" : "FAIL";
+    const link = r.addr
+      ? `https://sepolia.basescan.org/address/${r.addr}`
+      : "N/A";
+    console.log(`  [${icon}] ${r.name}`);
+    console.log(`         ${link}`);
+  }
+
+  console.log(`\n  Total: ${passed + failed} | Passed: ${passed} | Failed: ${failed}`);
+  console.log(`${"=".repeat(64)}\n`);
+
+  if (failed > 0) {
+    process.exit(1);
+  }
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
