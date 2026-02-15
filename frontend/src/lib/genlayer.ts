@@ -165,7 +165,7 @@ export async function fetchMultipleContracts(
       contracts.push(result.value);
     } else {
       const msg = result.reason?.message || "Unknown error";
-      const meta = factoryMetadata?.[addr];
+      const meta = factoryMetadata?.[addr] || factoryMetadata?.[addr.toLowerCase()];
       const isTransient = isTransientGenLayerError(msg);
 
       if (meta) {

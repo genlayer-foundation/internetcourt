@@ -38,6 +38,35 @@ function cacheSet(key: string, data: unknown): void {
   cache.set(key, { data, timestamp: Date.now() });
 }
 
+/** Fetch factory entries and build an address -> metadata map for fallback. */
+async function fetchFactoryMetadataMap(): Promise<Record<string, Record<string, unknown>>> {
+  const meta: Record<string, Record<string, unknown>> = {};
+  try {
+    const entries = await callContractView(
+      FACTORY_ADDRESS,
+      "get_contracts_by_type",
+      ["internetcourt"]
+    );
+    const entryList = Array.isArray(entries) ? entries : [];
+    for (const entry of entryList) {
+      const address = entry?.address;
+      if (!address) continue;
+      let params: Record<string, unknown> = {};
+      try {
+        params = typeof entry.params === "string" ? JSON.parse(entry.params) : (entry.params || {});
+      } catch {
+        params = {};
+      }
+      meta[address] = { ...params, deployer: entry.deployer || "" };
+      // Also store with lowercased key for case-insensitive lookup
+      meta[address.toLowerCase()] = meta[address];
+    }
+  } catch {
+    // Factory lookup failed — return empty map (no fallback available)
+  }
+  return meta;
+}
+
 export async function GET() {
   try {
     if (!FACTORY_ADDRESS) {
@@ -151,7 +180,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { contracts, errors, warnings } = await fetchMultipleContracts(addresses);
+    // Fetch factory metadata so tracked contracts have a fallback on GenLayer errors
+    const factoryMeta = await fetchFactoryMetadataMap();
+
+    const { contracts, errors, warnings } = await fetchMultipleContracts(addresses, factoryMeta);
     const responseData = { contracts, errors, warnings };
     cacheSet(cacheKey, responseData);
     return NextResponse.json(responseData, {
