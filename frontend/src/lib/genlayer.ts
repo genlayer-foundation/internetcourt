@@ -157,8 +157,6 @@ export async function fetchMultipleContracts(
     addresses.map((addr) => limit(() => fetchWithRetry(addr)))
   );
 
-  let transientCount = 0;
-
   results.forEach((result, i) => {
     const addr = addresses[i];
     if (result.status === "fulfilled") {
@@ -166,11 +164,10 @@ export async function fetchMultipleContracts(
     } else {
       const msg = result.reason?.message || "Unknown error";
       const meta = factoryMetadata?.[addr] || factoryMetadata?.[addr.toLowerCase()];
-      const isTransient = isTransientGenLayerError(msg);
 
       if (meta) {
-        // Always fall back to factory metadata when available — show partial data rather than hiding the case
-        if (isTransient) transientCount++;
+        // Always fall back to factory metadata when available — show partial data rather than hiding the case.
+        // The "Partial" badge on the card communicates this to the user; no warning banner needed.
         contracts.push({
           address: addr,
           partyA: (meta.party_a as string) || (meta.deployer as string) || "",
@@ -186,24 +183,13 @@ export async function fetchMultipleContracts(
           proposedOutcomeA: "",
           proposedOutcomeB: "",
           incomplete: true,
-          incompleteReason: isTransient
-            ? "GenLayer temporarily unavailable"
-            : `Contract read failed: ${msg}`,
+          incompleteReason: "GenLayer temporarily unavailable",
         });
-        if (!isTransient) {
-          warnings.push(`${addr.slice(0, 8)}...: contract read failed, showing partial data from factory`);
-        }
       } else {
         errors[addr] = msg;
       }
     }
   });
-
-  if (transientCount > 0) {
-    warnings.push(
-      `GenLayer studionet is busy (${transientCount} contract${transientCount > 1 ? "s" : ""} affected). Some case details may be incomplete.`
-    );
-  }
 
   return { contracts, errors, warnings };
 }
