@@ -13,16 +13,16 @@ export const NAV_LINKS = [
 
 // --- Contract addresses (centralized) ---
 
+// TODO: move to env var once Vercel dashboard is updated
 export const BASE_FACTORY_ADDRESS =
-  (process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS ||
-    "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E") as `0x${string}`;
+  "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E" as `0x${string}`;
 
 export const GENLAYER_FACTORY_ADDRESS =
   "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE" as `0x${string}`;
 
+// TODO: move to env var once Vercel dashboard is updated
 export const MOCK_USDC_ADDRESS =
-  (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
-    "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3") as `0x${string}`;
+  "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3" as `0x${string}`;
 
 export const DEPLOYMENT_BLOCK = 37666093;
 

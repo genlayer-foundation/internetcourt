@@ -8,7 +8,8 @@ export const isMainnet = rawEnv === "mainnet";
 export const baseChain = isMainnet ? base : baseSepolia;
 
 export const BASE_CONFIG = {
-  FACTORY_CONTRACT: process.env.NEXT_PUBLIC_COURT_FACTORY_ADDRESS || "",
+  // TODO: move to env var once Vercel dashboard is updated
+  FACTORY_CONTRACT: "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E",
   CHAIN: baseChain,
   RPC_URL:
     process.env.NEXT_PUBLIC_BASE_RPC_URL ||
