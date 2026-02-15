@@ -55,6 +55,13 @@ contract Agreement {
     uint256 public evidenceDeadlineSeconds;
     uint256 public disputeTimestamp;
 
+    // Grace period for deadline=0 cases
+    uint256 public constant DEFAULT_GRACE_PERIOD = 7 days;
+
+    // Inactivity timeout for ACTIVE state
+    uint256 public activatedTimestamp;
+    uint256 public constant INACTIVITY_TIMEOUT = 90 days;
+
     // Escrow (USDC)
     IERC20 public usdcToken;
     uint256 public escrowAmount;
@@ -98,6 +105,7 @@ contract Agreement {
     event Resolved(Verdict verdict, string reasoning);
     event FundsClaimed(address indexed claimant, uint256 amount);
     event Cancelled(address indexed cancelledBy);
+    event AutoDisputed(address indexed secondProposer);
 
     // ──────────────────────────────────────────────
     //  Modifiers
@@ -201,6 +209,7 @@ contract Agreement {
         }
 
         status = Status.ACTIVE;
+        activatedTimestamp = block.timestamp;
 
         emit AgreementAccepted(partyB, escrowAmount);
     }
@@ -257,6 +266,16 @@ contract Agreement {
             emit Resolved(verdict, reasoning);
 
             _releaseEscrow();
+        }
+        // Auto-dispute if both proposed but differ
+        else if (proposalA != 0 && proposalB != 0 && proposalA != proposalB) {
+            status = Status.DISPUTED;
+            disputeTimestamp = block.timestamp;
+            disputeInitiator = msg.sender;
+
+            uint256 deadline = block.timestamp + evidenceDeadlineSeconds;
+            emit AutoDisputed(msg.sender);
+            emit DisputeRaised(msg.sender, deadline);
         }
     }
 
@@ -346,11 +365,14 @@ contract Agreement {
      *         Anyone can call this once the evidence deadline has passed.
      */
     function closeEvidenceWindow() external inStatus(Status.DISPUTED) {
-        require(evidenceDeadlineSeconds > 0, "No deadline set");
+        uint256 effectiveDeadline = evidenceDeadlineSeconds > 0
+            ? evidenceDeadlineSeconds
+            : DEFAULT_GRACE_PERIOD;
         require(
-            block.timestamp > disputeTimestamp + evidenceDeadlineSeconds,
+            block.timestamp > disputeTimestamp + effectiveDeadline,
             "Deadline not passed"
         );
+        require(evidenceASubmitted && evidenceBSubmitted, "Use resolveByDefault for partial/no evidence");
 
         _triggerResolution();
     }
@@ -365,14 +387,16 @@ contract Agreement {
      *         only non-initiator submitted → non-initiator wins.
      */
     function resolveByDefault() external inStatus(Status.DISPUTED) {
-        require(evidenceDeadlineSeconds > 0, "No deadline set");
-        require(block.timestamp > disputeTimestamp + evidenceDeadlineSeconds, "Deadline not passed");
+        uint256 effectiveDeadline = evidenceDeadlineSeconds > 0
+            ? evidenceDeadlineSeconds
+            : DEFAULT_GRACE_PERIOD;
+        require(block.timestamp > disputeTimestamp + effectiveDeadline, "Deadline not passed");
         require(!(evidenceASubmitted && evidenceBSubmitted), "Both parties submitted evidence");
         require(disputeInitiator != address(0), "No dispute initiator");
 
         if (!evidenceASubmitted && !evidenceBSubmitted) {
-            verdict = Verdict.UNDETERMINED;
-            reasoning = "Resolved by default - no evidence submitted by either party";
+            verdict = (disputeInitiator == partyA) ? Verdict.TRUE_ : Verdict.FALSE_;
+            reasoning = "Resolved by default - no evidence submitted, dispute initiator wins";
         } else {
             address nonInitiator = disputeInitiator == partyA ? partyB : partyA;
             bool initiatorSubmitted = (disputeInitiator == partyA) ? evidenceASubmitted : evidenceBSubmitted;
@@ -428,6 +452,32 @@ contract Agreement {
         status = Status.CANCELLED;
 
         emit Cancelled(msg.sender);
+
+        if (escrowAmount > 0 && address(usdcToken) != address(0)) {
+            uint256 amount = escrowAmount;
+            escrowAmount = 0;
+            usdcToken.safeTransfer(partyA, amount);
+        }
+    }
+
+    // ──────────────────────────────────────────────
+    //  Inactivity escape (ACTIVE state)
+    // ──────────────────────────────────────────────
+
+    /**
+     * @notice Cancel an ACTIVE agreement that has been inactive for INACTIVITY_TIMEOUT.
+     *         Returns escrow to party A. Anyone can call.
+     */
+    function cancelInactive() external inStatus(Status.ACTIVE) {
+        require(activatedTimestamp > 0, "Not activated");
+        require(
+            block.timestamp > activatedTimestamp + INACTIVITY_TIMEOUT,
+            "Inactivity timeout not reached"
+        );
+
+        status = Status.CANCELLED;
+
+        emit Cancelled(address(0));
 
         if (escrowAmount > 0 && address(usdcToken) != address(0)) {
             uint256 amount = escrowAmount;

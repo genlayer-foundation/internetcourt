@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { createPublicClient, http, zeroAddress } from "viem";
+import { createPublicClient, http, zeroAddress, encodeFunctionData, parseAbi } from "viem";
 import { base, baseSepolia } from "viem/chains";
 import { z } from "zod";
 
@@ -34,6 +34,23 @@ const AGREEMENT_ABI = [
   { name: "constraints", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
   { name: "evidenceDefs", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
 ] as const;
+
+const USDC_ADDRESS = (process.env.USDC_ADDRESS || "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3") as `0x${string}`;
+
+const FACTORY_WRITE_ABI = parseAbi([
+  "function createAgreement(address,string,string,string,uint256,address,uint256,uint256,uint256,string) returns (address)",
+]);
+
+const AGREEMENT_WRITE_ABI = parseAbi([
+  "function acceptAgreement()",
+  "function submitEvidence(string)",
+  "function proposeOutcome(uint8)",
+  "function raiseDispute()",
+]);
+
+const ERC20_ABI = parseAbi([
+  "function approve(address spender, uint256 amount) returns (bool)",
+]);
 
 const STATUS_NAMES = ["CREATED", "ACTIVE", "DISPUTED", "RESOLVING", "RESOLVED", "CANCELLED"];
 const VERDICT_NAMES = ["UNDETERMINED", "TRUE", "FALSE"];
@@ -153,6 +170,186 @@ export function registerTools(server: McpServer) {
         result.evidenceDeadline = { timestamp: deadline, passed: now > deadline, remainingSeconds: Math.max(0, deadline - now) };
       }
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // ──── Write Tools (return prepared transaction data) ────
+
+  // Tool 4: prepare_create_case
+  server.tool(
+    "prepare_create_case",
+    "Prepare transactions to create a new Internet Court case with USDC escrow",
+    {
+      party_b: z.string().describe("Address of the counterparty (0x...)"),
+      statement: z.string().describe("The claim to be evaluated as true/false"),
+      guidelines: z.string().describe("Rules for how the AI jury should evaluate"),
+      evidence_defs: z.string().describe("JSON string of evidence type definitions"),
+      evidence_deadline_seconds: z.number().default(86400).describe("Evidence submission window in seconds (default: 24h)"),
+      escrow_amount: z.string().default("0").describe("USDC escrow amount in base units (6 decimals, e.g. '1000000000' for 1000 USDC)"),
+      join_deadline: z.number().default(0).describe("Unix timestamp by which party B must accept (0 = no deadline)"),
+      max_evidence_length: z.number().default(0).describe("Max evidence length in bytes (0 = no limit)"),
+      constraints: z.string().default("").describe("Additional constraints string"),
+    },
+    async ({ party_b, statement, guidelines, evidence_defs, evidence_deadline_seconds, escrow_amount, join_deadline, max_evidence_length, constraints }) => {
+      const transactions: { step: number; description: string; to: string; data: string; value: string }[] = [];
+      const escrow = BigInt(escrow_amount);
+
+      if (escrow > 0n) {
+        const approveData = encodeFunctionData({
+          abi: ERC20_ABI,
+          functionName: "approve",
+          args: [FACTORY_ADDRESS, escrow],
+        });
+        transactions.push({
+          step: 1,
+          description: "Approve USDC spending by factory",
+          to: USDC_ADDRESS,
+          data: approveData,
+          value: "0",
+        });
+      }
+
+      const createData = encodeFunctionData({
+        abi: FACTORY_WRITE_ABI,
+        functionName: "createAgreement",
+        args: [
+          party_b as `0x${string}`,
+          statement,
+          guidelines,
+          evidence_defs,
+          BigInt(evidence_deadline_seconds),
+          escrow > 0n ? USDC_ADDRESS : zeroAddress,
+          escrow,
+          BigInt(join_deadline),
+          BigInt(max_evidence_length),
+          constraints,
+        ],
+      });
+      transactions.push({
+        step: transactions.length + 1,
+        description: "Create the agreement",
+        to: FACTORY_ADDRESS,
+        data: createData,
+        value: "0",
+      });
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({ transactions }, null, 2) }] };
+    }
+  );
+
+  // Tool 5: prepare_join_case
+  server.tool(
+    "prepare_join_case",
+    "Prepare transaction to join an existing case as Party B",
+    { case_id: z.number().describe("The case ID to join") },
+    async ({ case_id }) => {
+      const addr = await client.readContract({
+        address: FACTORY_ADDRESS, abi: FACTORY_ABI,
+        functionName: "agreements", args: [BigInt(case_id)],
+      });
+      if (addr === zeroAddress) {
+        return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
+      }
+
+      const data = encodeFunctionData({
+        abi: AGREEMENT_WRITE_ABI,
+        functionName: "acceptAgreement",
+      });
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({
+          transactions: [{ step: 1, description: "Join the agreement as Party B", to: addr, data, value: "0" }],
+        }, null, 2) }],
+      };
+    }
+  );
+
+  // Tool 6: prepare_submit_evidence
+  server.tool(
+    "prepare_submit_evidence",
+    "Prepare transaction to submit evidence to a case",
+    {
+      case_id: z.number().describe("The case ID"),
+      evidence: z.string().describe("The evidence string to submit"),
+    },
+    async ({ case_id, evidence }) => {
+      const addr = await client.readContract({
+        address: FACTORY_ADDRESS, abi: FACTORY_ABI,
+        functionName: "agreements", args: [BigInt(case_id)],
+      });
+      if (addr === zeroAddress) {
+        return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
+      }
+
+      const data = encodeFunctionData({
+        abi: AGREEMENT_WRITE_ABI,
+        functionName: "submitEvidence",
+        args: [evidence],
+      });
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({
+          transactions: [{ step: 1, description: "Submit evidence to the agreement", to: addr, data, value: "0" }],
+        }, null, 2) }],
+      };
+    }
+  );
+
+  // Tool 7: prepare_propose_outcome
+  server.tool(
+    "prepare_propose_outcome",
+    "Prepare transaction to propose an outcome for a case (1=TRUE, 2=FALSE)",
+    {
+      case_id: z.number().describe("The case ID"),
+      verdict: z.number().min(1).max(2).describe("Proposed verdict: 1=TRUE, 2=FALSE"),
+    },
+    async ({ case_id, verdict }) => {
+      const addr = await client.readContract({
+        address: FACTORY_ADDRESS, abi: FACTORY_ABI,
+        functionName: "agreements", args: [BigInt(case_id)],
+      });
+      if (addr === zeroAddress) {
+        return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
+      }
+
+      const data = encodeFunctionData({
+        abi: AGREEMENT_WRITE_ABI,
+        functionName: "proposeOutcome",
+        args: [verdict],
+      });
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({
+          transactions: [{ step: 1, description: `Propose outcome ${VERDICT_NAMES[verdict]} for the case`, to: addr, data, value: "0" }],
+        }, null, 2) }],
+      };
+    }
+  );
+
+  // Tool 8: prepare_raise_dispute
+  server.tool(
+    "prepare_raise_dispute",
+    "Prepare transaction to raise a dispute on a case",
+    { case_id: z.number().describe("The case ID") },
+    async ({ case_id }) => {
+      const addr = await client.readContract({
+        address: FACTORY_ADDRESS, abi: FACTORY_ABI,
+        functionName: "agreements", args: [BigInt(case_id)],
+      });
+      if (addr === zeroAddress) {
+        return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
+      }
+
+      const data = encodeFunctionData({
+        abi: AGREEMENT_WRITE_ABI,
+        functionName: "raiseDispute",
+      });
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({
+          transactions: [{ step: 1, description: "Raise a dispute on the agreement", to: addr, data, value: "0" }],
+        }, null, 2) }],
+      };
     }
   );
 }

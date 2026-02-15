@@ -33,6 +33,9 @@ describe("BridgeReceiver", function () {
     const trustedForwarder = ethers.zeroPadValue(outsider.address, 32);
     await receiver.connect(owner).setTrustedForwarder(REMOTE_EID, trustedForwarder);
 
+    // Authorize the mock target
+    await receiver.connect(owner).setAuthorizedTarget(await target.getAddress(), true);
+
     return { receiver, endpoint, target, owner, outsider, trustedForwarder };
   }
 
@@ -195,6 +198,38 @@ describe("BridgeReceiver", function () {
       ).to.be.revertedWith("BridgeReceiver: untrusted forwarder");
     });
 
+    it("rejects messages to unauthorized target contracts", async function () {
+      const { receiver, endpoint, outsider, owner } =
+        await loadFixture(deployBridgeReceiverFixture);
+
+      // Deploy a second mock target that is NOT authorized
+      const MockTarget = await ethers.getContractFactory("MockBridgeTarget");
+      const unauthorizedTarget = await MockTarget.deploy();
+
+      const innerMessage = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["string"],
+        ["Should not arrive"]
+      );
+      const message = buildMessage(
+        42,
+        outsider.address,
+        await unauthorizedTarget.getAddress(),
+        innerMessage
+      );
+      const origin = buildOrigin(REMOTE_EID, outsider.address, 1);
+      const guid = ethers.keccak256(ethers.toUtf8Bytes("guid-unauth"));
+
+      const endpointAddr = await endpoint.getAddress();
+      const endpointSigner = await ethers.getImpersonatedSigner(endpointAddr);
+      await setBalance(endpointAddr, ethers.parseEther("1"));
+
+      await expect(
+        receiver
+          .connect(endpointSigner)
+          .lzReceive(origin, guid, message, outsider.address, "0x")
+      ).to.be.revertedWith("BridgeReceiver: unauthorized target");
+    });
+
     it("rejects messages from an EID with no trusted forwarder set", async function () {
       const { receiver, endpoint, target, outsider } =
         await loadFixture(deployBridgeReceiverFixture);
@@ -258,6 +293,38 @@ describe("BridgeReceiver", function () {
 
       await expect(
         receiver.connect(outsider).setTrustedForwarder(REMOTE_EID, forwarder)
+      ).to.be.revertedWithCustomError(receiver, "OwnableUnauthorizedAccount");
+    });
+  });
+
+  // ─── setAuthorizedTarget ───────────────────────────
+
+  describe("setAuthorizedTarget", function () {
+    it("owner can authorize a target", async function () {
+      const { receiver, owner, outsider } =
+        await loadFixture(deployBridgeReceiverFixture);
+
+      await receiver.connect(owner).setAuthorizedTarget(outsider.address, true);
+      expect(await receiver.authorizedTargets(outsider.address)).to.be.true;
+    });
+
+    it("owner can deauthorize a target", async function () {
+      const { receiver, owner, target } =
+        await loadFixture(deployBridgeReceiverFixture);
+
+      // Target is authorized in fixture setup
+      expect(await receiver.authorizedTargets(await target.getAddress())).to.be.true;
+
+      await receiver.connect(owner).setAuthorizedTarget(await target.getAddress(), false);
+      expect(await receiver.authorizedTargets(await target.getAddress())).to.be.false;
+    });
+
+    it("reverts if not owner", async function () {
+      const { receiver, outsider } =
+        await loadFixture(deployBridgeReceiverFixture);
+
+      await expect(
+        receiver.connect(outsider).setAuthorizedTarget(outsider.address, true)
       ).to.be.revertedWithCustomError(receiver, "OwnableUnauthorizedAccount");
     });
   });

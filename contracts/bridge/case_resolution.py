@@ -1,9 +1,7 @@
 # v0.1.0
 # { "Depends": "py-genlayer:latest" }
+from genlayer import *
 import json
-from backend.node.genvm.icontract import IContract
-from backend.node.genvm.std import *
-from backend.node.genvm.types import *
 
 
 class CaseResolution(gl.Contract):

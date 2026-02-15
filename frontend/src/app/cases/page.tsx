@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS, BASE_FACTORY_ADDRESS, GENLAYER_FACTORY_ADDRESS } from "@/lib/constants";
+import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS, VERDICT_NAMES, BASE_FACTORY_ADDRESS, GENLAYER_FACTORY_ADDRESS } from "@/lib/constants";
 import { formatAddress } from "@/lib/genlayer";
 import {
   getTrackedAddresses,
@@ -115,7 +115,7 @@ function baseToMoltContract(c: Record<string, unknown>): MoltContract {
     status: STATUS_MAP[(c.statusName as string) || ""] || "created",
     evidenceA: "",
     evidenceB: "",
-    verdict: "" as const,
+    verdict: (VERDICT_NAMES[Number(c.verdict)] || "") as MoltContract["verdict"],
     reasoning: "",
     proposedOutcomeA: "",
     proposedOutcomeB: "",

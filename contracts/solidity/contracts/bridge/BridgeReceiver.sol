@@ -24,6 +24,9 @@ contract BridgeReceiver is Ownable, ReentrancyGuard {
     // Source EID -> trusted forwarder address (as bytes32)
     mapping(uint32 => bytes32) public trustedForwarders;
 
+    // Authorized target contracts that can receive bridge messages
+    mapping(address => bool) public authorizedTargets;
+
     constructor(address _endpoint, address _owner) Ownable(_owner) {
         endpoint = _endpoint;
     }
@@ -59,6 +62,9 @@ contract BridgeReceiver is Ownable, ReentrancyGuard {
             bytes memory message
         ) = abi.decode(_message, (uint32, address, address, bytes));
 
+        // Verify target is authorized
+        require(authorizedTargets[localContract], "BridgeReceiver: unauthorized target");
+
         // Dispatch to the target contract
         IGenLayerBridgeReceiverLz(localContract)
             .processBridgeMessage(srcChainId, srcSender, message);
@@ -73,5 +79,12 @@ contract BridgeReceiver is Ownable, ReentrancyGuard {
         bytes32 _forwarder
     ) external onlyOwner {
         trustedForwarders[_srcEid] = _forwarder;
+    }
+
+    function setAuthorizedTarget(
+        address _target,
+        bool _authorized
+    ) external onlyOwner {
+        authorizedTargets[_target] = _authorized;
     }
 }

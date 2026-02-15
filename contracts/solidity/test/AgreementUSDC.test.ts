@@ -358,10 +358,7 @@ describe("Agreement — USDC Escrow Features", function () {
   // ─── Default Judgment ───────────────────────────────
 
   describe("resolveByDefault", function () {
-    // NOTE: Contract was updated to resolve as UNDETERMINED when neither party submits evidence.
-    // Previously this test expected the initiator to win by default (TRUE_), but the current
-    // contract behavior returns UNDETERMINED and refunds escrow to partyA (creator).
-    it("partyA initiates dispute, no evidence -> resolves as UNDETERMINED", async function () {
+    it("partyA initiates dispute, no evidence -> dispute initiator wins (TRUE_)", async function () {
       const { agreement, partyA, usdc } = await loadFixture(disputedAgreementFixture);
 
       // Move past evidence deadline
@@ -370,15 +367,12 @@ describe("Agreement — USDC Escrow Features", function () {
       await agreement.resolveByDefault();
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
-      expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
-      // UNDETERMINED: escrow refunded to partyA (creator)
+      expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
+      // Dispute initiator (partyA) wins -> escrow to partyA
       expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
     });
 
-    // NOTE: Contract was updated to resolve as UNDETERMINED when neither party submits evidence.
-    // Previously this test expected the initiator (partyB) to win by default (FALSE_), but the
-    // current contract behavior returns UNDETERMINED and refunds escrow to partyA (creator).
-    it("partyB initiates dispute, no evidence -> resolves as UNDETERMINED", async function () {
+    it("partyB initiates dispute, no evidence -> dispute initiator wins (FALSE_)", async function () {
       const { agreement, partyA, partyB, usdc } = await loadFixture(activeAgreementFixture);
 
       // Party B raises the dispute
@@ -390,9 +384,9 @@ describe("Agreement — USDC Escrow Features", function () {
       await agreement.resolveByDefault();
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
-      expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
-      // UNDETERMINED: escrow refunded to partyA (creator), not partyB
-      expect(await agreement.pendingWithdrawals(partyA.address)).to.equal(ESCROW);
+      expect(await agreement.verdict()).to.equal(Verdict.FALSE_);
+      // Dispute initiator (partyB) wins -> escrow to partyB
+      expect(await agreement.pendingWithdrawals(partyB.address)).to.equal(ESCROW);
     });
 
     it("reverts before evidence deadline", async function () {
@@ -822,7 +816,7 @@ describe("Agreement — USDC Escrow Features", function () {
   // ─── resolveByDefault with Different Evidence Scenarios ─────
 
   describe("resolveByDefault with different evidence scenarios", function () {
-    it("neither party submits evidence → resolves as UNDETERMINED", async function () {
+    it("neither party submits evidence → dispute initiator wins", async function () {
       const { agreement, partyA, partyB } = await loadFixture(disputedAgreementFixture);
 
       // Move past evidence deadline without submitting any evidence
@@ -831,7 +825,8 @@ describe("Agreement — USDC Escrow Features", function () {
       await agreement.resolveByDefault();
 
       expect(await agreement.status()).to.equal(Status.RESOLVED);
-      expect(await agreement.verdict()).to.equal(Verdict.UNDETERMINED);
+      // partyA initiated the dispute → TRUE_
+      expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
     });
 
     it("only dispute initiator submits → initiator wins (partyA initiated)", async function () {

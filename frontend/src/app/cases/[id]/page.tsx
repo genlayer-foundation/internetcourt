@@ -96,7 +96,7 @@ function EvidenceDefsSummary({ defs }: { defs: MoltContract["evidenceDefs"] }) {
   const formatDef = (def: typeof defs.party_a) => {
     if (!def) return "—";
     const parts: string[] = [];
-    if (def.allowed_types) parts.push(def.allowed_types.join(", "));
+    if (def.allowed_types) parts.push(Array.isArray(def.allowed_types) ? def.allowed_types.join(", ") : String(def.allowed_types));
     if (def.max_chars) parts.push(`max ${def.max_chars.toLocaleString()} chars`);
     if (def.constraints) parts.push(def.constraints);
     return parts.join(" · ") || "—";

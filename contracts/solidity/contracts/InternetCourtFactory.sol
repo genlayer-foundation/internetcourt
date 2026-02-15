@@ -35,6 +35,9 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
     /// @notice Agreement ID -> Agreement address
     mapping(uint256 => address) public agreements;
 
+    /// @notice Agreement address -> Agreement ID (reverse mapping for O(1) lookup)
+    mapping(address => uint256) public agreementIds;
+
     /// @notice Block number at which the factory was deployed (for efficient event indexing)
     uint256 public immutable deploymentBlock;
 
@@ -130,6 +133,7 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         address addr = address(agreement);
         deployedAgreements[addr] = true;
         agreements[id] = addr;
+        agreementIds[addr] = id;
 
         emit AgreementCreated(id, addr, msg.sender, partyB);
         return addr;

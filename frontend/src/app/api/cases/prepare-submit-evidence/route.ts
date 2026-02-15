@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!evidence && evidence !== "") {
+    if (!evidence || evidence.trim() === "") {
       return NextResponse.json(
         { error: "evidence is required" },
         { status: 400 },

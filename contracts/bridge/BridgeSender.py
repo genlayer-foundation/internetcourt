@@ -1,8 +1,7 @@
 # v0.1.0
 # { "Depends": "py-genlayer:latest" }
-from backend.node.genvm.icontract import IContract
-from backend.node.genvm.std import *
-from backend.node.genvm.types import *
+from genlayer import *
+import datetime
 
 class MessageData:
     target_chain_id: int
@@ -23,7 +22,7 @@ class BridgeSender(gl.Contract):
         data: bytes
     ) -> str:
         hasher = Keccak256()
-        hasher.update(datetime.now().isoformat().encode())
+        hasher.update(datetime.datetime.now(datetime.timezone.utc).isoformat().encode())
         hasher.update(gl.message.sender_address.as_bytes)
         hasher.update(target_contract.encode())
         hasher.update(data)

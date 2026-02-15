@@ -8,6 +8,7 @@ export const SITE_URL = "https://internetcourt.org";
 export const NAV_LINKS = [
   { label: "Cases", href: "/cases" },
   { label: "Create", href: "/create" },
+  { label: "Join", href: "/join" },
   { label: "Docs", href: "/docs" },
 ] as const;
 

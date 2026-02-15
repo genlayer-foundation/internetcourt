@@ -206,6 +206,52 @@ describe("InternetCourtFactory", function () {
       expect(await factory.deployedAgreements(agreementAddr)).to.be.true;
     });
 
+    it("stores in agreementIds reverse mapping", async function () {
+      const { factory, agreementAddr } =
+        await loadFixture(factoryWithAgreementFixture);
+
+      expect(await factory.agreementIds(agreementAddr)).to.equal(0);
+    });
+
+    it("agreementIds reverse mapping is correct for multiple agreements", async function () {
+      const { factory, usdc, partyA, partyB } =
+        await loadFixture(deployFactoryFixture);
+
+      const usdcAddr = await usdc.getAddress();
+      const addresses: string[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const tx = await factory
+          .connect(partyA)
+          .createAgreement(
+            partyB.address,
+            `Statement ${i}`,
+            GUIDELINES,
+            EVIDENCE_DEFS,
+            EVIDENCE_DEADLINE,
+            usdcAddr,
+            ESCROW,
+            0,
+            0,
+            ""
+          );
+        const receipt = await tx.wait();
+        const event = receipt!.logs.find((log: any) => {
+          try {
+            return factory.interface.parseLog(log as any)?.name === "AgreementCreated";
+          } catch {
+            return false;
+          }
+        });
+        const parsed = factory.interface.parseLog(event as any);
+        addresses.push(parsed!.args.agreementAddress);
+      }
+
+      expect(await factory.agreementIds(addresses[0])).to.equal(0);
+      expect(await factory.agreementIds(addresses[1])).to.equal(1);
+      expect(await factory.agreementIds(addresses[2])).to.equal(2);
+    });
+
     it("emits AgreementCreated event", async function () {
       const { factory, usdc, partyA, partyB } =
         await loadFixture(deployFactoryFixture);

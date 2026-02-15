@@ -433,15 +433,15 @@ describe("E2E: Internet Court Bridge & USDC Escrow System", function () {
       expect(await agreement.verdict()).to.equal(Verdict.TRUE_);
     });
 
-    it("disagreeing proposals do NOT resolve", async function () {
+    it("disagreeing proposals auto-dispute", async function () {
       const { agreement, partyA, partyB } =
         await loadFixture(activeAgreementFixture);
 
       await agreement.connect(partyA).proposeOutcome(true);
       await agreement.connect(partyB).proposeOutcome(false);
 
-      // Should remain ACTIVE - no resolution
-      expect(await agreement.status()).to.equal(Status.ACTIVE);
+      // Should auto-transition to DISPUTED
+      expect(await agreement.status()).to.equal(Status.DISPUTED);
     });
   });
 

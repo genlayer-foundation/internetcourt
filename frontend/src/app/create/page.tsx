@@ -56,22 +56,20 @@ export default function CreatePage() {
   function buildEvidenceDefs(): string {
     return JSON.stringify({
       party_a: {
-        type: form.evidenceTypesA
+        allowed_types: form.evidenceTypesA
           .split(",")
           .map((t) => t.trim())
-          .filter(Boolean)
-          .join(", "),
+          .filter(Boolean),
         max_chars: parseInt(form.evidenceMaxCharsA, 10) || 10000,
         ...(form.evidenceConstraintsA
           ? { constraints: form.evidenceConstraintsA }
           : {}),
       },
       party_b: {
-        type: form.evidenceTypesB
+        allowed_types: form.evidenceTypesB
           .split(",")
           .map((t) => t.trim())
-          .filter(Boolean)
-          .join(", "),
+          .filter(Boolean),
         max_chars: parseInt(form.evidenceMaxCharsB, 10) || 10000,
         ...(form.evidenceConstraintsB
           ? { constraints: form.evidenceConstraintsB }
