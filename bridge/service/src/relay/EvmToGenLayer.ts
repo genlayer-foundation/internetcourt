@@ -295,6 +295,7 @@ export class EvmToGenLayer {
       address: config.GL_FACTORY_ADDRESS as `0x${string}`,
       functionName: "register_contract",
       args: [agreementAddress, "internetcourt", params],
+      value: 0n,
     });
 
     console.log(`[EvmToGenLayer] Registration tx: ${txHash}`);
