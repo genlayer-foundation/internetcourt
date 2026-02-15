@@ -52,23 +52,46 @@ function normalizeStatus(status: string): ContractStatus {
 export async function fetchContractDetails(
   address: string
 ): Promise<MoltContract> {
-  const data = (await callContractView(address, "get_contract_details", [])) as Record<string, string>;
-
-  return {
-    address,
-    partyA: data.party_a || "",
-    partyB: data.party_b || "",
-    statement: data.statement || "",
-    guidelines: data.guidelines || "",
-    evidenceDefs: parseEvidenceDefs(data.evidence_defs),
-    status: normalizeStatus(data.status || "created"),
-    evidenceA: data.evidence_a || "",
-    evidenceB: data.evidence_b || "",
-    verdict: (data.verdict || "") as Verdict,
-    reasoning: data.reasoning || "",
-    proposedOutcomeA: data.proposed_outcome_a || "",
-    proposedOutcomeB: data.proposed_outcome_b || "",
-  };
+  // Try get_contract_details first (returns all fields)
+  try {
+    const data = (await callContractView(address, "get_contract_details", [])) as Record<string, string>;
+    return {
+      address,
+      partyA: data.party_a || "",
+      partyB: data.party_b || "",
+      statement: data.statement || "",
+      guidelines: data.guidelines || "",
+      evidenceDefs: parseEvidenceDefs(data.evidence_defs),
+      status: normalizeStatus(data.status || "created"),
+      evidenceA: data.evidence_a || "",
+      evidenceB: data.evidence_b || "",
+      verdict: (data.verdict || "") as Verdict,
+      reasoning: data.reasoning || "",
+      proposedOutcomeA: data.proposed_outcome_a || "",
+      proposedOutcomeB: data.proposed_outcome_b || "",
+    };
+  } catch {
+    // get_contract_details failed — fall back to get_status which is more reliable
+    // on some GenLayer contracts (known VM issue after AI consensus resolution)
+    const data = (await callContractView(address, "get_status", [])) as Record<string, string>;
+    return {
+      address,
+      partyA: data.party_a || "",
+      partyB: data.party_b || "",
+      statement: data.statement || "",
+      guidelines: "",
+      evidenceDefs: {},
+      status: normalizeStatus(data.status || "created"),
+      evidenceA: "",
+      evidenceB: "",
+      verdict: (data.verdict || "") as Verdict,
+      reasoning: data.reasoning || "",
+      proposedOutcomeA: "",
+      proposedOutcomeB: "",
+      incomplete: true,
+      incompleteReason: "Partial read — some fields unavailable",
+    };
+  }
 }
 
 /** Check if an error message indicates a transient GenLayer condition (server busy, RPC failures, etc). */
