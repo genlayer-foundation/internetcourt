@@ -31,7 +31,9 @@
       "Bash(tmux send-keys:*)",
       "Bash(tmux capture-pane:*)",
       "Bash(xargs kill:*)",
-      "Bash(tmux list-panes:*)"
+      "Bash(tmux list-panes:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

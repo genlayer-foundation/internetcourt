@@ -526,6 +526,14 @@ export default function CaseDetailPage({
           >
             {STATUS_LABELS[contract.status] || contract.status.toUpperCase()}
           </Badge>
+          {contract.incomplete && (
+            <Badge
+              variant="outline"
+              className="text-[10px] font-medium bg-amber-50 text-amber-600 border-amber-200 border-dashed"
+            >
+              Partial — {contract.incompleteReason || "some data unavailable"}
+            </Badge>
+          )}
           {contract.escrowAmount && contract.escrowAmount !== "0" && (
             <span className="text-[11px] font-mono text-muted-foreground">
               Escrow: {(Number(contract.escrowAmount) / 1e6).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC

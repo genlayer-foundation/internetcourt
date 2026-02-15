@@ -71,14 +71,18 @@ export async function fetchContractDetails(
   };
 }
 
-/** Check if an error message indicates a transient GenLayer "server busy" condition. */
-function isServerBusyError(message: string): boolean {
+/** Check if an error message indicates a transient GenLayer condition (server busy, RPC failures, etc). */
+function isTransientGenLayerError(message: string): boolean {
   const lower = message.toLowerCase();
   return (
     lower.includes("server busy") ||
     lower.includes("execution slots occupied") ||
     lower.includes("execution slots") ||
-    lower.includes("all 8 execution")
+    lower.includes("all 8 execution") ||
+    lower.includes("running contract failed") ||
+    lower.includes("missing or invalid parameters") ||
+    lower.includes("execution timeout") ||
+    lower.includes("timed out")
   );
 }
 
@@ -118,7 +122,7 @@ async function fetchWithRetry(address: string): Promise<MoltContract> {
       lastError = err instanceof Error ? err : new Error(String(err));
       if (
         attempt < RETRY_DELAYS.length &&
-        isServerBusyError(lastError.message)
+        isTransientGenLayerError(lastError.message)
       ) {
         await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
         continue;
@@ -148,12 +152,12 @@ export async function fetchMultipleContracts(
   const contracts: MoltContract[] = [];
   const errors: Record<string, string> = {};
   const warnings: string[] = [];
-  let busyCount = 0;
-
   const limit = pLimit(3);
   const results = await Promise.allSettled(
     addresses.map((addr) => limit(() => fetchWithRetry(addr)))
   );
+
+  let transientCount = 0;
 
   results.forEach((result, i) => {
     const addr = addresses[i];
@@ -161,15 +165,17 @@ export async function fetchMultipleContracts(
       contracts.push(result.value);
     } else {
       const msg = result.reason?.message || "Unknown error";
-      if (isServerBusyError(msg)) {
-        busyCount++;
-        // Return a partial contract from factory metadata if available
-        const meta = factoryMetadata?.[addr];
+      const meta = factoryMetadata?.[addr];
+      const isTransient = isTransientGenLayerError(msg);
+
+      if (meta) {
+        // Always fall back to factory metadata when available — show partial data rather than hiding the case
+        if (isTransient) transientCount++;
         contracts.push({
           address: addr,
-          partyA: (meta?.party_a as string) || (meta?.deployer as string) || "",
-          partyB: (meta?.party_b as string) || "",
-          statement: (meta?.statement as string) || "",
+          partyA: (meta.party_a as string) || (meta.deployer as string) || "",
+          partyB: (meta.party_b as string) || "",
+          statement: (meta.statement as string) || "",
           guidelines: "",
           evidenceDefs: {},
           status: "created", // default; actual status unknown
@@ -179,16 +185,23 @@ export async function fetchMultipleContracts(
           reasoning: "",
           proposedOutcomeA: "",
           proposedOutcomeB: "",
+          incomplete: true,
+          incompleteReason: isTransient
+            ? "GenLayer temporarily unavailable"
+            : `Contract read failed: ${msg}`,
         });
+        if (!isTransient) {
+          warnings.push(`${addr.slice(0, 8)}...: contract read failed, showing partial data from factory`);
+        }
       } else {
         errors[addr] = msg;
       }
     }
   });
 
-  if (busyCount > 0) {
+  if (transientCount > 0) {
     warnings.push(
-      `GenLayer studionet is busy (${busyCount} contract${busyCount > 1 ? "s" : ""} affected). Some case details may be incomplete.`
+      `GenLayer studionet is busy (${transientCount} contract${transientCount > 1 ? "s" : ""} affected). Some case details may be incomplete.`
     );
   }
 

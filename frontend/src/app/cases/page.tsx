@@ -613,7 +613,7 @@ function ContractCard({
       <Card
         className={`animate-fade-in-up opacity-0 bg-[#f7f7f7] border hover:shadow-lg transition-all duration-300 ${
           highlight ? "border-blue-200" : ""
-        }`}
+        } ${c.incomplete ? "border-dashed border-amber-300" : ""}`}
         style={{ animationDelay: `${index * 60}ms` }}
       >
         <CardContent className="p-5">
@@ -631,6 +631,14 @@ function ContractCard({
                 >
                   {isBase ? "Base" : "GenLayer"}
                 </Badge>
+                {c.incomplete && (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-medium bg-amber-50 text-amber-600 border-amber-200"
+                  >
+                    Partial
+                  </Badge>
+                )}
                 {/* Status badge */}
                 <Badge
                   variant="outline"
