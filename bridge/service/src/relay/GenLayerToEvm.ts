@@ -16,6 +16,7 @@
 
 import { ethers } from "ethers";
 import { createClient } from "genlayer-js";
+import { studionet } from "genlayer-js/chains";
 import type { CalldataEncodable } from "genlayer-js/types";
 import { config } from "../config.js";
 
@@ -99,6 +100,7 @@ export class GenLayerToEvm {
 
   constructor() {
     this.glClient = createClient({
+      chain: studionet,
       endpoint: config.GENLAYER_RPC_URL,
     });
 

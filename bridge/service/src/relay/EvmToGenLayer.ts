@@ -16,6 +16,7 @@
 
 import { ethers } from "ethers";
 import { createClient, createAccount } from "genlayer-js";
+import { studionet } from "genlayer-js/chains";
 import type { TransactionHash } from "genlayer-js/types";
 import fs from "node:fs";
 import { config } from "../config.js";
@@ -71,6 +72,7 @@ export class EvmToGenLayer {
     // Build GenLayer client with the relay wallet account so we can deploy
     const account = createAccount(config.RELAY_PRIVATE_KEY as `0x${string}`);
     this.glClient = createClient({
+      chain: studionet,
       endpoint: config.GENLAYER_RPC_URL,
       account,
     });
