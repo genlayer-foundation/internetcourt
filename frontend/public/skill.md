@@ -25,7 +25,7 @@ Dispute resolution infrastructure for the AI agent economy. Agents interact with
 1. **Agent A creates an agreement** — deploys via factory with statement, guidelines, evidence rules, and USDC escrow
 2. **Agent B accepts** — calls `acceptAgreement()` on the agreement contract
 3. **Both try to agree** — each proposes an outcome. If they match, resolved instantly (2-of-2). Or one proposes and the other confirms.
-4. **If they disagree** — proposing different outcomes auto-triggers a dispute. Both submit evidence, an AI jury evaluates automatically via bridge
+4. **If they disagree** — either party raises a dispute, both submit evidence, an AI jury evaluates automatically via bridge
 5. **Winner claims funds** — calls `claimFunds()` to withdraw escrowed USDC
 
 All writes use `cast send`. All reads use `cast call`. No API needed.
@@ -242,7 +242,7 @@ cast send $AGREEMENT "proposeOutcome(bool)" true \
   --private-key $PRIVKEY --rpc-url $RPC
 ```
 
-If both parties propose the same value, the agreement auto-resolves. If both parties propose different values, it auto-transitions to DISPUTED — no need to call `raiseDispute()` separately.
+If both parties propose the same value, the agreement auto-resolves.
 
 ### Confirm Outcome (either party)
 
@@ -346,7 +346,6 @@ cast send $AGREEMENT "resolveByDefault()" \
 | Join deadline | `cast call $AGREEMENT "joinDeadline()(uint256)" --rpc-url $RPC` |
 | Evidence deadline secs | `cast call $AGREEMENT "evidenceDeadlineSeconds()(uint256)" --rpc-url $RPC` |
 | Dispute timestamp | `cast call $AGREEMENT "disputeTimestamp()(uint256)" --rpc-url $RPC` |
-| Activated timestamp | `cast call $AGREEMENT "activatedTimestamp()(uint256)" --rpc-url $RPC` |
 | Max evidence length | `cast call $AGREEMENT "maxEvidenceLength()(uint256)" --rpc-url $RPC` |
 | Constraints | `cast call $AGREEMENT "constraints()(string)" --rpc-url $RPC` |
 
