@@ -575,121 +575,135 @@ export default function CaseDetailPage({
       {/* Overview Tab */}
       {activeTab === "overview" && (
         <>
-          {/* Statement — centered, serif, italic */}
-          <div className="mb-8 text-center px-10">
-            <h1 className="font-serif text-[28px] sm:text-[32px] font-normal leading-[1.45] tracking-[-0.3px] italic">
-              &ldquo;{contract.statement}&rdquo;
-            </h1>
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              {contract.guidelines}
-            </p>
-          </div>
-
-          {/* Evidence definitions bar */}
-          <EvidenceDefsSummary defs={contract.evidenceDefs} />
-
-          {/* Split adversarial: Party A | VS | Party B */}
-          <div className="mb-10 grid grid-cols-[1fr_48px_1fr]">
-            {/* Party A */}
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-                <span className="text-xs font-bold tracking-wide">Party A — Creator</span>
+          {contract.incomplete && !contract.statement ? (
+            <div className="py-16 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 border border-amber-200">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
               </div>
-              <div className="mb-3">
-                <CopyableAddress address={contract.partyA} />
-              </div>
-              {contract.proposedOutcomeA && (
-                <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
-                  contract.proposedOutcomeA === "TRUE"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : contract.proposedOutcomeA === "FALSE"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-amber-100 text-amber-800"
-                }`}>
-                  Proposes {contract.proposedOutcomeA}
-                </span>
-              )}
-              {contract.evidenceA && (
-                <div className="mt-3 rounded-[10px] border-l-[3px] border-blue-600 bg-card p-5">
-                  <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Evidence
-                  </div>
-                  <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
-                    {formatEvidence(contract.evidenceA)}
-                  </pre>
-                </div>
-              )}
-            </div>
-
-            {/* VS Divider */}
-            <div className="flex flex-col items-center pt-3">
-              <div className="w-px flex-1 bg-border" />
-              <div className="my-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-[9px] font-bold tracking-widest text-white">
-                VS
-              </div>
-              <div className="w-px flex-1 bg-border" />
-            </div>
-
-            {/* Party B */}
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-pink-600" />
-                <span className="text-xs font-bold tracking-wide">Party B — Counterparty</span>
-              </div>
-              <div className="mb-3">
-                <CopyableAddress address={contract.partyB} />
-              </div>
-              {contract.proposedOutcomeB && (
-                <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
-                  contract.proposedOutcomeB === "TRUE"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : contract.proposedOutcomeB === "FALSE"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-amber-100 text-amber-800"
-                }`}>
-                  Proposes {contract.proposedOutcomeB}
-                </span>
-              )}
-              {contract.evidenceB && (
-                <div className="mt-3 rounded-[10px] border-l-[3px] border-pink-600 bg-card p-5">
-                  <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Evidence
-                  </div>
-                  <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
-                    {formatEvidence(contract.evidenceB)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Verdict */}
-          {contract.verdict ? (
-            <div className="rounded-xl bg-card p-8 text-center">
-              <div className="mb-3 text-[10px] font-bold uppercase tracking-[1.5px] text-muted-foreground">
-                Verdict
-              </div>
-              <div className={`mb-4 font-mono text-3xl font-bold ${VERDICT_COLORS[contract.verdict] || ""}`}>
-                {contract.verdict}
-              </div>
-              {contract.reasoning && (
-                <p className="mx-auto max-w-lg text-sm leading-relaxed text-muted-foreground">
-                  {contract.reasoning}
-                </p>
-              )}
+              <p className="text-sm font-medium text-foreground mb-1">Contract data temporarily unavailable</p>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                This is a GenLayer contract. The data source is currently busy — try refreshing in a moment.
+              </p>
             </div>
           ) : (
-            contract.status !== "created" && contract.status !== "active" && (
-              <div className="rounded-xl border-2 border-dashed border-border p-10 text-center">
-                <div className="mb-2 text-[10px] font-bold uppercase tracking-[1.5px] text-muted-foreground">
-                  Verdict
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Awaiting AI jury resolution
+            <>
+              {/* Statement — centered, serif, italic */}
+              <div className="mb-8 text-center px-10">
+                <h1 className="font-serif text-[28px] sm:text-[32px] font-normal leading-[1.45] tracking-[-0.3px] italic">
+                  &ldquo;{contract.statement}&rdquo;
+                </h1>
+                <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+                  {contract.guidelines}
                 </p>
               </div>
-            )
+
+              {/* Evidence definitions bar */}
+              <EvidenceDefsSummary defs={contract.evidenceDefs} />
+
+              {/* Split adversarial: Party A | VS | Party B */}
+              <div className="mb-10 grid grid-cols-[1fr_48px_1fr]">
+                {/* Party A */}
+                <div>
+                  <div className="mb-4 flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+                    <span className="text-xs font-bold tracking-wide">Party A — Creator</span>
+                  </div>
+                  <div className="mb-3">
+                    <CopyableAddress address={contract.partyA} />
+                  </div>
+                  {contract.proposedOutcomeA && (
+                    <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
+                      contract.proposedOutcomeA === "TRUE"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : contract.proposedOutcomeA === "FALSE"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-amber-100 text-amber-800"
+                    }`}>
+                      Proposes {contract.proposedOutcomeA}
+                    </span>
+                  )}
+                  {contract.evidenceA && (
+                    <div className="mt-3 rounded-[10px] border-l-[3px] border-blue-600 bg-card p-5">
+                      <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Evidence
+                      </div>
+                      <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
+                        {formatEvidence(contract.evidenceA)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+
+                {/* VS Divider */}
+                <div className="flex flex-col items-center pt-3">
+                  <div className="w-px flex-1 bg-border" />
+                  <div className="my-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-[9px] font-bold tracking-widest text-white">
+                    VS
+                  </div>
+                  <div className="w-px flex-1 bg-border" />
+                </div>
+
+                {/* Party B */}
+                <div>
+                  <div className="mb-4 flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-pink-600" />
+                    <span className="text-xs font-bold tracking-wide">Party B — Counterparty</span>
+                  </div>
+                  <div className="mb-3">
+                    <CopyableAddress address={contract.partyB} />
+                  </div>
+                  {contract.proposedOutcomeB && (
+                    <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
+                      contract.proposedOutcomeB === "TRUE"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : contract.proposedOutcomeB === "FALSE"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-amber-100 text-amber-800"
+                    }`}>
+                      Proposes {contract.proposedOutcomeB}
+                    </span>
+                  )}
+                  {contract.evidenceB && (
+                    <div className="mt-3 rounded-[10px] border-l-[3px] border-pink-600 bg-card p-5">
+                      <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Evidence
+                      </div>
+                      <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
+                        {formatEvidence(contract.evidenceB)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Verdict */}
+              {contract.verdict ? (
+                <div className="rounded-xl bg-card p-8 text-center">
+                  <div className="mb-3 text-[10px] font-bold uppercase tracking-[1.5px] text-muted-foreground">
+                    Verdict
+                  </div>
+                  <div className={`mb-4 font-mono text-3xl font-bold ${VERDICT_COLORS[contract.verdict] || ""}`}>
+                    {contract.verdict}
+                  </div>
+                  {contract.reasoning && (
+                    <p className="mx-auto max-w-lg text-sm leading-relaxed text-muted-foreground">
+                      {contract.reasoning}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                contract.status !== "created" && contract.status !== "active" && (
+                  <div className="rounded-xl border-2 border-dashed border-border p-10 text-center">
+                    <div className="mb-2 text-[10px] font-bold uppercase tracking-[1.5px] text-muted-foreground">
+                      Verdict
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Awaiting AI jury resolution
+                    </p>
+                  </div>
+                )
+              )}
+            </>
           )}
         </>
       )}
