@@ -36,7 +36,6 @@ export const FACTORY_ABI = parseAbi([
   "function createAgreement(address,string,string,string,uint256,address,uint256,uint256,uint256,string) returns (address)",
   "function nextAgreementId() view returns (uint256)",
   "function agreements(uint256) view returns (address)",
-  "function agreementIds(address) view returns (uint256)",
   "function deploymentBlock() view returns (uint256)",
 ]);
 

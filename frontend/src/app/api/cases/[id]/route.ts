@@ -20,35 +20,30 @@ export async function GET(
 
     // Support both numeric IDs and contract addresses
     if (id.startsWith("0x") && id.length === 42) {
-      // O(1) lookup by address using reverse mapping
       agreementAddress = id as `0x${string}`;
 
-      const foundId = Number(
+      // Find case ID by iterating factory agreements (no reverse mapping on-chain)
+      const nextId = Number(
         await publicClient.readContract({
           address: FACTORY_ADDRESS,
           abi: FACTORY_ABI,
-          functionName: "agreementIds",
-          args: [agreementAddress],
+          functionName: "nextAgreementId",
         }),
       );
 
-      // Verify the address actually maps back (agreementIds returns 0 for unknown addresses,
-      // so also check that agreements[0] matches when foundId is 0)
-      const verifyAddr = await publicClient.readContract({
-        address: FACTORY_ADDRESS,
-        abi: FACTORY_ABI,
-        functionName: "agreements",
-        args: [BigInt(foundId)],
-      });
-
-      if (verifyAddr.toLowerCase() !== agreementAddress.toLowerCase()) {
-        return NextResponse.json(
-          { error: "Case not found" },
-          { status: 404 },
-        );
+      caseId = -1;
+      for (let i = 0; i < nextId; i++) {
+        const addr = await publicClient.readContract({
+          address: FACTORY_ADDRESS,
+          abi: FACTORY_ABI,
+          functionName: "agreements",
+          args: [BigInt(i)],
+        });
+        if (addr.toLowerCase() === agreementAddress.toLowerCase()) {
+          caseId = i;
+          break;
+        }
       }
-
-      caseId = foundId;
     } else {
       caseId = parseInt(id, 10);
 
