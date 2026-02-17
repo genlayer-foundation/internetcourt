@@ -4,6 +4,17 @@
 
 ## In Progress
 
+### Frontend Performance — Remove Aggressive Caching + Optimize Data Fetching
+- Reduce localStorage TTL from 10min → 2min
+- Add Cache-Control: no-store to API responses
+- Remove/reduce 2-min in-memory server cache
+- Parallelize Base + GenLayer fetches (currently sequential)
+- Batch sequential RPC calls with Promise.all()
+- Add timeouts to GenLayer RPC calls
+- Add refresh button to cases page
+- Include verdict in list API to eliminate N+1 fetches
+- Status: In progress
+
 ### Fix Bridge Structural Issues + Clean Redeploy
 - Phase 1: Code fixes (centralize addresses in deployments.json, delete stale files, add relay persistence)
 - Phase 2: Clean deploy (BridgeSender → Factory → Receiver → Forwarder → Configure → E2E)

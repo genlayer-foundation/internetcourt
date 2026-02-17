@@ -8,8 +8,8 @@ import type { MoltContract } from "@/lib/types";
 
 const FACTORY_ADDRESS = GENLAYER_FACTORY_ADDRESS;
 
-// --- In-memory response cache (2-minute TTL, max 100 entries) ---
-const CACHE_TTL_MS = 2 * 60 * 1000;
+// --- In-memory response cache (30-second TTL, max 100 entries) ---
+const CACHE_TTL_MS = 30 * 1000;
 const CACHE_MAX_ENTRIES = 100;
 
 interface CacheEntry {
@@ -70,14 +70,16 @@ async function fetchFactoryMetadataMap(): Promise<Record<string, Record<string, 
 export async function GET() {
   try {
     if (!FACTORY_ADDRESS) {
-      return NextResponse.json({ contracts: [], errors: {} });
+      return NextResponse.json({ contracts: [], errors: {} }, {
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     const cacheKey = "factory-list";
     const cached = cacheGet(cacheKey);
     if (cached) {
       return NextResponse.json(cached, {
-        headers: { "X-Cache": "HIT", "Cache-Control": "max-age=120" },
+        headers: { "X-Cache": "HIT", "Cache-Control": "no-store" },
       });
     }
 
@@ -155,7 +157,7 @@ export async function GET() {
     const responseData = { contracts, errors, warnings };
     cacheSet(cacheKey, responseData);
     return NextResponse.json(responseData, {
-      headers: { "X-Cache": "MISS" },
+      headers: { "X-Cache": "MISS", "Cache-Control": "no-store" },
     });
   } catch (err) {
     console.error("GET /api/contracts error:", err instanceof Error ? err.message : err);
@@ -169,14 +171,16 @@ export async function POST(req: NextRequest) {
     const addresses: string[] = body.addresses || [];
 
     if (addresses.length === 0) {
-      return NextResponse.json({ contracts: [], errors: {} });
+      return NextResponse.json({ contracts: [], errors: {} }, {
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     const cacheKey = "addrs:" + [...addresses].sort().join(",");
     const cached = cacheGet(cacheKey);
     if (cached) {
       return NextResponse.json(cached, {
-        headers: { "X-Cache": "HIT", "Cache-Control": "max-age=120" },
+        headers: { "X-Cache": "HIT", "Cache-Control": "no-store" },
       });
     }
 
@@ -187,7 +191,7 @@ export async function POST(req: NextRequest) {
     const responseData = { contracts, errors, warnings };
     cacheSet(cacheKey, responseData);
     return NextResponse.json(responseData, {
-      headers: { "X-Cache": "MISS" },
+      headers: { "X-Cache": "MISS", "Cache-Control": "no-store" },
     });
   } catch (err) {
     console.error("POST /api/contracts error:", err instanceof Error ? err.message : err);

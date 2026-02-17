@@ -3,9 +3,9 @@ import { ethers, network } from "hardhat";
 const ADDRESSES = {
   // Base Sepolia
   factory: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
-  bridgeReceiver: "0x347FbC76104588dF52b85b7c840a4a8a891E2cf2",
+  bridgeReceiver: "0xc3e6aE892A704c875bF74Df46eD873308db15d82",
   // zkSync Sepolia
-  bridgeForwarder: "0xa94cc270C23789550F22d545d64691b958b9F1cb",
+  bridgeForwarder: "0x95c4E5b042d75528f7df355742e48B298028b3f2",
 };
 
 // LayerZero EIDs

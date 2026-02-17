@@ -12,9 +12,9 @@ import { ethers } from "hardhat";
 // ──────────────────────────────────────────────────────────────
 //  Contract addresses (Base Sepolia)
 // ──────────────────────────────────────────────────────────────
-const MOCK_USDC = "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3";
+const MOCK_USDC = "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f";
 const FACTORY = "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a";
-const BRIDGE_RECEIVER = "0x347FbC76104588dF52b85b7c840a4a8a891E2cf2";
+const BRIDGE_RECEIVER = "0xc3e6aE892A704c875bF74Df46eD873308db15d82";
 
 // Party B deterministic key (testnet only - no real funds)
 const PARTY_B_KEY =

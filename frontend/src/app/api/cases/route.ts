@@ -61,109 +61,130 @@ export async function GET(req: NextRequest) {
     const totalContracts = Number(nextId);
 
     if (totalContracts === 0) {
-      return NextResponse.json({ cases: [], total: 0, page, limit });
+      return NextResponse.json({ cases: [], total: 0, page, limit }, {
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     // Iterate from newest to oldest, collecting matching cases
+    // Batch address lookups in groups of 10 for performance
+    const BATCH_SIZE = 10;
     const cases: Array<Record<string, unknown>> = [];
     let matched = 0;
     const skip = (page - 1) * limit;
 
-    for (let i = totalContracts - 1; i >= 0 && cases.length < limit; i--) {
-      const agreementAddress = await publicClient.readContract({
-        address: FACTORY_ADDRESS,
-        abi: FACTORY_ABI,
-        functionName: "agreements",
-        args: [BigInt(i)],
-      });
-
-      if (
-        agreementAddress === "0x0000000000000000000000000000000000000000"
-      ) {
-        continue;
+    for (let batchStart = totalContracts - 1; batchStart >= 0 && cases.length < limit; batchStart -= BATCH_SIZE) {
+      // Build batch of IDs (newest first, descending)
+      const batchIds: number[] = [];
+      for (let i = batchStart; i >= 0 && i > batchStart - BATCH_SIZE; i--) {
+        batchIds.push(i);
       }
 
-      // Read basic fields via multicall
-      const results = await publicClient.multicall({
-        contracts: [
-          {
-            address: agreementAddress,
-            abi: AGREEMENT_ABI,
-            functionName: "status",
-          },
-          {
-            address: agreementAddress,
-            abi: AGREEMENT_ABI,
-            functionName: "partyA",
-          },
-          {
-            address: agreementAddress,
-            abi: AGREEMENT_ABI,
-            functionName: "partyB",
-          },
-          {
-            address: agreementAddress,
-            abi: AGREEMENT_ABI,
-            functionName: "statement",
-          },
-          {
-            address: agreementAddress,
-            abi: AGREEMENT_ABI,
-            functionName: "escrowAmount",
-          },
-          {
-            address: agreementAddress,
-            abi: AGREEMENT_ABI,
-            functionName: "verdict",
-          },
-        ],
-      });
+      // Fetch addresses in parallel
+      const addresses = await Promise.all(
+        batchIds.map((i) =>
+          publicClient.readContract({
+            address: FACTORY_ADDRESS,
+            abi: FACTORY_ABI,
+            functionName: "agreements",
+            args: [BigInt(i)],
+          })
+        )
+      );
 
-      const status = results[0].status === "success" ? Number(results[0].result) : 0;
-      const partyA =
-        results[1].status === "success" ? (results[1].result as string) : "";
-      const partyB =
-        results[2].status === "success" ? (results[2].result as string) : "";
-      const statement =
-        results[3].status === "success" ? (results[3].result as string) : "";
-      const escrowAmount =
-        results[4].status === "success"
-          ? (results[4].result as bigint).toString()
-          : "0";
-      const verdict =
-        results[5].status === "success" ? Number(results[5].result) : 0;
+      // Process each result in order (newest first within the batch)
+      for (let idx = 0; idx < batchIds.length && cases.length < limit; idx++) {
+        const i = batchIds[idx];
+        const agreementAddress = addresses[idx];
 
-      // Apply filters
-      if (statusFilter !== null && status !== statusFilter) {
-        continue;
+        if (
+          agreementAddress === "0x0000000000000000000000000000000000000000"
+        ) {
+          continue;
+        }
+
+        // Read basic fields via multicall
+        const results = await publicClient.multicall({
+          contracts: [
+            {
+              address: agreementAddress,
+              abi: AGREEMENT_ABI,
+              functionName: "status",
+            },
+            {
+              address: agreementAddress,
+              abi: AGREEMENT_ABI,
+              functionName: "partyA",
+            },
+            {
+              address: agreementAddress,
+              abi: AGREEMENT_ABI,
+              functionName: "partyB",
+            },
+            {
+              address: agreementAddress,
+              abi: AGREEMENT_ABI,
+              functionName: "statement",
+            },
+            {
+              address: agreementAddress,
+              abi: AGREEMENT_ABI,
+              functionName: "escrowAmount",
+            },
+            {
+              address: agreementAddress,
+              abi: AGREEMENT_ABI,
+              functionName: "verdict",
+            },
+          ],
+        });
+
+        const status = results[0].status === "success" ? Number(results[0].result) : 0;
+        const partyA =
+          results[1].status === "success" ? (results[1].result as string) : "";
+        const partyB =
+          results[2].status === "success" ? (results[2].result as string) : "";
+        const statement =
+          results[3].status === "success" ? (results[3].result as string) : "";
+        const escrowAmount =
+          results[4].status === "success"
+            ? (results[4].result as bigint).toString()
+            : "0";
+        const verdict =
+          results[5].status === "success" ? Number(results[5].result) : 0;
+
+        // Apply filters
+        if (statusFilter !== null && status !== statusFilter) {
+          continue;
+        }
+        if (
+          partyFilter &&
+          partyA.toLowerCase() !== partyFilter &&
+          partyB.toLowerCase() !== partyFilter
+        ) {
+          continue;
+        }
+
+        matched++;
+
+        // Skip for pagination
+        if (matched <= skip) {
+          continue;
+        }
+
+        cases.push({
+          id: i,
+          address: agreementAddress,
+          status,
+          statusName: STATUS_NAMES[status] || "UNKNOWN",
+          partyA,
+          partyB,
+          statement,
+          escrowAmount,
+          verdict,
+          verdictName: VERDICT_NAMES[verdict] || "UNDETERMINED",
+        });
       }
-      if (
-        partyFilter &&
-        partyA.toLowerCase() !== partyFilter &&
-        partyB.toLowerCase() !== partyFilter
-      ) {
-        continue;
-      }
-
-      matched++;
-
-      // Skip for pagination
-      if (matched <= skip) {
-        continue;
-      }
-
-      cases.push({
-        id: i,
-        address: agreementAddress,
-        status,
-        statusName: STATUS_NAMES[status] || "UNKNOWN",
-        partyA,
-        partyB,
-        statement,
-        escrowAmount,
-        verdict,
-        verdictName: VERDICT_NAMES[verdict] || "UNDETERMINED",
-      });
     }
 
     // --- Fetch timestamps for collected cases ---
@@ -299,7 +320,9 @@ export async function GET(req: NextRequest) {
         ? matched
         : totalContracts;
 
-    return NextResponse.json({ cases, total, page, limit });
+    return NextResponse.json({ cases, total, page, limit }, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     console.error("GET /api/cases error:", err instanceof Error ? err.message : err);
     return apiError(err instanceof Error ? err.message : "Internal error", 500);
