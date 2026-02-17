@@ -1,13 +1,18 @@
 import { ethers, network } from "hardhat";
 
+import * as fs from "fs";
+import * as path from "path";
+
+const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
 const ADDRESSES = {
-  factory: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
-  bridgeReceiver: "0xc3e6aE892A704c875bF74Df46eD873308db15d82",
-  bridgeForwarder: "0x95c4E5b042d75528f7df355742e48B298028b3f2",
-  mockUSDC: "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f",
+  factory: deployments.baseSepolia.factory,
+  bridgeReceiver: deployments.baseSepolia.bridgeReceiver,
+  bridgeForwarder: deployments.zkSyncSepolia.bridgeForwarder,
+  mockUSDC: deployments.baseSepolia.mockUSDC,
 };
 
-const EIDS = { zkSyncSepolia: 40165, baseSepolia: 40245 };
+const EIDS = { zkSyncSepolia: 40305, baseSepolia: 40245 };
 
 async function verifyBase() {
   console.log("=== Base Sepolia Verification ===\n");

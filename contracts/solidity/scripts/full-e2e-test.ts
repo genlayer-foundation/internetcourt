@@ -9,12 +9,17 @@ import { ethers } from "hardhat";
  * Run: npx hardhat run scripts/full-e2e-test.ts --network baseSepolia
  */
 
+import * as fs from "fs";
+import * as path from "path";
+
 // ──────────────────────────────────────────────────────────────
-//  Contract addresses (Base Sepolia)
+//  Contract addresses (Base Sepolia) — from deployments.json
 // ──────────────────────────────────────────────────────────────
-const MOCK_USDC = "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f";
-const FACTORY = "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a";
-const BRIDGE_RECEIVER = "0xc3e6aE892A704c875bF74Df46eD873308db15d82";
+const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+const MOCK_USDC = deployments.baseSepolia.mockUSDC;
+const FACTORY = deployments.baseSepolia.factory;
+const BRIDGE_RECEIVER = deployments.baseSepolia.bridgeReceiver;
 
 // Party B deterministic key (testnet only - no real funds)
 const PARTY_B_KEY =

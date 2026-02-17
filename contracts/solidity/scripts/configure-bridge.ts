@@ -1,11 +1,15 @@
 import { ethers, network } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
+
+// Load deployed addresses from deployments.json
+const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
 
 const ADDRESSES = {
-  // Base Sepolia
-  factory: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
-  bridgeReceiver: "0xc3e6aE892A704c875bF74Df46eD873308db15d82",
-  // zkSync Sepolia
-  bridgeForwarder: "0x95c4E5b042d75528f7df355742e48B298028b3f2",
+  factory: deployments.baseSepolia.factory,
+  bridgeReceiver: deployments.baseSepolia.bridgeReceiver,
+  bridgeForwarder: deployments.zkSyncSepolia.bridgeForwarder,
 };
 
 // LayerZero EIDs

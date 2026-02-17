@@ -11,8 +11,13 @@ import { ethers } from "hardhat";
  * Run: npx hardhat run scripts/cross-chain-e2e.ts --network baseSepolia
  */
 
-const FACTORY = "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a";
-const USDC = "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f";
+import * as fs from "fs";
+import * as path from "path";
+
+const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+const FACTORY = deployments.baseSepolia.factory;
+const USDC = deployments.baseSepolia.mockUSDC;
 const ESCROW = 50_000000n; // 50 USDC per case (6 decimals)
 const PARTY_B_KEY = "0x31f35a8cc001278c0293a9a061e0e291b6379d3cc75982613770e4b7967ecfaf";
 
