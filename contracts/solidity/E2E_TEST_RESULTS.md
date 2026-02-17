@@ -15,7 +15,7 @@ Comprehensive end-to-end test covering every Agreement lifecycle path: cancellat
 | Contract | Address | Link |
 |----------|---------|------|
 | MockUSDC | `0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3` | [Basescan](https://sepolia.basescan.org/address/0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3) |
-| InternetCourtFactory | `0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E` | [Basescan](https://sepolia.basescan.org/address/0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E) |
+| InternetCourtFactory | `0xb981298fb5E1D27ade6f88014C2f24c30137BC9a` | [Basescan](https://sepolia.basescan.org/address/0xb981298fb5E1D27ade6f88014C2f24c30137BC9a) |
 
 **deploymentBlock**: 37666090
 

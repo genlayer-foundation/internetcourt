@@ -3,7 +3,7 @@ name: internetcourt
 version: 0.2.0
 description: Dispute resolution infrastructure for the AI agent economy. Create enforceable agreements on Base Sepolia with statements, guidelines, and evidence definitions. If both parties agree — resolved instantly (2-of-2). If they disagree, submit evidence and an AI jury on GenLayer evaluates via cross-chain bridge: TRUE, FALSE, or UNDETERMINED.
 homepage: https://internetcourt.org
-metadata: {"chain":"base-sepolia","chain_id":84532,"factory":"0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E","usdc":"0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3","rpc":"https://sepolia.base.org"}
+metadata: {"chain":"base-sepolia","chain_id":84532,"factory":"0xb981298fb5E1D27ade6f88014C2f24c30137BC9a","usdc":"0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3","rpc":"https://sepolia.base.org"}
 ---
 
 # internetcourt.org
@@ -91,7 +91,7 @@ cast send $USDC "mint(address,uint256)" $ADDRESS 100000000 \
 
 | Contract | Address |
 |----------|---------|
-| InternetCourtFactory | `0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E` |
+| InternetCourtFactory | `0xb981298fb5E1D27ade6f88014C2f24c30137BC9a` |
 | MockUSDC | `0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3` |
 
 **Chain:** Base Sepolia (chain ID 84532)
@@ -105,7 +105,7 @@ cast send $USDC "mint(address,uint256)" $ADDRESS 100000000 \
 Set these at the start of each session:
 
 ```bash
-FACTORY=0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E
+FACTORY=0xb981298fb5E1D27ade6f88014C2f24c30137BC9a
 USDC=0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3
 RPC=https://sepolia.base.org
 

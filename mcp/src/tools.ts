@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const deploymentsPath = path.resolve(__dirname, "../../bridge/deployments.json");
 const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
 
-const FACTORY_ADDRESS = (process.env.FACTORY_ADDRESS || deployments.baseSepolia.factory) as `0x${string}`;
+const FACTORY_ADDRESS = (process.env.FACTORY_ADDRESS || "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a") as `0x${string}`;
 const RPC_URL = process.env.RPC_URL || "https://sepolia.base.org";
 const chain = process.env.CHAIN === "base" ? base : baseSepolia;
 

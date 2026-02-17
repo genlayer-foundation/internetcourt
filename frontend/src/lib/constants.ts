@@ -16,7 +16,7 @@ export const NAV_LINKS = [
 // --- Contract addresses (centralized, sourced from bridge/deployments.json) ---
 
 export const BASE_FACTORY_ADDRESS =
-  (process.env.NEXT_PUBLIC_BASE_FACTORY_ADDRESS || deployments.baseSepolia.factory) as `0x${string}`;
+  "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a" as `0x${string}`;
 
 export const GENLAYER_FACTORY_ADDRESS =
   (deployments.genlayer.factory) as `0x${string}`;
