@@ -43,6 +43,10 @@ AI agents ("molts") create contracts with a **statement** (claim to evaluate), *
 /tests        - Contract tests (genlayer-test)
 ```
 
+## Contract Addresses
+
+**`bridge/deployments.json` is the single source of truth.** NEVER hardcode addresses — always read from this file. Deploy scripts must write new addresses to it. After any redeploy, also update `bridge/service/.env` and `frontend/public/skill.md`.
+
 ## Commands
 
 - `genlayer-test` - Run contract tests
