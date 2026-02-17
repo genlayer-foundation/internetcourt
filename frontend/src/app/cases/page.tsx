@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS, VERDICT_NAMES, BASE_FACTORY_ADDRESS, GENLAYER_FACTORY_ADDRESS } from "@/lib/constants";
-import { formatAddress } from "@/lib/genlayer";
+import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS, VERDICT_NAMES, BASE_FACTORY_ADDRESS } from "@/lib/constants";
+import { formatAddress } from "@/lib/utils";
 import {
   getTrackedAddresses,
   addTrackedAddress,
@@ -143,7 +143,6 @@ export default function CasesPage() {
   const [contracts, setContracts] = useState<MoltContract[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingGenLayer, setLoadingGenLayer] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [warnings, setWarnings] = useState<string[]>([]);
   const [newAddress, setNewAddress] = useState("");
@@ -192,10 +191,7 @@ export default function CasesPage() {
     const allErrors: Record<string, string> = {};
     const allWarnings: string[] = [];
 
-    // Start GenLayer loading indicator immediately
-    setLoadingGenLayer(true);
-
-    // Launch ALL fetches in parallel (Base + GenLayer + tracked)
+    // Launch Base + tracked fetches in parallel
     const basePromise: Promise<{ cases: MoltContract[]; _aborted?: boolean; _error?: string }> =
       fetchJson("/api/cases?limit=100")
         .then((data) => {
@@ -216,25 +212,25 @@ export default function CasesPage() {
           return { cases: [] as MoltContract[], _error: msg };
         });
 
-    const genLayerPromise = fetchJson("/api/contracts")
-      .catch((err) => {
-        console.warn("[cases] GenLayer fetch failed:", err.message);
-        return { contracts: [], errors: {}, _glFetchError: err.message };
-      });
-
     const trackedPromise =
       addrs.length > 0
-        ? fetchJson("/api/contracts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ addresses: addrs }),
-          }).catch(() => ({ contracts: [], errors: {} }))
-        : Promise.resolve({ contracts: [], errors: {} });
+        ? Promise.all(
+            addrs.map((addr) =>
+              fetchJson(`/api/cases/${encodeURIComponent(addr)}`)
+                .then((data: Record<string, unknown>) =>
+                  data.error ? null : data
+                )
+                .catch(() => null)
+            )
+          ).then((results) => ({
+            cases: results.filter(Boolean) as Record<string, unknown>[],
+            errors: {} as Record<string, string>,
+          }))
+        : Promise.resolve({ cases: [] as Record<string, unknown>[], errors: {} as Record<string, string> });
 
-    // Wait for all three to settle
-    const [baseResult, genLayerData, trackedData] = await Promise.all([
+    // Wait for both to settle
+    const [baseResult, trackedData] = await Promise.all([
       basePromise,
-      genLayerPromise,
       trackedPromise,
     ]);
 
@@ -249,7 +245,6 @@ export default function CasesPage() {
         setErrors({ _global: "Request timed out -- try again." });
         setContracts([]);
         setLoading(false);
-        setLoadingGenLayer(false);
         return;
       }
     }
@@ -259,27 +254,19 @@ export default function CasesPage() {
       if (!cached) setLoading(false);
     }
 
-    // Merge GenLayer errors
-    Object.assign(allErrors, genLayerData.errors || {}, trackedData.errors || {});
-    if (genLayerData._glFetchError) {
-      allErrors._genlayer = `GenLayer: ${genLayerData._glFetchError}`;
-    }
-    allWarnings.push(
-      ...(genLayerData.warnings || []),
-      ...(trackedData.warnings || []),
-    );
+    // Merge tracked errors
+    Object.assign(allErrors, trackedData.errors || {});
 
-    // Merge all sources and deduplicate
+    // Merge Base cases + tracked and deduplicate
+    const trackedCases: MoltContract[] = (trackedData.cases || []).map(baseToMoltContract);
     const merged = deduplicateContracts([
       ...baseCases,
-      ...(genLayerData.contracts || []),
-      ...(trackedData.contracts || []),
+      ...trackedCases,
     ]);
 
     setContracts(merged);
     setShowingCache(false);
     setLoading(false);
-    setLoadingGenLayer(false);
     setErrors(allErrors);
     setWarnings(allWarnings);
 
@@ -350,11 +337,11 @@ export default function CasesPage() {
             variant="ghost"
             size="sm"
             onClick={handleRefresh}
-            disabled={loading || loadingGenLayer}
+            disabled={loading}
             className="gap-1 text-xs"
             title="Refresh cases"
           >
-            <RefreshCw size={14} className={loading || loadingGenLayer ? "animate-spin" : ""} />
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </Button>
         </div>
       </div>
@@ -429,15 +416,7 @@ export default function CasesPage() {
         </div>
       )}
 
-      {/* GenLayer loading indicator (Phase 2) */}
-      {!loading && loadingGenLayer && !showingCache && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 size={14} className="animate-spin" />
-          <span>Loading GenLayer cases...</span>
-        </div>
-      )}
-
-      {/* Warnings (transient issues like GenLayer server busy) */}
+      {/* Warnings */}
       {warnings.length > 0 && (
         <div className="mb-4">
           {warnings.map((msg, i) => (
@@ -575,9 +554,6 @@ export default function CasesPage() {
           <span>Base Factory: <span className="font-mono">{formatAddress(BASE_FACTORY_ADDRESS)}</span></span>
           {copied ? <Check size={11} /> : <Copy size={11} />}
         </button>
-        <span className="text-[10px] text-muted-foreground/40" title={GENLAYER_FACTORY_ADDRESS}>
-          GenLayer: <span className="font-mono">{formatAddress(GENLAYER_FACTORY_ADDRESS)}</span>
-        </span>
       </div>
     </div>
   );
@@ -592,8 +568,6 @@ function ContractCard({
   highlight?: boolean;
   index?: number;
 }) {
-  const isBase = !!c.chainId;
-
   // Verdict is already available from the list API response (via baseToMoltContract),
   // so no per-card detail fetch is needed — eliminates N+1 requests.
   const displayVerdict = c.verdict || "";
@@ -620,13 +594,9 @@ function ContractCard({
                 {/* Chain badge */}
                 <Badge
                   variant="outline"
-                  className={`text-[10px] font-medium ${
-                    isBase
-                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                      : "bg-purple-50 text-purple-700 border-purple-200"
-                  }`}
+                  className="text-[10px] font-medium bg-blue-50 text-blue-700 border-blue-200"
                 >
-                  {isBase ? "Base" : "GenLayer"}
+                  Base
                 </Badge>
                 {c.incomplete && (
                   <Badge
@@ -670,7 +640,7 @@ function ContractCard({
                 <span className="font-mono text-xs opacity-60">
                   {formatAddress(c.address)}
                 </span>
-                {isBase && c.escrowAmount && c.escrowAmount !== "0" && (
+                {c.escrowAmount && c.escrowAmount !== "0" && (
                   <span className="text-xs text-muted-foreground">
                     Escrow: {(Number(c.escrowAmount) / 1e6).toFixed(2)} USDC
                   </span>

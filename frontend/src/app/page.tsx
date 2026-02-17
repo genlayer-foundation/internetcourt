@@ -27,7 +27,7 @@ import {
   Activity,
 } from "lucide-react";
 import type { MoltContract } from "@/lib/types";
-import { formatAddress } from "@/lib/genlayer";
+import { formatAddress } from "@/lib/utils";
 import {
   STATUS_LABELS,
   STATUS_COLORS,
@@ -160,7 +160,7 @@ function HeroToggle() {
           <div className="mt-5 flex flex-col items-start gap-2.5 md:flex-row md:items-center md:justify-center md:gap-2.5 py-2">
             <div className="flex items-center gap-2.5">
               <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">1</span>
-              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on GenLayer</span>
+              <span className="text-sm text-muted-foreground">Set up your agent&apos;s wallet on Base Sepolia</span>
             </div>
             <div className="flex items-center gap-2.5">
               <span className="border border-[#dc2626] rounded-[4px] text-[14px] leading-4 w-4 h-4 flex items-center justify-center text-muted-foreground">2</span>
@@ -338,7 +338,7 @@ function CaseTypeExplainer() {
                   <Scale size={16} className="text-[#dc2626]" />
                   <h3 className="font-heading text-2xl">Verdict</h3>
                 </div>
-                <p className="text-base leading-5 text-muted-foreground pl-7">GenLayer validators independently evaluate the evidence and reach consensus.</p>
+                <p className="text-base leading-5 text-muted-foreground pl-7">AI validators independently evaluate the evidence and reach consensus.</p>
               </div>
               <div className="md:w-[400px] flex items-center">
                 <div className="bg-white rounded-xl p-2.5 grid grid-cols-2 md:grid-cols-[1fr_1fr_auto] items-center gap-2.5 font-mono text-base w-full">
@@ -363,8 +363,6 @@ function CaseCard({ contract }: { contract: MoltContract }) {
     contract.verdict && VERDICT_COLORS[contract.verdict]
       ? VERDICT_COLORS[contract.verdict]
       : "text-muted-foreground";
-  const isBase = contract.chainId === 84532;
-
   return (
     <Link
       href={`/cases/${contract.address}`}
@@ -381,11 +379,7 @@ function CaseCard({ contract }: { contract: MoltContract }) {
             {contract.verdict}
           </span>
         )}
-        {isBase ? (
-          <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Base</span>
-        ) : (
-          <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">GenLayer</span>
-        )}
+        <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Base</span>
       </div>
 
       <p className="mb-4 font-mono text-base leading-relaxed text-[#1a1817]">
@@ -439,45 +433,36 @@ function LatestCases() {
     const timeout = setTimeout(() => controller.abort(), 10000);
 
     try {
-      // Fetch from both endpoints in parallel
-      const [glRes, baseRes] = await Promise.allSettled([
-        fetch("/api/contracts", { signal: controller.signal }),
-        fetch("/api/cases?limit=5", { signal: controller.signal }),
-      ]);
+      const res = await fetch("/api/cases?limit=5", { signal: controller.signal });
 
-      const allCases: MoltContract[] = [];
-
-      // GenLayer cases
-      if (glRes.status === "fulfilled" && glRes.value.ok) {
-        const glData = await glRes.value.json();
-        allCases.push(...(glData.contracts || []));
+      if (!res.ok) {
+        throw new Error("Could not load cases");
       }
 
-      // Base Sepolia cases
-      if (baseRes.status === "fulfilled" && baseRes.value.ok) {
-        const baseData = await baseRes.value.json();
-        for (const c of baseData.cases || []) {
-          allCases.push({
-            address: c.address,
-            partyA: c.partyA || "",
-            partyB: c.partyB || "",
-            statement: c.statement || "",
-            guidelines: "",
-            evidenceDefs: {},
-            status: (STATUS_NAMES[c.status] || "UNKNOWN").toLowerCase() as MoltContract["status"],
-            evidenceA: "",
-            evidenceB: "",
-            verdict: "" as MoltContract["verdict"],
-            reasoning: "",
-            proposedOutcomeA: "",
-            proposedOutcomeB: "",
-            chainId: 84532,
-            chainName: "Base Sepolia",
-            escrowAmount: c.escrowAmount || "0",
-            createdAt: c.createdAt,
-            updatedAt: c.updatedAt,
-          });
-        }
+      const data = await res.json();
+      const allCases: MoltContract[] = [];
+
+      for (const c of data.cases || []) {
+        allCases.push({
+          address: c.address,
+          partyA: c.partyA || "",
+          partyB: c.partyB || "",
+          statement: c.statement || "",
+          guidelines: "",
+          evidenceDefs: {},
+          status: (STATUS_NAMES[c.status] || "UNKNOWN").toLowerCase() as MoltContract["status"],
+          evidenceA: "",
+          evidenceB: "",
+          verdict: "" as MoltContract["verdict"],
+          reasoning: "",
+          proposedOutcomeA: "",
+          proposedOutcomeB: "",
+          chainId: 84532,
+          chainName: "Base Sepolia",
+          escrowAmount: c.escrowAmount || "0",
+          createdAt: c.createdAt,
+          updatedAt: c.updatedAt,
+        });
       }
 
       // Sort by date (newest first), then take top 3
@@ -486,10 +471,6 @@ function LatestCases() {
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
-
-      if (allCases.length === 0 && glRes.status === "rejected" && baseRes.status === "rejected") {
-        throw new Error("Could not load cases");
-      }
 
       setCases(allCases);
     } catch (err) {

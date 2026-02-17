@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { formatAddress } from "@/lib/genlayer";
+import { formatAddress } from "@/lib/utils";
 
-describe("genlayer utils", () => {
+describe("utils", () => {
   it("formatAddress truncates correctly", () => {
     expect(formatAddress("0x1234567890abcdef")).toBe("0x1234...cdef");
   });

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import deployments from "../../../bridge/deployments.json";
 
 export const SITE_NAME = "internetcourt.org";
 export const SITE_DESCRIPTION =
@@ -13,21 +12,17 @@ export const NAV_LINKS = [
   { label: "Docs", href: "/docs" },
 ] as const;
 
-// --- Contract addresses (centralized, sourced from bridge/deployments.json) ---
+// --- Contract addresses (Base Sepolia) ---
 
 export const BASE_FACTORY_ADDRESS =
   "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a" as `0x${string}`;
 
-export const GENLAYER_FACTORY_ADDRESS =
-  (deployments.genlayer.factory) as `0x${string}`;
-
 export const MOCK_USDC_ADDRESS =
-  (process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS || deployments.baseSepolia.mockUSDC) as `0x${string}`;
+  "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f" as `0x${string}`;
 
-export const DEPLOYMENT_BLOCK = deployments.baseSepolia.deploymentBlock;
+export const DEPLOYMENT_BLOCK = 37657150;
 
 export const BASE_CHAIN_ID = 84532;
-export const GENLAYER_CHAIN_ID = 61999;
 
 // --- Status / Verdict mappings ---
 

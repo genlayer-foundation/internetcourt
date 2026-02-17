@@ -46,7 +46,7 @@ export interface MoltContract {
   // Timestamps (optional — derived from blockchain events)
   createdAt?: string; // ISO 8601 string
   updatedAt?: string; // ISO 8601 string
-  // Incomplete data indicator (set when GenLayer read fails but factory metadata is available)
+  // Incomplete data indicator (set when contract read fails but factory metadata is available)
   incomplete?: boolean;
   incompleteReason?: string;
 }
