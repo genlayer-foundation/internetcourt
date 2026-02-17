@@ -1,10 +1,4 @@
 import { ethers, network } from "hardhat";
-import * as fs from "fs";
-import * as path from "path";
-
-// Load deployed addresses from deployments.json
-const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
-const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
 
 const ADDRESSES = {
   factory: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",

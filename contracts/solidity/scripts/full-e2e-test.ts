@@ -10,7 +10,7 @@ import { ethers } from "hardhat";
  */
 
 // ──────────────────────────────────────────────────────────────
-//  Contract addresses loaded from deployments.json
+//  Contract addresses (Base Sepolia)
 // ──────────────────────────────────────────────────────────────
 const MOCK_USDC = "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3";
 const FACTORY = "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a";
