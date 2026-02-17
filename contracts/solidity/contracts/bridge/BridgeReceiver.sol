@@ -11,80 +11,65 @@ struct Origin {
 }
 
 interface IGenLayerBridgeReceiverLz {
-    function processBridgeMessage(
-        uint32 srcChainId,
-        address srcSender,
-        bytes calldata message
-    ) external;
+    function processBridgeMessage(uint32 srcChainId, address srcSender, bytes calldata message) external;
 }
 
 contract BridgeReceiver is Ownable, ReentrancyGuard {
     address public immutable endpoint;
 
-    // Source EID -> trusted forwarder address (as bytes32)
     mapping(uint32 => bytes32) public trustedForwarders;
-
-    // Authorized target contracts that can receive bridge messages
-    mapping(address => bool) public authorizedTargets;
 
     constructor(address _endpoint, address _owner) Ownable(_owner) {
         endpoint = _endpoint;
     }
 
-    // ──────────────────────────────────────────────
-    //  LayerZero receive handler
-    // ──────────────────────────────────────────────
+    function allowInitializePath(Origin calldata _origin) external view returns (bool) {
+        return trustedForwarders[_origin.srcEid] == _origin.sender;
+    }
+
+    function nextNonce(uint32, bytes32) external pure returns (uint64) {
+        return 0;
+    }
 
     function lzReceive(
         Origin calldata _origin,
-        bytes32,                    // guid (unused)
+        bytes32,
         bytes calldata _message,
-        address,                    // executor (unused)
-        bytes calldata              // extra data (unused)
+        address,
+        bytes calldata
     ) external payable nonReentrant {
-        // Only the LayerZero endpoint can call this
-        require(
-            msg.sender == address(endpoint),
-            "BridgeReceiver: only Endpoint can call"
-        );
+        require(msg.sender == endpoint, "BridgeReceiver: only Endpoint");
+        require(trustedForwarders[_origin.srcEid] == _origin.sender, "BridgeReceiver: untrusted");
 
-        // Verify the message came from a trusted forwarder
-        require(
-            trustedForwarders[_origin.srcEid] == _origin.sender,
-            "BridgeReceiver: untrusted forwarder"
-        );
+        (uint32 srcChainId, address srcSender, address localContract, bytes memory message) =
+            abi.decode(_message, (uint32, address, address, bytes));
 
-        // Decode the bridge message envelope
-        (
-            uint32 srcChainId,
-            address srcSender,
-            address localContract,
-            bytes memory message
-        ) = abi.decode(_message, (uint32, address, address, bytes));
-
-        // Verify target is authorized
-        require(authorizedTargets[localContract], "BridgeReceiver: unauthorized target");
-
-        // Dispatch to the target contract
-        IGenLayerBridgeReceiverLz(localContract)
-            .processBridgeMessage(srcChainId, srcSender, message);
+        IGenLayerBridgeReceiverLz(localContract).processBridgeMessage(srcChainId, srcSender, message);
     }
 
-    // ──────────────────────────────────────────────
-    //  Admin: configure trusted forwarders
-    // ──────────────────────────────────────────────
-
-    function setTrustedForwarder(
-        uint32 _srcEid,
-        bytes32 _forwarder
-    ) external onlyOwner {
+    function setTrustedForwarder(uint32 _srcEid, bytes32 _forwarder) external onlyOwner {
         trustedForwarders[_srcEid] = _forwarder;
     }
 
-    function setAuthorizedTarget(
-        address _target,
-        bool _authorized
-    ) external onlyOwner {
-        authorizedTargets[_target] = _authorized;
+    /// @notice Set delegate on LayerZero endpoint
+    function setDelegate(address _delegate) external onlyOwner {
+        // Low-level call to avoid importing SetConfigParam struct which triggers stack-too-deep
+        (bool success,) = endpoint.call(abi.encodeWithSignature("setDelegate(address)", _delegate));
+        require(success, "setDelegate failed");
+    }
+
+    /// @notice Configure LayerZero settings (DVNs, Executor)
+    function setConfig(address _lib, bytes calldata _configData) external onlyOwner {
+        // Low-level call: endpoint.setConfig(address(this), _lib, configParams)
+        // _configData should be the full ABI-encoded SetConfigParam[] array
+        (bool success,) = endpoint.call(
+            abi.encodeWithSignature(
+                "setConfig(address,address,bytes)",
+                address(this),
+                _lib,
+                _configData
+            )
+        );
+        require(success, "setConfig failed");
     }
 }

@@ -4,6 +4,11 @@
 
 ## In Progress
 
+### Fix Bridge Structural Issues + Clean Redeploy
+- Phase 1: Code fixes (centralize addresses in deployments.json, delete stale files, add relay persistence)
+- Phase 2: Clean deploy (BridgeSender → Factory → Receiver → Forwarder → Configure → E2E)
+- Phase 3: Lock down (commit final addresses, update Vercel, verify frontend)
+- Status: Phase 1 in progress
 
 ### Implement factory improvements — pagination, find by party, migration/export/import
 - Add pagination to factory queries (offset/limit pattern)

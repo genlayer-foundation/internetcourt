@@ -1,55 +1,64 @@
 # v0.1.0
-# { "Depends": "py-genlayer:latest" }
-from genlayer import *
-import datetime
+# { "Depends": "py-genlayer:1j12s63yfjpva9ik2xgnffgrs6v44y1f52jvj9w7xvdn7qckd379" }
 
+"""BridgeSender: Sends messages from GenLayer to EVM chains via the bridge service."""
+
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
+from genlayer import *
+from genlayer.py.keccak import Keccak256
+
+genvm_eth = gl.evm
+
+
+@allow_storage
+@dataclass
 class MessageData:
-    target_chain_id: int
+    target_chain_id: u256
     target_contract: str
     data: bytes
 
+
 class BridgeSender(gl.Contract):
     messages: TreeMap[str, MessageData]
+    owner: Address
 
     def __init__(self):
-        self.messages = TreeMap()
+        self.owner = gl.message.sender_address
 
     @gl.public.write
-    def send_message(
-        self,
-        target_chain_id: int,
-        target_contract: str,
-        data: bytes
-    ) -> str:
+    def send_message(self, target_chain_id: int, target_contract: str, data: bytes) -> str:
         hasher = Keccak256()
-        hasher.update(datetime.datetime.now(datetime.timezone.utc).isoformat().encode())
+        hasher.update(datetime.now().isoformat().encode())
         hasher.update(gl.message.sender_address.as_bytes)
         hasher.update(target_contract.encode())
         hasher.update(data)
         message_hash = hasher.digest().hex()
 
-        # ABI-encode bridge envelope: (uint32 srcChainId, address sender, address target, bytes data)
         abi = [u32, Address, Address, bytes]
         encoder = genvm_eth.MethodEncoder("", abi, bool)
-        message_data = [
-            61998,                          # GenLayer chain ID
-            gl.message.sender_address,
-            Address(target_contract),
-            data
-        ]
-        message_bytes = encoder.encode_call(message_data)[4:]  # Strip method selector
+        message_data = [61998, gl.message.sender_address, Address(target_contract), data]
+        message_bytes = encoder.encode_call(message_data)[4:]
 
-        self.messages[message_hash] = MessageData(
-            target_chain_id,
-            target_contract,
-            message_bytes
-        )
+        self.messages[message_hash] = MessageData(target_chain_id, target_contract, message_bytes)
         return message_hash
+
+    @gl.public.write
+    def delete_message(self, message_hash: str):
+        if gl.message.sender_address != self.owner:
+            raise gl.vm.UserError("Only owner can delete messages")
+        del self.messages[message_hash]
+
+    @gl.public.view
+    def get_message(self, message_hash: str) -> dict[str, Any]:
+        return self.messages[message_hash]
+
+    @gl.public.view
+    def get_messages(self) -> dict[str, dict[str, Any]]:
+        return self.messages
 
     @gl.public.view
     def get_message_hashes(self) -> list[str]:
         return list(self.messages.keys())
-
-    @gl.public.view
-    def get_message(self, message_hash: str) -> MessageData:
-        return self.messages[message_hash]

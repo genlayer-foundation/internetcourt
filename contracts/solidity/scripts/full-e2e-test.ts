@@ -1,4 +1,6 @@
 import { ethers } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Comprehensive E2E test script for Internet Court Agreement.sol on Base Sepolia.
@@ -10,11 +12,14 @@ import { ethers } from "hardhat";
  */
 
 // ──────────────────────────────────────────────────────────────
-//  Contract addresses on Base Sepolia (redeployed)
+//  Contract addresses loaded from deployments.json
 // ──────────────────────────────────────────────────────────────
-const MOCK_USDC = "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3";
-const FACTORY = "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E";
-const BRIDGE_RECEIVER = "0x347FbC76104588dF52b85b7c840a4a8a891E2cf2";
+const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+
+const MOCK_USDC = deployments.baseSepolia.mockUSDC;
+const FACTORY = deployments.baseSepolia.factory;
+const BRIDGE_RECEIVER = deployments.baseSepolia.bridgeReceiver;
 
 // Party B deterministic key (testnet only - no real funds)
 const PARTY_B_KEY =

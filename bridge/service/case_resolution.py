@@ -1,14 +1,13 @@
-# v0.1.0
 # { "Depends": "py-genlayer:latest" }
+from genlayer import *
 import json
-from backend.node.genvm.icontract import IContract
-from backend.node.genvm.std import *
-from backend.node.genvm.types import *
+
+genvm_eth = gl.evm
 
 
 class CaseResolution(gl.Contract):
     agreement_address: str
-    target_chain_eid: int
+    target_chain_eid: u256
     target_contract: str
     bridge_sender: str
     verdict: str

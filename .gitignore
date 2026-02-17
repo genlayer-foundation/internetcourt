@@ -49,6 +49,10 @@ contracts/solidity/typechain-types/
 # Vercel
 .vercel
 
+# Bridge relay
+bridge/service/data/
+
 # Build artifacts
 *-report.json
 tmp/
+contracts/bridge/node_modules

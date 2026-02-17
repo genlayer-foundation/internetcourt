@@ -33,7 +33,16 @@
       "Bash(xargs kill:*)",
       "Bash(tmux list-panes:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cast call:*)",
+      "Bash(NODE_PATH=./node_modules node:*)",
+      "Bash(ln:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(python3:*)",
+      "Bash(genvm-lint check:*)",
+      "Bash(curl:*)",
+      "Bash(npx hardhat compile:*)"
     ]
   }
 }

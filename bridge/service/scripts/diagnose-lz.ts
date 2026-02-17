@@ -20,7 +20,7 @@ const BRIDGE_FORWARDER = process.env.BRIDGE_FORWARDER_ADDRESS;
 const BRIDGE_RECEIVER = process.env.BRIDGE_RECEIVER_ADDRESS;
 
 // LayerZero EIDs
-const ZKSYNC_EID = 40165;
+const ZKSYNC_EID = 40305;
 const BASE_EID = 40245;
 
 const FORWARDER_ABI = [

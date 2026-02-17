@@ -1,4 +1,6 @@
 import { ethers } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Deploy BridgeForwarder and BridgeReceiver, then configure trust relationships.
@@ -21,14 +23,14 @@ import { ethers } from "hardhat";
  *                           (if set, will configure BridgeReceiver as bridge receiver on factory)
  *
  * Known LayerZero V2 Endpoints:
- *   zkSync Sepolia: 0x6EDCE65403992e310A62460808c4b910D972f10f  (EID: 40165)
- *   Base Sepolia:   0x6EDCE65403992e310A62460808c4b910D972f10f  (EID: 40245)
+ *   zkSync Sepolia: 0x605688c4caa80d17448e074faa463ed7b7693d63  (EID: 40305)
+ *   Base Sepolia:   0xe1a12515f9ab2764b887bf60b923ca494ebbb2d6  (EID: 40245)
  *   zkSync Mainnet: 0xd07C30aF3Ff30D96BDc9c6044958230Eb5b32a6c  (EID: 30165)
  *   Base Mainnet:   0x1a44076050125825900e736c501f859c50fE728c  (EID: 30184)
  */
 
 // LayerZero Endpoint IDs
-const EID_ZKSYNC_SEPOLIA = 40165;
+const EID_ZKSYNC_SEPOLIA = 40305;
 const EID_BASE_SEPOLIA = 40245;
 
 async function main() {
@@ -69,7 +71,7 @@ async function main() {
   } else {
     lzEndpointForwarder =
       process.env.LZ_ENDPOINT_ZKSYNC ||
-      "0x6EDCE65403992e310A62460808c4b910D972f10f";
+      "0xe2Ef622A13e71D9Dd2BBd12cd4b27e1516FA8a09";
     lzEndpointReceiver =
       process.env.LZ_ENDPOINT_BASE ||
       "0x6EDCE65403992e310A62460808c4b910D972f10f";
@@ -154,7 +156,22 @@ async function main() {
   }
   console.log("========================================");
 
-  // ── 6. Verification commands ──
+  // ── 6. Update deployments.json ──
+
+  const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+  try {
+    const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+    deployments.zkSyncSepolia.bridgeForwarder = forwarderAddress;
+    deployments.baseSepolia.bridgeReceiver = receiverAddress;
+    fs.writeFileSync(deploymentsPath, JSON.stringify(deployments, null, 2) + "\n");
+    console.log(`\nUpdated deployments.json:`);
+    console.log(`  zkSyncSepolia.bridgeForwarder = ${forwarderAddress}`);
+    console.log(`  baseSepolia.bridgeReceiver = ${receiverAddress}`);
+  } catch (err) {
+    console.warn("\nWarning: Could not update deployments.json:", (err as Error).message);
+  }
+
+  // ── 7. Verification commands ──
 
   if (!isLocal) {
     console.log("\nTo verify on block explorer, run:");

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import deployments from "../../../bridge/deployments.json";
 
 export const SITE_NAME = "internetcourt.org";
 export const SITE_DESCRIPTION =
@@ -12,20 +13,18 @@ export const NAV_LINKS = [
   { label: "Docs", href: "/docs" },
 ] as const;
 
-// --- Contract addresses (centralized) ---
+// --- Contract addresses (centralized, sourced from bridge/deployments.json) ---
 
-// TODO: move to env var once Vercel dashboard is updated
 export const BASE_FACTORY_ADDRESS =
-  "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E" as `0x${string}`;
+  (process.env.NEXT_PUBLIC_BASE_FACTORY_ADDRESS || deployments.baseSepolia.factory) as `0x${string}`;
 
 export const GENLAYER_FACTORY_ADDRESS =
-  "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE" as `0x${string}`;
+  (deployments.genlayer.factory) as `0x${string}`;
 
-// TODO: move to env var once Vercel dashboard is updated
 export const MOCK_USDC_ADDRESS =
-  "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3" as `0x${string}`;
+  (process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS || deployments.baseSepolia.mockUSDC) as `0x${string}`;
 
-export const DEPLOYMENT_BLOCK = 37666093;
+export const DEPLOYMENT_BLOCK = deployments.baseSepolia.deploymentBlock;
 
 export const BASE_CHAIN_ID = 84532;
 export const GENLAYER_CHAIN_ID = 61999;

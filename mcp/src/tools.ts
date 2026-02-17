@@ -2,8 +2,16 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createPublicClient, http, zeroAddress, encodeFunctionData, parseAbi } from "viem";
 import { base, baseSepolia } from "viem/chains";
 import { z } from "zod";
+import * as fs from "fs";
+import { fileURLToPath } from "url";
+import * as path from "path";
 
-const FACTORY_ADDRESS = (process.env.FACTORY_ADDRESS || "0xED498a92b97C2962E71Dd764D10Fcce77dF83b5E") as `0x${string}`;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const deploymentsPath = path.resolve(__dirname, "../../bridge/deployments.json");
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+
+const FACTORY_ADDRESS = (process.env.FACTORY_ADDRESS || deployments.baseSepolia.factory) as `0x${string}`;
 const RPC_URL = process.env.RPC_URL || "https://sepolia.base.org";
 const chain = process.env.CHAIN === "base" ? base : baseSepolia;
 
@@ -35,7 +43,7 @@ const AGREEMENT_ABI = [
   { name: "evidenceDefs", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
 ] as const;
 
-const USDC_ADDRESS = (process.env.USDC_ADDRESS || "0x1185DA4da4DB96016BA7Cf93ee91F6D199FB25A3") as `0x${string}`;
+const USDC_ADDRESS = (process.env.USDC_ADDRESS || deployments.baseSepolia.mockUSDC) as `0x${string}`;
 
 const FACTORY_WRITE_ABI = parseAbi([
   "function createAgreement(address,string,string,string,uint256,address,uint256,uint256,uint256,string) returns (address)",

@@ -4,6 +4,12 @@ pragma solidity ^0.8.20;
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+struct SetConfigParam {
+    uint32 eid;
+    uint32 configType;
+    bytes config;
+}
+
 interface ILayerZeroEndpointV2 {
     struct MessagingParams {
         uint32 dstEid;
@@ -35,6 +41,14 @@ interface ILayerZeroEndpointV2 {
     ) external view returns (MessagingFee memory);
 
     function eid() external view returns (uint32);
+
+    function setDelegate(address _delegate) external;
+
+    function setConfig(
+        address _oapp,
+        address _lib,
+        SetConfigParam[] calldata _params
+    ) external;
 }
 
 interface IGenLayerBridgeReceiverLocal {
@@ -141,6 +155,20 @@ contract BridgeForwarder is AccessControlEnumerable, ReentrancyGuard {
 
     function isHashUsed(bytes32 _txHash) external view returns (bool) {
         return usedTxHash[_txHash];
+    }
+
+    // ──────────────────────────────────────────────
+    //  LayerZero Configuration
+    // ──────────────────────────────────────────────
+
+    /// @notice Set delegate on LayerZero endpoint to allow external configuration
+    function setDelegate(address _delegate) external onlyRole(OWNER_ROLE) {
+        endpoint.setDelegate(_delegate);
+    }
+
+    /// @notice Configure LayerZero settings (DVNs, Executor) for this OApp
+    function setConfig(address _lib, SetConfigParam[] calldata _params) external onlyRole(OWNER_ROLE) {
+        endpoint.setConfig(address(this), _lib, _params);
     }
 
     receive() external payable {}

@@ -1,6 +1,6 @@
 import { createClient, createAccount, generatePrivateKey } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -64,6 +64,18 @@ async function main() {
     console.log("Address:", contractAddress);
     console.log("\nFor relay service .env:");
     console.log("  BRIDGE_SENDER_ADDRESS=" + contractAddress);
+
+    // Update deployments.json
+    const deploymentsPath = join(__dirname, "../../bridge/deployments.json");
+    try {
+      const deployments = JSON.parse(readFileSync(deploymentsPath, "utf-8"));
+      deployments.genlayer.bridgeSender = contractAddress;
+      writeFileSync(deploymentsPath, JSON.stringify(deployments, null, 2) + "\n");
+      console.log(`\nUpdated deployments.json:`);
+      console.log(`  genlayer.bridgeSender = ${contractAddress}`);
+    } catch (err) {
+      console.warn("\nWarning: Could not update deployments.json:", err.message);
+    }
   } else {
     console.log("Receipt:", JSON.stringify(receipt, null, 2));
     console.error("No contract address found in receipt");

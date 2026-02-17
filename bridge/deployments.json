@@ -1,0 +1,15 @@
+{
+  "baseSepolia": {
+    "factory": "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
+    "mockUSDC": "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f",
+    "bridgeReceiver": "0xc3e6aE892A704c875bF74Df46eD873308db15d82",
+    "deploymentBlock": 37657150
+  },
+  "zkSyncSepolia": {
+    "bridgeForwarder": "0x95c4E5b042d75528f7df355742e48B298028b3f2"
+  },
+  "genlayer": {
+    "factory": "0x9D6e760B5ebE7953aEB73cc5868D18e5bA80f1AE",
+    "bridgeSender": "0xC94bE65Baf99590B1523db557D157fabaD2DA729"
+  }
+}

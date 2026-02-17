@@ -1,4 +1,6 @@
 import { ethers } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 const LZ_ENDPOINTS: Record<number, string> = {
   84532: "0x6EDCE65403992e310A62460808c4b910D972f10f", // Base Sepolia
@@ -25,6 +27,18 @@ async function main() {
   await receiver.waitForDeployment();
   const receiverAddr = await receiver.getAddress();
   console.log("BridgeReceiver deployed to:", receiverAddr);
+
+  // Update deployments.json
+  const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+  try {
+    const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+    deployments.baseSepolia.bridgeReceiver = receiverAddr;
+    fs.writeFileSync(deploymentsPath, JSON.stringify(deployments, null, 2) + "\n");
+    console.log(`\nUpdated deployments.json:`);
+    console.log(`  baseSepolia.bridgeReceiver = ${receiverAddr}`);
+  } catch (err) {
+    console.warn("\nWarning: Could not update deployments.json:", (err as Error).message);
+  }
 }
 
 main().catch((e) => {

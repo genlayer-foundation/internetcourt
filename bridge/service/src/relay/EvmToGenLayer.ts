@@ -8,10 +8,9 @@
  *      case data as constructor arguments.
  *   3. Waits for the oracle to finalize (up to 3 minutes).
  *
- * Processed disputes are tracked in an in-memory Set so they are not
- * re-processed within a single service lifetime. On service restart the
- * Set is empty, but the oracle deployment is idempotent — the GenLayer
- * contract will simply exist from the previous run.
+ * Processed disputes are persisted to a JSON file (bridge/service/data/processed.json)
+ * so they survive service restarts. The in-memory Set is loaded from the file
+ * on startup and written back after each successful processing.
  */
 
 import { ethers } from "ethers";
@@ -19,7 +18,15 @@ import { createClient, createAccount } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 import type { TransactionHash } from "genlayer-js/types";
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
+
+// ----- Persistence paths -----
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = path.resolve(__dirname, "../../data");
+const PROCESSED_FILE = path.join(DATA_DIR, "processed.json");
 
 // ----- ABIs (human-readable, ethers v6) -----
 
@@ -58,7 +65,7 @@ export class EvmToGenLayer {
   private factory: ethers.Contract;
   private glClient: ReturnType<typeof createClient>;
   private lastBlock: number = 0;
-  private processedDisputes: Set<string> = new Set();
+  private processedDisputes: Set<string>;
   private registeredCases: Set<string> = new Set();
 
   constructor() {
@@ -76,6 +83,47 @@ export class EvmToGenLayer {
       endpoint: config.GENLAYER_RPC_URL,
       account,
     });
+
+    // Load previously processed disputes from disk
+    this.processedDisputes = this.loadProcessed();
+  }
+
+  // ----- Persistence helpers -----
+
+  /**
+   * Load processed dispute addresses from the JSON file on disk.
+   * Returns an empty Set if the file doesn't exist or is corrupt.
+   */
+  private loadProcessed(): Set<string> {
+    try {
+      if (fs.existsSync(PROCESSED_FILE)) {
+        const data = JSON.parse(fs.readFileSync(PROCESSED_FILE, "utf-8"));
+        console.log(
+          `[EvmToGenLayer] Loaded ${data.length} processed disputes from ${PROCESSED_FILE}`,
+        );
+        return new Set(data);
+      }
+    } catch (e) {
+      console.warn(
+        "[EvmToGenLayer] Could not load processed file, starting fresh:",
+        e,
+      );
+    }
+    return new Set();
+  }
+
+  /**
+   * Persist the current set of processed dispute addresses to disk.
+   * Creates the data directory if it doesn't exist.
+   */
+  private saveProcessed(): void {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(
+      PROCESSED_FILE,
+      JSON.stringify([...this.processedDisputes], null, 2),
+    );
   }
 
   /**
@@ -112,6 +160,7 @@ export class EvmToGenLayer {
       try {
         await this.processDispute(agreementAddress);
         this.processedDisputes.add(agreementAddress);
+        this.saveProcessed();
       } catch (err) {
         console.error(
           `[EvmToGenLayer] Failed to process dispute ${agreementAddress}:`,

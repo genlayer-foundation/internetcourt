@@ -1,4 +1,6 @@
 import { ethers } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Deploy InternetCourtFactory and MockUSDC to the target chain.
@@ -30,12 +32,14 @@ async function main() {
   const chainId = Number(network.chainId);
   const isMainnet = chainId === 8453 || chainId === 324; // Base Mainnet or zkSync Mainnet
 
+  let mockUsdcAddress: string | undefined;
   if (!isMainnet) {
     console.log("\n--- Deploying MockUSDC (testnet) ---");
     const MockUSDC = await ethers.getContractFactory("MockUSDC");
     const mockUsdc = await MockUSDC.deploy();
     await mockUsdc.waitForDeployment();
-    console.log("MockUSDC deployed to:", await mockUsdc.getAddress());
+    mockUsdcAddress = await mockUsdc.getAddress();
+    console.log("MockUSDC deployed to:", mockUsdcAddress);
   } else {
     console.log("\nSkipping MockUSDC deployment on mainnet");
   }
@@ -69,7 +73,29 @@ async function main() {
   console.log("Owner:             ", ownerAddress);
   console.log("========================================");
 
-  // ── 4. Optional: Verify on block explorer ──
+  // ── 4. Update deployments.json ──
+
+  const deploymentsPath = path.resolve(__dirname, "../../../bridge/deployments.json");
+  try {
+    const deployments = JSON.parse(fs.readFileSync(deploymentsPath, "utf-8"));
+    deployments.baseSepolia.factory = factoryAddress;
+    if (mockUsdcAddress) {
+      deployments.baseSepolia.mockUSDC = mockUsdcAddress;
+    }
+    const deploymentBlock = await ethers.provider.getBlockNumber();
+    deployments.baseSepolia.deploymentBlock = deploymentBlock;
+    fs.writeFileSync(deploymentsPath, JSON.stringify(deployments, null, 2) + "\n");
+    console.log(`\nUpdated deployments.json:`);
+    console.log(`  baseSepolia.factory = ${factoryAddress}`);
+    if (mockUsdcAddress) {
+      console.log(`  baseSepolia.mockUSDC = ${mockUsdcAddress}`);
+    }
+    console.log(`  baseSepolia.deploymentBlock = ${deploymentBlock}`);
+  } catch (err) {
+    console.warn("\nWarning: Could not update deployments.json:", (err as Error).message);
+  }
+
+  // ── 5. Optional: Verify on block explorer ──
 
   if (chainId !== 31337) {
     console.log("\nTo verify on block explorer, run:");

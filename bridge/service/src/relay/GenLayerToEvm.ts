@@ -34,20 +34,25 @@ const FORWARDER_ABI = [
  * Build LayerZero V2 executor options bytes manually.
  *
  * Format (LZ V2 Options spec):
- *   - 2 bytes: options type (0x0003 for V2)
+ *   - 2 bytes: options type (0x0003 for TYPE_3)
  *   - For each option:
- *     - 2 bytes: worker ID (0x0001 for executor)
- *     - 2 bytes: option length
- *     - 1 byte:  option type (0x01 = lzReceive)
+ *     - 1 byte:  worker ID (0x01 for executor)
+ *     - 2 bytes: option data length
  *     - option data:
+ *       - 1 byte:  option type (0x01 = lzReceive gas only, 0x02 = gas+value)
  *       - 16 bytes: gas limit (uint128)
- *       - 16 bytes: native value (uint128)
+ *       - 16 bytes: native value (uint128) — only if option type 0x02
  *
  * This avoids a dependency on @layerzerolabs/lz-v2-utilities which can
  * have installation issues.
  */
 function buildLzOptions(gasLimit: bigint, nativeValue: bigint): Uint8Array {
-  const buf = new Uint8Array(2 + 2 + 2 + 1 + 16 + 16); // 39 bytes total
+  const hasValue = nativeValue > 0n;
+  const optionType = hasValue ? 0x02 : 0x01;
+  const optionDataLen = hasValue ? 1 + 16 + 16 : 1 + 16; // type + gas [+ value]
+  const totalLen = 2 + 1 + 2 + optionDataLen;
+
+  const buf = new Uint8Array(totalLen);
   const view = new DataView(buf.buffer);
 
   let offset = 0;
@@ -56,16 +61,16 @@ function buildLzOptions(gasLimit: bigint, nativeValue: bigint): Uint8Array {
   view.setUint16(offset, 3);
   offset += 2;
 
-  // Worker ID: 0x0001 (executor)
-  view.setUint16(offset, 1);
+  // Worker ID: 0x01 (executor) — 1 byte
+  buf[offset] = 0x01;
+  offset += 1;
+
+  // Option data length (uint16)
+  view.setUint16(offset, optionDataLen);
   offset += 2;
 
-  // Option data length: 1 (type) + 16 (gas) + 16 (value) = 33
-  view.setUint16(offset, 33);
-  offset += 2;
-
-  // Option type: 0x01 (lzReceive)
-  buf[offset] = 1;
+  // Option type
+  buf[offset] = optionType;
   offset += 1;
 
   // Gas limit as uint128 (big-endian, 16 bytes)
@@ -73,9 +78,11 @@ function buildLzOptions(gasLimit: bigint, nativeValue: bigint): Uint8Array {
   buf.set(gasBytes, offset);
   offset += 16;
 
-  // Native value as uint128 (big-endian, 16 bytes)
-  const valueBytes = bigintToBytes16(nativeValue);
-  buf.set(valueBytes, offset);
+  // Native value as uint128 — only when non-zero
+  if (hasValue) {
+    const valueBytes = bigintToBytes16(nativeValue);
+    buf.set(valueBytes, offset);
+  }
 
   return buf;
 }
@@ -166,32 +173,39 @@ export class GenLayerToEvm {
     console.log(`[GenLayerToEvm] New message to relay: ${hash}`);
 
     // Step 3: Fetch full message data from BridgeSender
-    const messageRaw: CalldataEncodable = await this.glClient.readContract({
-      address: config.BRIDGE_SENDER as `0x${string}`,
-      functionName: "get_message",
-      args: [hash],
-    });
+    // GenLayer returns @dataclass objects as Map<string, any>, not plain objects
+    const messageResponse: Map<string, any> =
+      await this.glClient.readContract({
+        address: config.BRIDGE_SENDER as `0x${string}`,
+        functionName: "get_message",
+        args: [hash],
+      });
 
-    const message = messageRaw as {
-      target_chain_id: number;
-      target_contract: string;
-      data: Uint8Array | string;
-    };
+    // Extract fields via Map.get() (GenLayer dataclass serialization)
+    const targetChainId = Number(messageResponse.get("target_chain_id"));
+    const targetContract = String(messageResponse.get("target_contract"));
 
     // Only process messages targeting our configured destination chain
-    if (message.target_chain_id !== config.LZ_DST_EID) {
+    if (targetChainId !== config.LZ_DST_EID) {
       console.log(
-        `[GenLayerToEvm] Skipping hash ${hash}: target_chain_id=${message.target_chain_id} != ${config.LZ_DST_EID}`,
+        `[GenLayerToEvm] Skipping hash ${hash}: target_chain_id=${targetChainId} != ${config.LZ_DST_EID}`,
       );
       return;
     }
 
-    // The message data is the ABI-encoded bridge envelope from BridgeSender.
-    // It needs to be forwarded as-is through BridgeForwarder -> LZ -> BridgeReceiver.
-    const messageData =
-      message.data instanceof Uint8Array
-        ? ethers.hexlify(message.data)
-        : message.data;
+    // Convert data to hex string
+    let messageData = messageResponse.get("data");
+    if (messageData instanceof Uint8Array || Buffer.isBuffer(messageData)) {
+      messageData = "0x" + Buffer.from(messageData).toString("hex");
+    } else if (Array.isArray(messageData)) {
+      const bytes = messageData.map((b: number | bigint) => Number(b) & 0xff);
+      messageData = "0x" + Buffer.from(bytes).toString("hex");
+    } else if (
+      typeof messageData === "string" &&
+      !messageData.startsWith("0x")
+    ) {
+      messageData = "0x" + messageData;
+    }
 
     // Step 4: Build LayerZero V2 executor options
     // 1M gas for execution on Base, 0 native value forwarded
