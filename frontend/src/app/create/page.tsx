@@ -7,17 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import {
-  createBrowserClient,
-  deployAndRegister,
-} from "@/lib/genlayer-client";
-import { addTrackedAddress } from "@/lib/contract-store";
-import { isValidAddress } from "@/lib/constants";
+import { BASE_CHAIN_ID, isValidAddress } from "@/lib/constants";
 
 type DeployState =
   | { step: "idle" }
   | { step: "loading"; status: string }
-  | { step: "success"; address: string }
+  | { step: "success"; caseId: string }
   | { step: "error"; message: string };
 
 export default function CreatePage() {
@@ -27,6 +22,8 @@ export default function CreatePage() {
     statement: "",
     guidelines: "",
     evidenceDeadlineHours: "24",
+    escrowAmount: "0",
+    joinDeadlineHours: "72",
     evidenceTypesA: "text, json",
     evidenceMaxCharsA: "10000",
     evidenceConstraintsA: "",
@@ -80,17 +77,55 @@ export default function CreatePage() {
 
   async function handleDeploy() {
     try {
+      setDeploy({ step: "loading", status: "Preparing transactions..." });
+
+      const deadlineSeconds =
+        Math.round(parseFloat(form.evidenceDeadlineHours) * 3600) || 0;
+
+      // Convert escrow amount to raw USDC units (6 decimals)
+      const escrowRaw = Math.round(
+        parseFloat(form.escrowAmount || "0") * 1e6
+      ).toString();
+
+      // Convert join deadline hours to Unix timestamp
+      const joinDeadlineHours = parseFloat(form.joinDeadlineHours || "0");
+      const joinDeadline =
+        joinDeadlineHours > 0
+          ? Math.round(Date.now() / 1000 + joinDeadlineHours * 3600).toString()
+          : "0";
+
+      const res = await fetch("/api/cases/prepare-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          partyB: form.partyB,
+          statement: form.statement,
+          guidelines: form.guidelines,
+          evidenceDefs: buildEvidenceDefs(),
+          escrowAmount: escrowRaw,
+          joinDeadline,
+          evidenceDeadlineSeconds: deadlineSeconds.toString(),
+          maxEvidenceLength: "0",
+          constraints: "",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to prepare transactions");
+      }
+
+      const { transactions, expectedCaseId } = data;
+
+      // Connect wallet
       setDeploy({ step: "loading", status: "Connecting wallet..." });
 
-      // Request MetaMask account
       const provider =
         typeof window !== "undefined"
           ? (window as unknown as { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum
           : undefined;
       if (!provider) {
-        throw new Error(
-          "No wallet found. Please install MetaMask and connect to GenLayer studionet (chain 61999)."
-        );
+        throw new Error("No wallet found. Please install MetaMask.");
       }
 
       const accounts = (await provider.request({
@@ -100,79 +135,64 @@ export default function CreatePage() {
         throw new Error("No account connected");
       }
 
-      // Verify chain ID
+      // Switch to Base Sepolia
       const chainIdHex = (await provider.request({
         method: "eth_chainId",
       })) as string;
       const chainId = parseInt(chainIdHex, 16);
-      if (chainId !== 61999) {
-        // Try to switch to GenLayer studionet
+      if (chainId !== BASE_CHAIN_ID) {
         try {
           await provider.request({
             method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0xF21F" }],
+            params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }],
           });
         } catch {
-          // Chain not added, try to add it
-          try {
-            await provider.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0xF21F",
-                  chainName: "GenLayer Studionet",
-                  rpcUrls: ["https://studio.genlayer.com/api"],
-                  nativeCurrency: {
-                    name: "GEN Token",
-                    symbol: "GEN",
-                    decimals: 18,
-                  },
-                },
-              ],
-            });
-          } catch {
-            throw new Error(
-              "Please switch your wallet to GenLayer studionet (chain 61999)"
-            );
-          }
+          throw new Error(
+            `Please switch your wallet to Base Sepolia (chain ${BASE_CHAIN_ID})`
+          );
         }
       }
 
-      const account = accounts[0] as `0x${string}`;
-      const client = createBrowserClient(account);
+      // Send each transaction sequentially
+      for (const tx of transactions) {
+        setDeploy({
+          step: "loading",
+          status: `Sending transaction ${tx.step}/${transactions.length}: ${tx.description}...`,
+        });
 
-      setDeploy({ step: "loading", status: "Fetching contract code..." });
+        const txHash = await provider.request({
+          method: "eth_sendTransaction",
+          params: [
+            {
+              from: accounts[0],
+              to: tx.to,
+              data: tx.data,
+              value: "0x0",
+            },
+          ],
+        });
 
-      const codeRes = await fetch("/api/contract-code");
-      const codeData = await codeRes.json();
-      if (!codeData.code) {
-        throw new Error("Could not fetch contract code");
+        setDeploy({
+          step: "loading",
+          status: `Waiting for confirmation (${tx.description})...`,
+        });
+
+        // Poll for receipt
+        let receipt = null;
+        while (!receipt) {
+          await new Promise((r) => setTimeout(r, 2000));
+          receipt = await provider.request({
+            method: "eth_getTransactionReceipt",
+            params: [txHash],
+          });
+        }
       }
 
-      const deadlineSeconds =
-        Math.round(parseFloat(form.evidenceDeadlineHours) * 3600) || 0;
-
-      const result = await deployAndRegister(
-        client,
-        codeData.code,
-        {
-          partyB: form.partyB,
-          statement: form.statement,
-          guidelines: form.guidelines,
-          evidenceDefs: buildEvidenceDefs(),
-          evidenceDeadlineSeconds: deadlineSeconds,
-        },
-        (status) => setDeploy({ step: "loading", status }),
-      );
-
-      // Track the newly deployed contract
-      addTrackedAddress(result.contractAddress);
-
-      setDeploy({ step: "success", address: result.contractAddress });
+      setDeploy({ step: "success", caseId: expectedCaseId });
     } catch (err) {
       setDeploy({
         step: "error",
-        message: err instanceof Error ? err.message : "Deployment failed",
+        message: err instanceof Error ? err.message : "Creation failed",
       });
     }
   }
@@ -190,11 +210,26 @@ export default function CreatePage() {
     handleDeploy();
   }
 
+  const initialForm = {
+    partyB: "",
+    statement: "",
+    guidelines: "",
+    evidenceDeadlineHours: "24",
+    escrowAmount: "0",
+    joinDeadlineHours: "72",
+    evidenceTypesA: "text, json",
+    evidenceMaxCharsA: "10000",
+    evidenceConstraintsA: "",
+    evidenceTypesB: "text, json",
+    evidenceMaxCharsB: "10000",
+    evidenceConstraintsB: "",
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-8 flex items-center gap-3 flex-wrap">
         <h1 className="font-heading text-4xl md:text-5xl tracking-[-0.96px] leading-[1.2]">Create Contract</h1>
-        <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200">Deploys to GenLayer Studionet</span>
+        <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200">Creates on Base Sepolia</span>
       </div>
 
       {/* Success state */}
@@ -202,13 +237,13 @@ export default function CreatePage() {
         <Card className="border-green-500/30">
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <CheckCircle className="h-12 w-12 text-green-500" />
-            <h2 className="text-xl font-bold">Contract Deployed</h2>
-            <p className="font-mono text-sm text-muted-foreground break-all">
-              {deploy.address}
+            <h2 className="text-xl font-bold">Case Created</h2>
+            <p className="font-mono text-sm text-muted-foreground">
+              Case ID: {deploy.caseId}
             </p>
             <div className="flex gap-3">
               <Button
-                onClick={() => router.push(`/cases/${deploy.address}`)}
+                onClick={() => router.push(`/cases/${deploy.caseId}`)}
               >
                 View Case
               </Button>
@@ -217,18 +252,7 @@ export default function CreatePage() {
                 onClick={() => {
                   setDeploy({ step: "idle" });
                   setPreview(false);
-                  setForm({
-                    partyB: "",
-                    statement: "",
-                    guidelines: "",
-                    evidenceDeadlineHours: "24",
-                    evidenceTypesA: "text, json",
-                    evidenceMaxCharsA: "10000",
-                    evidenceConstraintsA: "",
-                    evidenceTypesB: "text, json",
-                    evidenceMaxCharsB: "10000",
-                    evidenceConstraintsB: "",
-                  });
+                  setForm(initialForm);
                 }}
               >
                 Create Another
@@ -251,7 +275,7 @@ export default function CreatePage() {
                   Party B Address
                 </label>
                 <p className="mb-1 text-xs text-muted-foreground">
-                  The counterparty&apos;s GenLayer address
+                  The counterparty&apos;s wallet address on Base
                 </p>
                 <Input
                   name="partyB"
@@ -303,22 +327,60 @@ export default function CreatePage() {
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Evidence Deadline
-                </label>
-                <p className="mb-1 text-xs text-muted-foreground">
-                  Hours after dispute for evidence submission (0 = no deadline)
-                </p>
-                <Input
-                  name="evidenceDeadlineHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={form.evidenceDeadlineHours}
-                  onChange={handleChange}
-                  disabled={preview}
-                />
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Escrow Amount (USDC)
+                  </label>
+                  <p className="mb-1 text-xs text-muted-foreground">
+                    Funds locked in escrow (0 = no escrow)
+                  </p>
+                  <Input
+                    name="escrowAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.escrowAmount}
+                    onChange={handleChange}
+                    disabled={preview}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Join Deadline (hours)
+                  </label>
+                  <p className="mb-1 text-xs text-muted-foreground">
+                    Time for Party B to accept (0 = no deadline)
+                  </p>
+                  <Input
+                    name="joinDeadlineHours"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={form.joinDeadlineHours}
+                    onChange={handleChange}
+                    disabled={preview}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Evidence Deadline (hours)
+                  </label>
+                  <p className="mb-1 text-xs text-muted-foreground">
+                    After dispute for evidence (0 = no deadline)
+                  </p>
+                  <Input
+                    name="evidenceDeadlineHours"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={form.evidenceDeadlineHours}
+                    onChange={handleChange}
+                    disabled={preview}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -415,7 +477,7 @@ export default function CreatePage() {
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium">Deployment failed</p>
+                <p className="font-medium">Creation failed</p>
                 <p className="mt-1 text-xs opacity-80">{deploy.message}</p>
               </div>
             </div>
@@ -450,10 +512,10 @@ export default function CreatePage() {
               {deploy.step === "loading" ? (
                 <>
                   <Loader2 size={14} className="mr-2 animate-spin" />
-                  Deploying...
+                  Creating...
                 </>
               ) : preview ? (
-                "Deploy Contract"
+                "Create Case"
               ) : (
                 "Preview"
               )}

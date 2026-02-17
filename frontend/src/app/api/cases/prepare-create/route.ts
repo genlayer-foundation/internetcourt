@@ -5,6 +5,7 @@ import {
   FACTORY_ABI,
   ERC20_ABI,
   USDC_ADDRESS,
+  publicClient,
 } from "@/lib/contracts";
 
 interface CreateAgreementBody {
@@ -44,6 +45,13 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
+
+    // Read the next agreement ID so the frontend can redirect after creation
+    const expectedCaseId = await publicClient.readContract({
+      address: FACTORY_ADDRESS,
+      abi: FACTORY_ABI,
+      functionName: "nextAgreementId",
+    });
 
     const escrow = BigInt(escrowAmount || "0");
     const tokenAddress = (usdcAddress || USDC_ADDRESS) as `0x${string}`;
@@ -99,7 +107,10 @@ export async function POST(req: NextRequest) {
       value: "0",
     });
 
-    return NextResponse.json({ transactions });
+    return NextResponse.json({
+      transactions,
+      expectedCaseId: expectedCaseId.toString(),
+    });
   } catch (err) {
     console.error(
       "POST /api/cases/prepare-create error:",
