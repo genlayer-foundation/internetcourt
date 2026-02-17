@@ -27,7 +27,7 @@ const STATUSES: Array<ContractStatus | "ALL"> = [
 ];
 
 const CACHE_KEY = "internetcourt:cases:cache";
-const CACHE_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_MAX_AGE_MS = 2 * 60 * 1000; // 2 minutes
 
 interface CachedCases {
   contracts: MoltContract[];
@@ -192,102 +192,102 @@ export default function CasesPage() {
     const allErrors: Record<string, string> = {};
     const allWarnings: string[] = [];
 
-    // Phase 1: Fetch Base cases (fast) and show immediately
-    let baseCases: MoltContract[] = [];
-    try {
-      const baseCasesData = await fetchJson("/api/cases?limit=100");
-      if (gen !== fetchGenRef.current) return;
-      baseCases = (baseCasesData.cases || []).map(baseToMoltContract);
-      // Show Base cases immediately (replace cache if we had one)
-      setContracts(baseCases);
-      setShowingCache(false);
-      setLoading(false);
-    } catch (err) {
-      if (gen !== fetchGenRef.current) return;
-      if (err instanceof DOMException && err.name === "AbortError") {
-        clearTimeout(timeout);
-        if (!cached) {
-          setErrors({ _global: "Request timed out -- try again." });
-          setContracts([]);
+    // Start GenLayer loading indicator immediately
+    setLoadingGenLayer(true);
+
+    // Launch ALL fetches in parallel (Base + GenLayer + tracked)
+    const basePromise: Promise<{ cases: MoltContract[]; _aborted?: boolean; _error?: string }> =
+      fetchJson("/api/cases?limit=100")
+        .then((data) => {
+          if (gen !== fetchGenRef.current) return { cases: [] as MoltContract[] };
+          const baseCases: MoltContract[] = (data.cases || []).map(baseToMoltContract);
+          // Show Base cases as soon as they arrive (intermediate update)
+          setContracts(baseCases);
+          setShowingCache(false);
           setLoading(false);
-        }
+          return { cases: baseCases };
+        })
+        .catch((err) => {
+          if (err instanceof DOMException && err.name === "AbortError") {
+            return { cases: [] as MoltContract[], _aborted: true };
+          }
+          const msg = err instanceof Error ? err.message : "Base fetch failed";
+          console.warn("[cases] Base Sepolia fetch failed:", msg);
+          return { cases: [] as MoltContract[], _error: msg };
+        });
+
+    const genLayerPromise = fetchJson("/api/contracts")
+      .catch((err) => {
+        console.warn("[cases] GenLayer fetch failed:", err.message);
+        return { contracts: [], errors: {}, _glFetchError: err.message };
+      });
+
+    const trackedPromise =
+      addrs.length > 0
+        ? fetchJson("/api/contracts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ addresses: addrs }),
+          }).catch(() => ({ contracts: [], errors: {} }))
+        : Promise.resolve({ contracts: [], errors: {} });
+
+    // Wait for all three to settle
+    const [baseResult, genLayerData, trackedData] = await Promise.all([
+      basePromise,
+      genLayerPromise,
+      trackedPromise,
+    ]);
+
+    if (gen !== fetchGenRef.current) return;
+    clearTimeout(timeout);
+
+    const baseCases: MoltContract[] = baseResult.cases || [];
+
+    // Handle Base errors
+    if (baseResult._aborted) {
+      if (!cached) {
+        setErrors({ _global: "Request timed out -- try again." });
+        setContracts([]);
+        setLoading(false);
+        setLoadingGenLayer(false);
         return;
       }
-      const msg = err instanceof Error ? err.message : "Base fetch failed";
-      console.warn("[cases] Base Sepolia fetch failed:", msg);
-      allErrors._base = `Base Sepolia: ${msg}`;
-      // If no cache, stop loading spinner anyway
+    }
+    if (baseResult._error) {
+      allErrors._base = `Base Sepolia: ${baseResult._error}`;
+      // If no cache and no base data, stop loading spinner
       if (!cached) setLoading(false);
     }
 
-    // Phase 2: Fetch GenLayer + tracked contracts in background
-    setLoadingGenLayer(true);
+    // Merge GenLayer errors
+    Object.assign(allErrors, genLayerData.errors || {}, trackedData.errors || {});
+    if (genLayerData._glFetchError) {
+      allErrors._genlayer = `GenLayer: ${genLayerData._glFetchError}`;
+    }
+    allWarnings.push(
+      ...(genLayerData.warnings || []),
+      ...(trackedData.warnings || []),
+    );
 
-    try {
-      const genLayerPromise = fetchJson("/api/contracts")
-        .catch((err) => {
-          console.warn("[cases] GenLayer fetch failed:", err.message);
-          return { contracts: [], errors: {}, _glFetchError: err.message };
-        });
+    // Merge all sources and deduplicate
+    const merged = deduplicateContracts([
+      ...baseCases,
+      ...(genLayerData.contracts || []),
+      ...(trackedData.contracts || []),
+    ]);
 
-      const trackedPromise =
-        addrs.length > 0
-          ? fetchJson("/api/contracts", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ addresses: addrs }),
-            }).catch(() => ({ contracts: [], errors: {} }))
-          : Promise.resolve({ contracts: [], errors: {} });
+    setContracts(merged);
+    setShowingCache(false);
+    setLoading(false);
+    setLoadingGenLayer(false);
+    setErrors(allErrors);
+    setWarnings(allWarnings);
 
-      const [genLayerData, trackedData] = await Promise.all([
-        genLayerPromise,
-        trackedPromise,
-      ]);
-
-      if (gen !== fetchGenRef.current) return;
-      clearTimeout(timeout);
-
-      // Merge GenLayer errors
-      Object.assign(allErrors, genLayerData.errors || {}, trackedData.errors || {});
-      if (genLayerData._glFetchError) {
-        allErrors._genlayer = `GenLayer: ${genLayerData._glFetchError}`;
-      }
-      allWarnings.push(
-        ...(genLayerData.warnings || []),
-        ...(trackedData.warnings || []),
-      );
-
-      // Merge all sources and deduplicate
-      const merged = deduplicateContracts([
-        ...baseCases,
-        ...(genLayerData.contracts || []),
-        ...(trackedData.contracts || []),
-      ]);
-
-      setContracts(merged);
-      setShowingCache(false);
-      setErrors(allErrors);
-      setWarnings(allWarnings);
-
-      // Update localStorage cache with fresh data
+    // Update localStorage cache with fresh data
+    if (merged.length > 0) {
       saveCache(merged);
-    } catch (err) {
-      if (gen !== fetchGenRef.current) return;
-      clearTimeout(timeout);
-      // Phase 2 failed entirely — keep whatever we have (Base or cache)
-      if (err instanceof DOMException && err.name === "AbortError") {
-        allErrors._genlayer = "GenLayer request timed out";
-      }
-      setErrors((prev) => ({ ...prev, ...allErrors }));
-
-      // Still save whatever we have to cache
-      if (baseCases.length > 0) {
-        saveCache(baseCases);
-      }
-    } finally {
-      if (gen === fetchGenRef.current) {
-        setLoadingGenLayer(false);
-      }
+    } else if (baseCases.length > 0) {
+      saveCache(baseCases);
     }
   }, []);
 
@@ -311,6 +311,18 @@ export default function CasesPage() {
     const updated = removeTrackedAddress(addr);
     setAddresses(updated);
     setContracts((prev) => prev.filter((c) => c.address.toLowerCase() !== addr.toLowerCase()));
+  }
+
+  function handleRefresh() {
+    try {
+      localStorage.removeItem(CACHE_KEY);
+    } catch {
+      // localStorage unavailable — ignore
+    }
+    setLoading(true);
+    setErrors({});
+    setWarnings([]);
+    fetchContracts(addresses);
   }
 
   const filtered =
@@ -337,9 +349,10 @@ export default function CasesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => fetchContracts(addresses)}
-            disabled={loading}
+            onClick={handleRefresh}
+            disabled={loading || loadingGenLayer}
             className="gap-1 text-xs"
+            title="Refresh cases"
           >
             <RefreshCw size={14} className={loading || loadingGenLayer ? "animate-spin" : ""} />
           </Button>
@@ -579,27 +592,11 @@ function ContractCard({
   highlight?: boolean;
   index?: number;
 }) {
-  // Fix #6: Only fetch detail for RESOLVED Base cases to get verdict.
-  // Status is already known from the list API — skip redundant per-card refetch.
-  const [verdictName, setVerdictName] = useState<string | null>(null);
   const isBase = !!c.chainId;
 
-  useEffect(() => {
-    if (!isBase || c.status !== "resolved") return;
-    // Only resolved Base cases need a detail fetch (to get verdict)
-    fetch(`/api/cases/${c.address}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.verdictName) {
-          setVerdictName(data.verdictName);
-        }
-      })
-      .catch(() => {});
-  }, [c.address, isBase, c.status]);
-
-  // Fix #3: Show verdict for Base RESOLVED cases from detail fetch,
-  // or from contract data for GenLayer cases
-  const displayVerdict = c.verdict || verdictName || "";
+  // Verdict is already available from the list API response (via baseToMoltContract),
+  // so no per-card detail fetch is needed — eliminates N+1 requests.
+  const displayVerdict = c.verdict || "";
 
   // Fix #5: Only show date section when dates exist AND are valid
   const createdAtValid = c.createdAt && !isNaN(new Date(c.createdAt).getTime());

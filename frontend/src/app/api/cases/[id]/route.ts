@@ -23,6 +23,8 @@ export async function GET(
       agreementAddress = id as `0x${string}`;
 
       // Find case ID by iterating factory agreements (no reverse mapping on-chain)
+      // Batch lookups in groups of 20 for performance
+      const BATCH_SIZE = 20;
       const nextId = Number(
         await publicClient.readContract({
           address: FACTORY_ADDRESS,
@@ -32,16 +34,26 @@ export async function GET(
       );
 
       caseId = -1;
-      for (let i = 0; i < nextId; i++) {
-        const addr = await publicClient.readContract({
-          address: FACTORY_ADDRESS,
-          abi: FACTORY_ABI,
-          functionName: "agreements",
-          args: [BigInt(i)],
-        });
-        if (addr.toLowerCase() === agreementAddress.toLowerCase()) {
-          caseId = i;
-          break;
+      for (let batchStart = 0; batchStart < nextId && caseId === -1; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, nextId);
+        const batchIds = Array.from({ length: batchEnd - batchStart }, (_, idx) => batchStart + idx);
+
+        const addresses = await Promise.all(
+          batchIds.map((i) =>
+            publicClient.readContract({
+              address: FACTORY_ADDRESS,
+              abi: FACTORY_ABI,
+              functionName: "agreements",
+              args: [BigInt(i)],
+            })
+          )
+        );
+
+        for (let idx = 0; idx < batchIds.length; idx++) {
+          if (addresses[idx].toLowerCase() === agreementAddress.toLowerCase()) {
+            caseId = batchIds[idx];
+            break;
+          }
         }
       }
     } else {
@@ -50,7 +62,7 @@ export async function GET(
       if (isNaN(caseId) || caseId < 0) {
         return NextResponse.json(
           { error: "Invalid case ID" },
-          { status: 400 },
+          { status: 400, headers: { "Cache-Control": "no-store" } },
         );
       }
 
@@ -66,7 +78,7 @@ export async function GET(
       ) {
         return NextResponse.json(
           { error: "Case not found" },
-          { status: 404 },
+          { status: 404, headers: { "Cache-Control": "no-store" } },
         );
       }
     }
@@ -207,7 +219,9 @@ export async function GET(
       constraints: getResult(17) ?? "",
     };
 
-    return NextResponse.json(caseData);
+    return NextResponse.json(caseData, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     console.error(
       "GET /api/cases/[id] error:",
@@ -215,7 +229,7 @@ export async function GET(
     );
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal error" },
-      { status: 500 },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }
 }

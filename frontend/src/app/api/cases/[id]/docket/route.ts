@@ -129,18 +129,32 @@ function mapMethodToAction(
 }
 
 async function fetchGenLayerDocket(address: string): Promise<{ docket: DocketEntry[]; note?: string }> {
-  const res = await fetch(GENLAYER_RPC, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: 1,
-      method: "sim_getTransactionsForAddress",
-      params: [address],
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
 
-  const data = await res.json();
+  let data: { error?: { message: string }; result?: GenLayerTx[] };
+  try {
+    const res = await fetch(GENLAYER_RPC, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "sim_getTransactionsForAddress",
+        params: [address],
+      }),
+      signal: controller.signal,
+    });
+
+    data = await res.json();
+  } catch (e) {
+    // Timeout or network error — return empty docket gracefully
+    console.warn(`[docket] GenLayer RPC timeout/error for ${address}:`, e instanceof Error ? e.message : e);
+    return { docket: [], note: "GenLayer RPC timed out or failed." };
+  } finally {
+    clearTimeout(timeout);
+  }
+
   if (data.error) {
     return { docket: [], note: `GenLayer RPC error: ${data.error.message}` };
   }
@@ -268,7 +282,9 @@ export async function GET(
       if (caseId === -1) {
         // Not on Base — try GenLayer transaction history
         const glResult = await fetchGenLayerDocket(agreementAddress);
-        return NextResponse.json(glResult);
+        return NextResponse.json(glResult, {
+          headers: { "Cache-Control": "no-store" },
+        });
       }
     } else {
       caseId = parseInt(id, 10);
@@ -276,7 +292,7 @@ export async function GET(
       if (isNaN(caseId) || caseId < 0) {
         return NextResponse.json(
           { error: "Invalid case ID" },
-          { status: 400 },
+          { status: 400, headers: { "Cache-Control": "no-store" } },
         );
       }
 
@@ -292,7 +308,7 @@ export async function GET(
       ) {
         return NextResponse.json(
           { error: "Case not found" },
-          { status: 404 },
+          { status: 404, headers: { "Cache-Control": "no-store" } },
         );
       }
     }
@@ -705,7 +721,9 @@ export async function GET(
     // Sort by block number (ascending = chronological)
     docket.sort((a, b) => a.blockNumber - b.blockNumber);
 
-    return NextResponse.json({ docket });
+    return NextResponse.json({ docket }, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     console.error(
       "GET /api/cases/[id]/docket error:",
@@ -713,7 +731,7 @@ export async function GET(
     );
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal error" },
-      { status: 500 },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }
 }
