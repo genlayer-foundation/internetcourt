@@ -188,16 +188,16 @@ async function main() {
   ok(`Status after accept: ${afterAccept.status}`);
   results.acceptTxHash = acceptResult.hash;
 
-  // ── STEP 7: Party A proposes TRUE ──
-  log(7, "Party A proposes outcome: TRUE");
-  const propAResult = await writeContract(clientA, courtAddr, "propose_outcome", ["TRUE"]);
+  // ── STEP 7: Party A proposes PARTY_A ──
+  log(7, "Party A proposes outcome: PARTY_A");
+  const propAResult = await writeContract(clientA, courtAddr, "propose_outcome", ["PARTY_A"]);
   ok(`Propose A tx: ${propAResult.hash}`);
   ok(`Result: ${propAResult.receipt.result_name || propAResult.receipt.result}`);
   results.proposeATxHash = propAResult.hash;
 
-  // ── STEP 8: Party B proposes FALSE (forces dispute) ──
-  log(8, "Party B proposes outcome: FALSE (to force dispute)");
-  const propBResult = await writeContract(clientB, courtAddr, "propose_outcome", ["FALSE"]);
+  // ── STEP 8: Party B proposes PARTY_B (forces dispute) ──
+  log(8, "Party B proposes outcome: PARTY_B (to force dispute)");
+  const propBResult = await writeContract(clientB, courtAddr, "propose_outcome", ["PARTY_B"]);
   ok(`Propose B tx: ${propBResult.hash}`);
   ok(`Result: ${propBResult.receipt.result_name || propBResult.receipt.result}`);
   const afterPropose = parseResult(await readState(clientA, courtAddr, "get_status"));
@@ -214,7 +214,7 @@ async function main() {
   results.disputeTxHash = disputeResult.hash;
 
   // ── STEP 10: Party A submits evidence ──
-  log(10, "Party A submits evidence (supporting TRUE)");
+  log(10, "Party A submits evidence (supporting PARTY_A)");
   const evidenceA = "7 is prime because its only divisors are 1 and 7. Testing all integers up to sqrt(7) ~ 2.65: 7/2 = 3.5 (not integer), so 7 is prime.";
   const evAResult = await writeContract(clientA, courtAddr, "submit_evidence", [evidenceA]);
   ok(`Evidence A tx: ${evAResult.hash}`);

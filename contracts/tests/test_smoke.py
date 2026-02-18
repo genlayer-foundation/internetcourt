@@ -21,11 +21,11 @@ def test_mutual_resolve(active_contract, direct_vm):
     """Test mutual agreement resolves without AI."""
     contract, alice, bob = active_contract
     with direct_vm.prank(alice):
-        contract.propose_outcome("TRUE")
+        contract.propose_outcome("PARTY_A")
     with direct_vm.prank(bob):
-        contract.propose_outcome("TRUE")
+        contract.propose_outcome("PARTY_A")
     assert contract.status == "resolved"
-    assert contract.verdict == "TRUE"
+    assert contract.verdict == "PARTY_A"
 
 
 def test_dispute_and_resolve(active_contract, direct_vm):
@@ -42,10 +42,10 @@ def test_dispute_and_resolve(active_contract, direct_vm):
     # Mock AI jury response before second submission — auto-resolve triggers
     direct_vm.mock_llm(
         r".*impartial AI juror.*",
-        '{"verdict": "FALSE", "reasoning": "The evidence shows the audit was incomplete."}'
+        '{"verdict": "PARTY_B", "reasoning": "The evidence shows the audit was incomplete."}'
     )
 
     with direct_vm.prank(bob):
         contract.submit_evidence("The audit covers all three areas as specified.")
     assert contract.status == "resolved"
-    assert contract.verdict == "FALSE"
+    assert contract.verdict == "PARTY_B"

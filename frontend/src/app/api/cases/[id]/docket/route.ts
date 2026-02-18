@@ -119,6 +119,26 @@ export async function GET(
       }
     }
 
+    // Start fetching GenLayer entries from relay (optional)
+    const relayBaseUrl = process.env.RELAY_BASE_URL?.trim();
+    const glEntriesPromise: Promise<DocketEntry[]> = (async () => {
+      if (!relayBaseUrl) return [];
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10_000);
+        const r = await fetch(
+          `${relayBaseUrl.replace(/\/$/, "")}/cases/${agreementAddress}/gl`,
+          { signal: controller.signal },
+        );
+        clearTimeout(timeout);
+        if (!r.ok) return [];
+        const data = await r.json();
+        return (data.entries || []) as DocketEntry[];
+      } catch {
+        return [];
+      }
+    })();
+
     // Use factory's deploymentBlock for efficient event indexing
     const currentBlock = await publicClient.getBlockNumber();
     const deployBlock = await publicClient.readContract({
@@ -290,7 +310,7 @@ export async function GET(
 
     // Helper to get verdict name
     const getVerdictName = (verdict: number): string => {
-      const names = ["UNDETERMINED", "TRUE", "FALSE"];
+      const names = ["UNDETERMINED", "PARTY A", "PARTY B"];
       return names[verdict] || "UNKNOWN";
     };
 
@@ -363,7 +383,7 @@ export async function GET(
 
     // OutcomeProposed
     outcomeProposedLogs.forEach((log) => {
-      const outcome = log.args.statementIsTrue ? "TRUE" : "FALSE";
+      const outcome = log.args.statementIsTrue ? "Party A Wins" : "Party B Wins";
       docket.push({
         action: `Outcome proposed: ${outcome}`,
         txHash: log.transactionHash!,
@@ -524,8 +544,16 @@ export async function GET(
       });
     });
 
-    // Sort by block number (ascending = chronological)
-    docket.sort((a, b) => a.blockNumber - b.blockNumber);
+    // Merge GenLayer entries and sort by timestamp then block number
+    try {
+      const glEntries = await glEntriesPromise;
+      if (glEntries.length) docket.push(...glEntries);
+    } catch {}
+
+    docket.sort((a, b) => {
+      if (a.timestamp !== b.timestamp) return a.timestamp - b.timestamp;
+      return a.blockNumber - b.blockNumber;
+    });
 
     return NextResponse.json({ docket }, {
       headers: { "Cache-Control": "no-store" },

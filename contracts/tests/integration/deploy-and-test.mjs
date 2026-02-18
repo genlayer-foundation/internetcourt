@@ -266,22 +266,22 @@ async function main() {
     report.errors.push({ step: 9, error: e.message });
   }
 
-  // ── Step 10: Party A proposes TRUE ─────────────────────────
-  log("STEP 10", "Party A proposes outcome TRUE");
+  // ── Step 10: Party A proposes PARTY_A ─────────────────────────
+  log("STEP 10", "Party A proposes outcome PARTY_A");
   try {
-    await write(deployerClient, courtAddr, "propose_outcome", ["TRUE"]);
-    ok("Party A proposed TRUE");
+    await write(deployerClient, courtAddr, "propose_outcome", ["PARTY_A"]);
+    ok("Party A proposed PARTY_A");
     report.steps.push({ step: 10, status: "ok" });
   } catch (e) {
     fail(`propose_outcome (A) failed: ${e.message}`);
     report.errors.push({ step: 10, error: e.message });
   }
 
-  // ── Step 11: Party B proposes FALSE (triggers dispute) ─────
-  log("STEP 11", "Party B proposes outcome FALSE");
+  // ── Step 11: Party B proposes PARTY_B (triggers dispute) ─────
+  log("STEP 11", "Party B proposes outcome PARTY_B");
   try {
-    await write(partyBClient, courtAddr, "propose_outcome", ["FALSE"]);
-    ok("Party B proposed FALSE");
+    await write(partyBClient, courtAddr, "propose_outcome", ["PARTY_B"]);
+    ok("Party B proposed PARTY_B");
 
     // Check status — should still be active since proposals differ
     const rawStatus = await read(deployerClient, courtAddr, "get_status", []);

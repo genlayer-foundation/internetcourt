@@ -21,12 +21,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
+import { setTimeout as sleep } from "node:timers/promises";
 
 // ----- Persistence paths -----
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.resolve(__dirname, "../../data");
 const PROCESSED_FILE = path.join(DATA_DIR, "processed.json");
+const GL_META_FILE = path.join(DATA_DIR, "genlayer.json");
 
 // ----- ABIs (human-readable, ethers v6) -----
 
@@ -44,7 +46,6 @@ const AGREEMENT_ABI = [
 
 const FACTORY_ABI = [
   "event DisputeRequested(address indexed agreementAddress, uint256 timestamp)",
-  "event AgreementCreated(uint256 indexed id, address agreementAddress, address partyA, address partyB)",
 ];
 
 // ----- Constants -----
@@ -66,7 +67,6 @@ export class EvmToGenLayer {
   private glClient: ReturnType<typeof createClient>;
   private lastBlock: number = 0;
   private processedDisputes: Set<string>;
-  private registeredCases: Set<string> = new Set();
 
   constructor() {
     this.baseProvider = new ethers.JsonRpcProvider(config.BASE_RPC_URL);
@@ -126,6 +126,26 @@ export class EvmToGenLayer {
     );
   }
 
+  /** Load persisted GenLayer metadata map { agreementLower: {...} } */
+  private loadGlMeta(): Record<string, any> {
+    try {
+      if (fs.existsSync(GL_META_FILE)) {
+        return JSON.parse(fs.readFileSync(GL_META_FILE, "utf-8"));
+      }
+    } catch (e) {
+      console.warn("[EvmToGenLayer] Could not load GL meta file, starting empty:", e);
+    }
+    return {};
+  }
+
+  /** Atomic write to persist GenLayer metadata */
+  private saveGlMeta(meta: Record<string, any>): void {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    const tmp = GL_META_FILE + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(meta, null, 2));
+    fs.renameSync(tmp, GL_META_FILE);
+  }
+
   /**
    * Single poll iteration. Called on a setInterval from the entry point.
    */
@@ -164,38 +184,6 @@ export class EvmToGenLayer {
       } catch (err) {
         console.error(
           `[EvmToGenLayer] Failed to process dispute ${agreementAddress}:`,
-          err,
-        );
-      }
-    }
-
-    // Query for AgreementCreated events in the same block range
-    const createdFilter = this.factory.filters.AgreementCreated();
-    const createdEvents = await this.factory.queryFilter(
-      createdFilter,
-      this.lastBlock,
-      currentBlock,
-    );
-
-    for (const event of createdEvents) {
-      const log = event as ethers.EventLog;
-      const caseId = Number(log.args[0]);
-      const agreementAddress: string = log.args[1];
-      const partyA: string = log.args[2];
-      const partyB: string = log.args[3];
-
-      if (this.registeredCases.has(agreementAddress)) continue;
-
-      console.log(
-        `[EvmToGenLayer] New agreement detected: ${agreementAddress} (case #${caseId}, block ${log.blockNumber})`,
-      );
-
-      try {
-        await this.registerCase(caseId, agreementAddress, partyA, partyB);
-        this.registeredCases.add(agreementAddress);
-      } catch (err) {
-        console.error(
-          `[EvmToGenLayer] Failed to register case ${agreementAddress}:`,
           err,
         );
       }
@@ -271,6 +259,44 @@ export class EvmToGenLayer {
 
         if (tx.statusName === "FINALIZED") {
           console.log(`[EvmToGenLayer] Oracle finalized: ${txHash}`);
+
+          // Best-effort: extract oracle address and verdict/reasoning for UI timeline
+          const oracleAddress: string | undefined =
+            // @ts-expect-error backend-specific
+            (tx as any).to_address || (tx as any).contractAddress || (tx as any).data?.contract_address;
+
+          let verdictStr = "";
+          let reasoningStr = "";
+          if (oracleAddress) {
+            const state = await glGetContractState(oracleAddress);
+            if (state) {
+              verdictStr = String((state as any).verdict || "");
+              reasoningStr = String((state as any).reasoning || "");
+            }
+          }
+
+          // Try to obtain a real timestamp from GL receipt; fallback to now
+          const rec = await glGetTransactionReceipt(txHash);
+          const ts = rec && typeof (rec as any).timestamp === "number"
+            ? Number((rec as any).timestamp)
+            : Math.floor(Date.now() / 1000);
+
+          // Persist minimal GL metadata for docket (non-blocking)
+          try {
+            const meta = this.loadGlMeta();
+            meta[agreementAddress.toLowerCase()] = {
+              oracleTxHash: txHash,
+              oracleAddress: oracleAddress || null,
+              verdict: verdictStr || null,
+              reasoning: reasoningStr || null,
+              timestamp: ts,
+            };
+            this.saveGlMeta(meta);
+            console.log(`[EvmToGenLayer] Saved GL metadata for ${agreementAddress}`);
+          } catch (e) {
+            console.warn("[EvmToGenLayer] Failed to persist GL metadata:", e);
+          }
+
           return;
         }
 
@@ -295,7 +321,7 @@ export class EvmToGenLayer {
         // getTransaction may throw if the tx is too new
       }
 
-      await new Promise((r) => setTimeout(r, FINALIZATION_POLL_MS));
+      await sleep(FINALIZATION_POLL_MS);
     }
 
     console.error(
@@ -303,50 +329,33 @@ export class EvmToGenLayer {
     );
   }
 
-  /**
-   * Read case data from Base and register it on the GenLayer factory.
-   */
-  private async registerCase(
-    caseId: number,
-    agreementAddress: string,
-    partyA: string,
-    partyB: string,
-  ): Promise<void> {
-    // Read case data from Base
-    const agreement = new ethers.Contract(
-      agreementAddress,
-      AGREEMENT_ABI,
-      this.baseProvider,
-    );
+}
 
-    const [statement, escrowAmount] = await Promise.all([
-      agreement.statement() as Promise<string>,
-      agreement.escrowAmount() as Promise<bigint>,
-    ]);
+// ----- Helpers: GenLayer raw RPC -----
 
-    // Register on GenLayer factory
-    const params = JSON.stringify({
-      chain_id: 84532,
-      chain_name: "base-sepolia",
-      base_factory: config.FACTORY_ADDRESS,
-      factory_id: caseId,
-      statement,
-      party_a: partyA,
-      party_b: partyB,
-      escrow_amount: escrowAmount.toString(),
-    });
-
-    console.log(
-      `[EvmToGenLayer] Registering case ${caseId} on GenLayer: ${agreementAddress}`,
-    );
-
-    const txHash = await this.glClient.writeContract({
-      address: config.GL_FACTORY_ADDRESS as `0x${string}`,
-      functionName: "register_contract",
-      args: [agreementAddress, "internetcourt", params],
-      value: 0n,
-    });
-
-    console.log(`[EvmToGenLayer] Registration tx: ${txHash}`);
+async function glJsonRpc<T = unknown>(method: string, params: unknown[]): Promise<T | null> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    const res = await fetch(config.GENLAYER_RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+      signal: controller.signal,
+    } as RequestInit);
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data?.result as T) ?? null;
+  } catch {
+    return null;
   }
+}
+
+async function glGetContractState(address: string): Promise<unknown | null> {
+  return glJsonRpc("gen_getContractState", [address]);
+}
+
+async function glGetTransactionReceipt(txHash: string): Promise<unknown | null> {
+  return glJsonRpc("gen_getTransactionReceipt", [txHash]);
 }

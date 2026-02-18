@@ -142,6 +142,12 @@ const SOURCE_STYLES: Record<string, { bg: string; text: string; dot: string; lab
     dot: "bg-blue-500",
     label: "Base",
   },
+  GenLayer: {
+    bg: "bg-emerald-50 border-emerald-200/60",
+    text: "text-emerald-700",
+    dot: "bg-emerald-500",
+    label: "GenLayer",
+  },
   LayerZero: {
     bg: "bg-amber-50 border-amber-200/60",
     text: "text-amber-700",
@@ -234,7 +240,7 @@ function DocketTab({ address, isBase }: { address: string; isBase: boolean }) {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          {["Base", "LayerZero"].map((src) => {
+          {["Base", "GenLayer", "LayerZero"].map((src) => {
             const style = SOURCE_STYLES[src];
             const count = docket.filter((e) => e.source === src).length;
             if (!count) return null;
@@ -580,13 +586,13 @@ export default function CaseDetailPage({
               </div>
               {contract.proposedOutcomeA && (
                 <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
-                  contract.proposedOutcomeA === "TRUE"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : contract.proposedOutcomeA === "FALSE"
-                      ? "bg-red-100 text-red-800"
+                  contract.proposedOutcomeA === "PARTY A"
+                    ? "bg-blue-100 text-blue-800"
+                    : contract.proposedOutcomeA === "PARTY B"
+                      ? "bg-pink-100 text-pink-800"
                       : "bg-amber-100 text-amber-800"
                 }`}>
-                  Proposes {contract.proposedOutcomeA}
+                  Proposes {contract.proposedOutcomeA === "PARTY A" ? "Party A Wins" : contract.proposedOutcomeA === "PARTY B" ? "Party B Wins" : contract.proposedOutcomeA}
                 </span>
               )}
               {contract.evidenceA && (
@@ -621,13 +627,13 @@ export default function CaseDetailPage({
               </div>
               {contract.proposedOutcomeB && (
                 <span className={`mb-5 inline-block rounded-full px-3.5 py-1 text-[11px] font-bold ${
-                  contract.proposedOutcomeB === "TRUE"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : contract.proposedOutcomeB === "FALSE"
-                      ? "bg-red-100 text-red-800"
+                  contract.proposedOutcomeB === "PARTY A"
+                    ? "bg-blue-100 text-blue-800"
+                    : contract.proposedOutcomeB === "PARTY B"
+                      ? "bg-pink-100 text-pink-800"
                       : "bg-amber-100 text-amber-800"
                 }`}>
-                  Proposes {contract.proposedOutcomeB}
+                  Proposes {contract.proposedOutcomeB === "PARTY A" ? "Party A Wins" : contract.proposedOutcomeB === "PARTY B" ? "Party B Wins" : contract.proposedOutcomeB}
                 </span>
               )}
               {contract.evidenceB && (

@@ -54,8 +54,8 @@ export const STATUS_COLORS: Record<string, string> = {
 };
 
 export const VERDICT_COLORS: Record<string, string> = {
-  TRUE: "text-emerald-600",
-  FALSE: "text-red-600",
+  "PARTY A": "text-blue-600",
+  "PARTY B": "text-pink-600",
   UNDETERMINED: "text-amber-600",
 };
 
@@ -68,7 +68,7 @@ export const STATUS_LABELS: Record<string, string> = {
   cancelled: "CANCELLED",
 };
 
-export const VERDICT_NAMES = ["UNDETERMINED", "TRUE", "FALSE"] as const;
+export const VERDICT_NAMES = ["UNDETERMINED", "PARTY A", "PARTY B"] as const;
 
 // --- Utilities ---
 

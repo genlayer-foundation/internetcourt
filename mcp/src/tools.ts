@@ -52,7 +52,7 @@ const FACTORY_WRITE_ABI = parseAbi([
 const AGREEMENT_WRITE_ABI = parseAbi([
   "function acceptAgreement()",
   "function submitEvidence(string)",
-  "function proposeOutcome(uint8)",
+  "function proposeOutcome(bool)",
   "function raiseDispute()",
 ]);
 
@@ -61,7 +61,7 @@ const ERC20_ABI = parseAbi([
 ]);
 
 const STATUS_NAMES = ["CREATED", "ACTIVE", "DISPUTED", "RESOLVING", "RESOLVED", "CANCELLED"];
-const VERDICT_NAMES = ["UNDETERMINED", "TRUE", "FALSE"];
+const VERDICT_NAMES = ["UNDETERMINED", "PARTY_A", "PARTY_B"];
 
 export function registerTools(server: McpServer) {
   // Tool 1: get_case
@@ -306,10 +306,10 @@ export function registerTools(server: McpServer) {
   // Tool 7: prepare_propose_outcome
   server.tool(
     "prepare_propose_outcome",
-    "Prepare transaction to propose an outcome for a case (1=TRUE, 2=FALSE)",
+    "Prepare transaction to propose an outcome for a case (1=Party A wins, 2=Party B wins)",
     {
       case_id: z.number().describe("The case ID"),
-      verdict: z.number().min(1).max(2).describe("Proposed verdict: 1=TRUE, 2=FALSE"),
+      verdict: z.number().min(1).max(2).describe("Proposed verdict: 1=Party A wins, 2=Party B wins"),
     },
     async ({ case_id, verdict }) => {
       const addr = await client.readContract({
@@ -320,10 +320,13 @@ export function registerTools(server: McpServer) {
         return { content: [{ type: "text" as const, text: `Error: case ${case_id} does not exist` }], isError: true };
       }
 
+      // Solidity proposeOutcome(bool): true = statement is true (Party A wins, verdict=1),
+      // false = statement is false (Party B wins, verdict=2)
+      const statementIsTrue = verdict === 1;
       const data = encodeFunctionData({
         abi: AGREEMENT_WRITE_ABI,
         functionName: "proposeOutcome",
-        args: [verdict],
+        args: [statementIsTrue],
       });
 
       return {

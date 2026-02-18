@@ -127,12 +127,12 @@ class TestInternetCourtDeploy:
 class TestMutualAgreement:
     """Test the 2-of-2 mutual agreement path (no jury needed)."""
 
-    def test_mutual_agreement_true(self, internetcourt_factory, test_accounts):
-        """Both parties agree TRUE — resolved without AI jury."""
+    def test_mutual_agreement_party_a(self, internetcourt_factory, test_accounts):
+        """Both parties agree PARTY_A — resolved without AI jury."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
-        print(f"\n--- Mutual Agreement: both propose TRUE ---")
+        print(f"\n--- Mutual Agreement: both propose PARTY_A ---")
 
         # Deploy
         contract = internetcourt_factory.deploy(
@@ -152,15 +152,15 @@ class TestMutualAgreement:
         assert status["status"] == "active"
         print(f"  Status: {status['status']}")
 
-        # Alice proposes TRUE
-        tx = contract.propose_outcome(args=["TRUE"]).transact()
+        # Alice proposes PARTY_A
+        tx = contract.propose_outcome(args=["PARTY_A"]).transact()
         assert tx_execution_succeeded(tx), f"Alice propose_outcome failed: {tx}"
-        print("  Alice proposed TRUE")
+        print("  Alice proposed PARTY_A")
 
-        # Bob proposes TRUE — should auto-resolve
-        tx = bob_contract.propose_outcome(args=["TRUE"]).transact()
+        # Bob proposes PARTY_A — should auto-resolve
+        tx = bob_contract.propose_outcome(args=["PARTY_A"]).transact()
         assert tx_execution_succeeded(tx), f"Bob propose_outcome failed: {tx}"
-        print("  Bob proposed TRUE")
+        print("  Bob proposed PARTY_A")
 
         # Check resolved
         verdict_json = contract.get_verdict().call()
@@ -168,16 +168,16 @@ class TestMutualAgreement:
         print(f"  Verdict: {json.dumps(verdict, indent=2)}")
 
         assert verdict["status"] == "resolved"
-        assert verdict["verdict"] == "TRUE"
+        assert verdict["verdict"] == "PARTY_A"
         assert "mutual agreement" in verdict["reasoning"].lower()
-        print("  PASSED: Resolved by mutual agreement (TRUE)")
+        print("  PASSED: Resolved by mutual agreement (PARTY_A)")
 
-    def test_mutual_agreement_false(self, internetcourt_factory, test_accounts):
-        """Both parties agree FALSE — resolved without AI jury."""
+    def test_mutual_agreement_party_b(self, internetcourt_factory, test_accounts):
+        """Both parties agree PARTY_B — resolved without AI jury."""
         alice = test_accounts["alice"]
         bob = test_accounts["bob"]
 
-        print(f"\n--- Mutual Agreement: both propose FALSE ---")
+        print(f"\n--- Mutual Agreement: both propose PARTY_B ---")
 
         contract = internetcourt_factory.deploy(
             args=[bob.address, SAMPLE_STATEMENT, SAMPLE_GUIDELINES, SAMPLE_EVIDENCE_DEFS],
@@ -189,18 +189,18 @@ class TestMutualAgreement:
         tx = bob_contract.accept_contract().transact()
         assert tx_execution_succeeded(tx)
 
-        tx = contract.propose_outcome(args=["FALSE"]).transact()
+        tx = contract.propose_outcome(args=["PARTY_B"]).transact()
         assert tx_execution_succeeded(tx)
-        print("  Alice proposed FALSE")
+        print("  Alice proposed PARTY_B")
 
-        tx = bob_contract.propose_outcome(args=["FALSE"]).transact()
+        tx = bob_contract.propose_outcome(args=["PARTY_B"]).transact()
         assert tx_execution_succeeded(tx)
-        print("  Bob proposed FALSE")
+        print("  Bob proposed PARTY_B")
 
         verdict = json.loads(contract.get_verdict().call())
         assert verdict["status"] == "resolved"
-        assert verdict["verdict"] == "FALSE"
-        print("  PASSED: Resolved by mutual agreement (FALSE)")
+        assert verdict["verdict"] == "PARTY_B"
+        print("  PASSED: Resolved by mutual agreement (PARTY_B)")
 
 
 # ---------------------------------------------------------------------------
@@ -288,7 +288,7 @@ class TestDisputeLifecycle:
                 verdict = json.loads(verdict_json)
                 print(f"  Verdict: {json.dumps(verdict, indent=2)}")
                 assert verdict["status"] == "resolved"
-                assert verdict["verdict"] in ("TRUE", "FALSE", "UNDETERMINED")
+                assert verdict["verdict"] in ("PARTY_A", "PARTY_B", "UNDETERMINED")
                 assert len(verdict["reasoning"]) > 0
                 print(f"  PASSED: AI jury ruled '{verdict['verdict']}'")
             else:
@@ -605,15 +605,15 @@ class TestEndToEnd:
         tx = bob_mc1.accept_contract().transact()
         assert tx_execution_succeeded(tx)
 
-        tx = mc1.propose_outcome(args=["TRUE"]).transact()
+        tx = mc1.propose_outcome(args=["PARTY_A"]).transact()
         assert tx_execution_succeeded(tx)
 
-        tx = bob_mc1.propose_outcome(args=["TRUE"]).transact()
+        tx = bob_mc1.propose_outcome(args=["PARTY_A"]).transact()
         assert tx_execution_succeeded(tx)
 
         verdict = json.loads(mc1.get_verdict().call())
         assert verdict["status"] == "resolved"
-        assert verdict["verdict"] == "TRUE"
+        assert verdict["verdict"] == "PARTY_A"
         print(f"  7. InternetCourt #1 resolved: {verdict['verdict']}")
 
         print("  === END-TO-END PASSED ===")

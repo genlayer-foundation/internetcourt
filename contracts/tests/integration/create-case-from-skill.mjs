@@ -162,11 +162,11 @@ async function main() {
   // --- Step 5: Try mutual resolution — but they disagree! ---
   log("STEP 5", "Both parties propose outcomes (they disagree)");
 
-  // Agent A proposes TRUE ("I completed the work")
+  // Agent A proposes PARTY_A ("I completed the work")
   const proposeAHash = await clientA.writeContract({
     address: CONTRACT,
     functionName: "propose_outcome",
-    args: ["TRUE"],
+    args: ["PARTY_A"],
     value: 0n,
     leaderOnly: false,
   });
@@ -176,15 +176,15 @@ async function main() {
     retries: 120,
     interval: 5000,
   });
-  ok("Agent A proposes TRUE");
+  ok("Agent A proposes PARTY_A");
 
   await new Promise(r => setTimeout(r, 3000));
 
-  // Agent B proposes FALSE ("No you didn't")
+  // Agent B proposes PARTY_B ("No you didn't")
   const proposeBHash = await clientB.writeContract({
     address: CONTRACT,
     functionName: "propose_outcome",
-    args: ["FALSE"],
+    args: ["PARTY_B"],
     value: 0n,
     leaderOnly: false,
   });
@@ -194,7 +194,7 @@ async function main() {
     retries: 120,
     interval: 5000,
   });
-  ok("Agent B proposes FALSE — disagreement!");
+  ok("Agent B proposes PARTY_B — disagreement!");
 
   await new Promise(r => setTimeout(r, 3000));
 

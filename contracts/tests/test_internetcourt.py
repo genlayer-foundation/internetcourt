@@ -164,42 +164,42 @@ class TestProposeOutcome:
     def test_party_a_can_propose(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
-        assert contract.proposed_outcome_a == "TRUE"
+            contract.propose_outcome("PARTY_A")
+        assert contract.proposed_outcome_a == "PARTY_A"
         assert contract.status == "active"  # Not resolved yet
 
     def test_party_b_can_propose(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
-        assert contract.proposed_outcome_b == "FALSE"
+            contract.propose_outcome("PARTY_B")
+        assert contract.proposed_outcome_b == "PARTY_B"
         assert contract.status == "active"  # Not resolved yet
 
-    def test_mutual_agreement_true(self, active_contract, direct_vm):
+    def test_mutual_agreement_party_a(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         assert contract.status == "resolved"
-        assert contract.verdict == "TRUE"
+        assert contract.verdict == "PARTY_A"
         assert "mutual agreement" in contract.reasoning
 
-    def test_mutual_agreement_false(self, active_contract, direct_vm):
+    def test_mutual_agreement_party_b(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "resolved"
-        assert contract.verdict == "FALSE"
+        assert contract.verdict == "PARTY_B"
 
     def test_disagreement_auto_disputes(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "disputed"  # Auto-disputed
         assert contract.verdict == ""
         assert contract.dispute_timestamp != ""
@@ -210,17 +210,17 @@ class TestProposeOutcome:
         charlie = Address(CHARLIE_BYTES)
         with direct_vm.expect_revert("Not a party to this contract"):
             with direct_vm.prank(charlie):
-                contract.propose_outcome("TRUE")
+                contract.propose_outcome("PARTY_A")
 
     def test_cannot_propose_before_active(self, deploy_internetcourt, direct_vm):
         contract, alice, bob = deploy_internetcourt
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
-                contract.propose_outcome("TRUE")
+                contract.propose_outcome("PARTY_A")
 
     def test_invalid_outcome_rejected(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        with direct_vm.expect_revert("Outcome must be TRUE or FALSE"):
+        with direct_vm.expect_revert("Outcome must be PARTY_A or PARTY_B"):
             with direct_vm.prank(alice):
                 contract.propose_outcome("MAYBE")
 
@@ -282,7 +282,7 @@ class TestSubmitEvidence:
             contract.submit_evidence("Evidence A")
         direct_vm.mock_llm(
             r".*impartial AI juror.*",
-            '{"verdict": "TRUE", "reasoning": "Auto-resolved after both submitted."}'
+            '{"verdict": "PARTY_A", "reasoning": "Auto-resolved after both submitted."}'
         )
         with direct_vm.prank(bob):
             contract.submit_evidence("Evidence B")
@@ -290,7 +290,7 @@ class TestSubmitEvidence:
         assert evidence["evidence_a"] == "Evidence A"
         assert evidence["evidence_b"] == "Evidence B"
         assert contract.status == "resolved"
-        assert contract.verdict == "TRUE"
+        assert contract.verdict == "PARTY_A"
 
     def test_party_a_cannot_submit_twice(self, disputed_contract, direct_vm):
         contract, alice, bob = disputed_contract
@@ -359,27 +359,27 @@ class TestResolve:
         with direct_vm.prank(bob):
             contract.submit_evidence("The audit covers all areas.")
 
-    def test_resolve_verdict_true(self, active_contract, direct_vm):
+    def test_resolve_verdict_party_a(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         self._setup_dispute_with_evidence(
             contract, alice, bob, direct_vm,
-            '{"verdict": "TRUE", "reasoning": "The audit was complete."}'
+            '{"verdict": "PARTY_A", "reasoning": "The audit was complete."}'
         )
 
         # Auto-resolved after second evidence submission
         assert contract.status == "resolved"
-        assert contract.verdict == "TRUE"
+        assert contract.verdict == "PARTY_A"
         assert contract.reasoning == "The audit was complete."
 
-    def test_resolve_verdict_false(self, active_contract, direct_vm):
+    def test_resolve_verdict_party_b(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         self._setup_dispute_with_evidence(
             contract, alice, bob, direct_vm,
-            '{"verdict": "FALSE", "reasoning": "The audit was incomplete."}'
+            '{"verdict": "PARTY_B", "reasoning": "The audit was incomplete."}'
         )
 
         assert contract.status == "resolved"
-        assert contract.verdict == "FALSE"
+        assert contract.verdict == "PARTY_B"
 
     def test_resolve_verdict_undetermined(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
@@ -411,7 +411,7 @@ class TestResolve:
         contract, alice, bob = active_contract
         self._setup_dispute_with_evidence(
             contract, alice, bob, direct_vm,
-            '{"verdict": "TRUE", "reasoning": "First resolution."}'
+            '{"verdict": "PARTY_A", "reasoning": "First resolution."}'
         )
 
         # Already auto-resolved, calling resolve again should fail
@@ -422,11 +422,11 @@ class TestResolve:
         contract, alice, bob = active_contract
         self._setup_dispute_with_evidence(
             contract, alice, bob, direct_vm,
-            '{"verdict": "FALSE", "reasoning": "Incomplete audit."}'
+            '{"verdict": "PARTY_B", "reasoning": "Incomplete audit."}'
         )
 
         verdict = json.loads(contract.get_verdict())
-        assert verdict["verdict"] == "FALSE"
+        assert verdict["verdict"] == "PARTY_B"
         assert verdict["reasoning"] == "Incomplete audit."
         assert verdict["status"] == "resolved"
 
@@ -454,9 +454,9 @@ class TestStateTransitions:
         assert contract.status == "active"
 
         with direct_vm.prank(alice):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "resolved"
 
     def test_full_lifecycle_ai_jury(self, deploy_internetcourt, direct_vm):
@@ -479,7 +479,7 @@ class TestStateTransitions:
         # Mock LLM before second submission — auto-resolve triggers
         direct_vm.mock_llm(
             r".*",
-            '{"verdict": "TRUE", "reasoning": "Statement confirmed."}'
+            '{"verdict": "PARTY_A", "reasoning": "Statement confirmed."}'
         )
         with direct_vm.prank(bob):
             contract.submit_evidence("B's evidence")
@@ -511,7 +511,7 @@ class TestViewMethods:
             contract.submit_evidence("Evidence A text")
         direct_vm.mock_llm(
             r".*",
-            '{"verdict": "TRUE", "reasoning": "Test."}'
+            '{"verdict": "PARTY_A", "reasoning": "Test."}'
         )
         with direct_vm.prank(bob):
             contract.submit_evidence("Evidence B text")
@@ -557,15 +557,15 @@ class TestEdgeCases:
         contract, alice, bob = active_contract
         # First round: disagreement → auto-dispute
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "disputed"
 
         # Cannot propose on disputed contract
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(bob):
-                contract.propose_outcome("TRUE")
+                contract.propose_outcome("PARTY_A")
 
     def test_snapshot_and_revert(self, active_contract, direct_vm):
         """Test VM snapshot/revert preserves contract state."""
@@ -615,9 +615,9 @@ class TestInvalidStateTransitions:
     def test_cannot_cancel_after_resolution(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         assert contract.status == "resolved"
         with direct_vm.expect_revert("Can only cancel before activation"):
             with direct_vm.prank(alice):
@@ -643,24 +643,24 @@ class TestInvalidStateTransitions:
             contract.cancel()
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
-                contract.propose_outcome("TRUE")
+                contract.propose_outcome("PARTY_A")
 
     def test_cannot_propose_on_disputed_contract(self, disputed_contract, direct_vm):
         contract, alice, bob = disputed_contract
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
-                contract.propose_outcome("TRUE")
+                contract.propose_outcome("PARTY_A")
 
     def test_cannot_propose_on_resolved_contract(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "resolved"
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
-                contract.propose_outcome("TRUE")
+                contract.propose_outcome("PARTY_A")
 
     def test_cannot_dispute_cancelled_contract(self, deploy_internetcourt, direct_vm):
         contract, alice, bob = deploy_internetcourt
@@ -673,9 +673,9 @@ class TestInvalidStateTransitions:
     def test_cannot_dispute_resolved_contract(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
                 contract.initiate_dispute()
@@ -703,9 +703,9 @@ class TestInvalidStateTransitions:
     def test_cannot_submit_evidence_on_resolved(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.expect_revert("No active dispute"):
             with direct_vm.prank(alice):
                 contract.submit_evidence("Evidence")
@@ -732,65 +732,65 @@ class TestProposeOutcomeEdgeCases:
     def test_invalid_outcome_undetermined(self, active_contract, direct_vm):
         """UNDETERMINED is not a valid proposal value."""
         contract, alice, bob = active_contract
-        with direct_vm.expect_revert("Outcome must be TRUE or FALSE"):
+        with direct_vm.expect_revert("Outcome must be PARTY_A or PARTY_B"):
             with direct_vm.prank(alice):
                 contract.propose_outcome("UNDETERMINED")
 
     def test_invalid_outcome_empty_string(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        with direct_vm.expect_revert("Outcome must be TRUE or FALSE"):
+        with direct_vm.expect_revert("Outcome must be PARTY_A or PARTY_B"):
             with direct_vm.prank(alice):
                 contract.propose_outcome("")
 
     def test_invalid_outcome_lowercase(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
-        with direct_vm.expect_revert("Outcome must be TRUE or FALSE"):
+        with direct_vm.expect_revert("Outcome must be PARTY_A or PARTY_B"):
             with direct_vm.prank(alice):
-                contract.propose_outcome("true")
+                contract.propose_outcome("party_a")
 
     def test_party_a_can_change_proposal(self, active_contract, direct_vm):
         """Party A can update their proposal before resolution."""
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
-        assert contract.proposed_outcome_a == "TRUE"
+            contract.propose_outcome("PARTY_A")
+        assert contract.proposed_outcome_a == "PARTY_A"
         with direct_vm.prank(alice):
-            contract.propose_outcome("FALSE")
-        assert contract.proposed_outcome_a == "FALSE"
+            contract.propose_outcome("PARTY_B")
+        assert contract.proposed_outcome_a == "PARTY_B"
 
     def test_party_b_can_change_proposal(self, active_contract, direct_vm):
         """Party B can update their proposal before resolution."""
         contract, alice, bob = active_contract
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
-        assert contract.proposed_outcome_b == "FALSE"
+            contract.propose_outcome("PARTY_B")
+        assert contract.proposed_outcome_b == "PARTY_B"
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
-        assert contract.proposed_outcome_b == "TRUE"
+            contract.propose_outcome("PARTY_A")
+        assert contract.proposed_outcome_b == "PARTY_A"
 
     def test_disagreement_auto_disputes_so_no_reproposal(self, active_contract, direct_vm):
         """Disagreeing proposals auto-dispute, so no chance to re-propose."""
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "disputed"
         # Cannot change proposal now
         with direct_vm.expect_revert("Contract not active"):
             with direct_vm.prank(alice):
-                contract.propose_outcome("FALSE")
+                contract.propose_outcome("PARTY_B")
 
     def test_b_proposes_first_then_a_matches(self, active_contract, direct_vm):
         """Order doesn't matter - B proposes first, A matches."""
         contract, alice, bob = active_contract
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         assert contract.status == "active"
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         assert contract.status == "resolved"
-        assert contract.verdict == "TRUE"
+        assert contract.verdict == "PARTY_A"
 
 
 # ============================================================
@@ -914,12 +914,12 @@ class TestViewMethodsAcrossStates:
     def test_get_status_resolved_mutual(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         status = json.loads(contract.get_status())
         assert status["status"] == "resolved"
-        assert status["verdict"] == "TRUE"
+        assert status["verdict"] == "PARTY_A"
         assert "mutual agreement" in status["reasoning"]
 
     def test_get_verdict_on_active_contract(self, active_contract):
@@ -945,9 +945,9 @@ class TestViewMethodsAcrossStates:
     def test_get_contract_details_after_proposals(self, active_contract, direct_vm):
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         details = json.loads(contract.get_contract_details())
-        assert details["proposed_outcome_a"] == "TRUE"
+        assert details["proposed_outcome_a"] == "PARTY_A"
         assert details["proposed_outcome_b"] == ""
 
     def test_get_contract_details_after_resolution(self, active_contract, direct_vm):
@@ -958,14 +958,14 @@ class TestViewMethodsAcrossStates:
             contract.submit_evidence("Evidence A")
         direct_vm.mock_llm(
             r".*",
-            '{"verdict": "TRUE", "reasoning": "Evidence supports the claim."}'
+            '{"verdict": "PARTY_A", "reasoning": "Evidence supports the claim."}'
         )
         with direct_vm.prank(bob):
             contract.submit_evidence("Evidence B")
         # Auto-resolved after second evidence
         details = json.loads(contract.get_contract_details())
         assert details["status"] == "resolved"
-        assert details["verdict"] == "TRUE"
+        assert details["verdict"] == "PARTY_A"
         assert details["reasoning"] == "Evidence supports the claim."
         assert details["evidence_a"] == "Evidence A"
         assert details["evidence_b"] == "Evidence B"
@@ -986,7 +986,7 @@ class TestViewMethodsAcrossStates:
             contract.submit_evidence("A evidence preserved")
         direct_vm.mock_llm(
             r".*",
-            '{"verdict": "FALSE", "reasoning": "Test."}'
+            '{"verdict": "PARTY_B", "reasoning": "Test."}'
         )
         with direct_vm.prank(bob):
             contract.submit_evidence("B evidence preserved")
@@ -1045,9 +1045,9 @@ class TestResolveEdgeCases:
         contract, alice, bob = active_contract
         self._setup_full_dispute(
             contract, alice, bob, direct_vm,
-            '```json\n{"verdict": "TRUE", "reasoning": "Fenced response."}\n```'
+            '```json\n{"verdict": "PARTY_A", "reasoning": "Fenced response."}\n```'
         )
-        assert contract.verdict == "TRUE"
+        assert contract.verdict == "PARTY_A"
         assert contract.reasoning == "Fenced response."
 
 
@@ -1144,9 +1144,9 @@ class TestSnapshotRevertExtended:
         snap = direct_vm.snapshot()
 
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         assert contract.status == "resolved"
 
         direct_vm.revert(snap)
@@ -1176,8 +1176,8 @@ class TestProposalClearingOnDispute:
         """Proposals are reset when dispute is initiated."""
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
-        assert contract.proposed_outcome_a == "TRUE"
+            contract.propose_outcome("PARTY_A")
+        assert contract.proposed_outcome_a == "PARTY_A"
 
         with direct_vm.prank(alice):
             contract.initiate_dispute()
@@ -1189,9 +1189,9 @@ class TestProposalClearingOnDispute:
         """Both parties' proposals are cleared on dispute."""
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         # This resolves by mutual agreement, so test with non-matching first
         # Actually, same proposal resolves. Let's test a different scenario.
         pass
@@ -1200,9 +1200,9 @@ class TestProposalClearingOnDispute:
         """Disagreeing proposals auto-transition to disputed."""
         contract, alice, bob = active_contract
         with direct_vm.prank(alice):
-            contract.propose_outcome("TRUE")
+            contract.propose_outcome("PARTY_A")
         with direct_vm.prank(bob):
-            contract.propose_outcome("FALSE")
+            contract.propose_outcome("PARTY_B")
         assert contract.status == "disputed"
         assert contract.dispute_timestamp != ""
 
@@ -1356,12 +1356,12 @@ class TestEvidenceDeadline:
         # Resolve should work even without B's evidence
         direct_vm.mock_llm(
             r".*impartial AI juror.*",
-            '{"verdict": "TRUE", "reasoning": "Only A submitted evidence, B defaulted."}'
+            '{"verdict": "PARTY_A", "reasoning": "Only A submitted evidence, B defaulted."}'
         )
         contract.resolve()
 
         assert contract.status == "resolved"
-        assert contract.verdict == "TRUE"
+        assert contract.verdict == "PARTY_A"
 
     def test_resolve_before_deadline_requires_both_evidence(self, direct_vm, direct_deploy):
         """Before deadline, resolution still requires both parties' evidence."""

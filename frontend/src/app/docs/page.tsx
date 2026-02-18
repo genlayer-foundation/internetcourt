@@ -311,17 +311,17 @@ export default function DocsPage() {
           {[
             {
               icon: CheckCircle,
-              verdict: "TRUE",
+              verdict: "PARTY A",
               description:
-                "The statement is confirmed. The evidence supports the claim as defined in the guidelines.",
-              color: "text-emerald-600",
+                "Party A wins. The evidence supports the claim as defined in the guidelines.",
+              color: "text-blue-600",
             },
             {
               icon: XCircle,
-              verdict: "FALSE",
+              verdict: "PARTY B",
               description:
-                "The statement is denied. The evidence does not support the claim as defined in the guidelines.",
-              color: "text-red-600",
+                "Party B wins. The evidence does not support the claim as defined in the guidelines.",
+              color: "text-pink-600",
             },
             {
               icon: HelpCircle,
@@ -386,7 +386,7 @@ export default function DocsPage() {
               </li>
               <li>
                 <strong className="text-foreground">Verdict delivery</strong> —
-                The consensus verdict (TRUE, FALSE, or UNDETERMINED) is
+                The consensus verdict (PARTY A, PARTY B, or UNDETERMINED) is
                 recorded on-chain. The contract moves to RESOLVED.
               </li>
             </ol>
@@ -437,7 +437,7 @@ print(status)  # "ACTIVE"
 
 # Get verdict (after resolution)
 verdict = court.get_verdict(contract.id)
-print(verdict.outcome)    # "TRUE" / "FALSE" / "UNDETERMINED"
+print(verdict.outcome)    # "PARTY A" / "PARTY B" / "UNDETERMINED"
 print(verdict.reasoning)  # "The audit was missing..."
 `}</code>
             </pre>
@@ -471,7 +471,7 @@ print(verdict.reasoning)  # "The audit was missing..."
                     "GenLayer intelligent contract for dispute resolution with full lifecycle management",
                     "Three-key system: mutual agreement (2-of-2) or AI jury tiebreaker",
                     "Contract components: Statement, Guidelines, and Evidence Definitions",
-                    "Resolution outcomes: TRUE, FALSE, or UNDETERMINED verdicts",
+                    "Resolution outcomes: PARTY A, PARTY B, or UNDETERMINED verdicts",
                     "Contract lifecycle: CREATED → ACTIVE → DISPUTED → RESOLVING → RESOLVED",
                     "Web dashboard for humans to monitor agent cases",
                     "Case browser with filtering by status and verdict",

@@ -4,6 +4,14 @@
 
 ## In Progress
 
+### Fix Verdict Semantics — PARTY_A / PARTY_B instead of TRUE / FALSE
+- Replace TRUE/FALSE verdict labels with PARTY_A/PARTY_B across contracts, frontend, MCP, docs
+- No Solidity redeploy needed — same uint8 values (0, 1, 2), just relabeled
+- Files: case_resolution.py, InternetCourt.py, test_internetcourt.py, constants.ts, types.ts, page.tsx, docket/route.ts, tools.ts, skill.md
+- Also fixed: MCP ABI mismatch (proposeOutcome was uint8, now bool to match Solidity), docs/page.tsx verdicts, test_smoke.py, test_studio_deploy.py
+- Frontend build: PASS (zero errors), grep for stale TRUE/FALSE: PASS (all clean)
+- Status: DONE — ready to commit
+
 ### Frontend Performance — Remove Aggressive Caching + Optimize Data Fetching
 - Reduce localStorage TTL from 10min → 2min
 - Add Cache-Control: no-store to API responses

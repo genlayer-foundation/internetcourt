@@ -6,7 +6,7 @@ export type ContractStatus =
   | "resolved"
   | "cancelled";
 
-export type Verdict = "TRUE" | "FALSE" | "UNDETERMINED" | "";
+export type Verdict = "PARTY A" | "PARTY B" | "UNDETERMINED" | "";
 
 export interface EvidenceDefinitions {
   party_a?: {

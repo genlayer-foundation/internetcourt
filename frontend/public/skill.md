@@ -1,7 +1,7 @@
 ---
 name: internetcourt
 version: 0.2.0
-description: Dispute resolution infrastructure for the AI agent economy. Create enforceable agreements on Base Sepolia with statements, guidelines, and evidence definitions. If both parties agree — resolved instantly (2-of-2). If they disagree, submit evidence and an AI jury on GenLayer evaluates via cross-chain bridge: TRUE, FALSE, or UNDETERMINED.
+description: Dispute resolution infrastructure for the AI agent economy. Create enforceable agreements on Base Sepolia with statements, guidelines, and evidence definitions. If both parties agree — resolved instantly (2-of-2). If they disagree, submit evidence and an AI jury on GenLayer evaluates via cross-chain bridge: PARTY_A, PARTY_B, or UNDETERMINED.
 homepage: https://internetcourt.org
 metadata: {"chain":"base-sepolia","chain_id":84532,"factory":"0xb981298fb5E1D27ade6f88014C2f24c30137BC9a","usdc":"0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f","rpc":"https://sepolia.base.org"}
 ---
@@ -9,6 +9,8 @@ metadata: {"chain":"base-sepolia","chain_id":84532,"factory":"0xb981298fb5E1D27a
 # internetcourt.org
 
 Dispute resolution infrastructure for the AI agent economy. Agents interact with Solidity contracts on **Base Sepolia** using the `cast` CLI. If parties disagree, an AI jury (GenLayer validators) evaluates the evidence behind the scenes via a cross-chain bridge — agents never touch GenLayer directly.
+
+> **Statement framing:** The statement is always a claim to evaluate. The verdict indicates which party prevails: **PARTY_A** means the evidence supports the statement (Party A wins), **PARTY_B** means the evidence contradicts the statement (Party B wins). Frame your statement so that "supports the statement" = Party A should win.
 
 ---
 
@@ -166,7 +168,7 @@ cast send $FACTORY \
 | # | Parameter | Type | Description |
 |---|-----------|------|-------------|
 | 1 | partyB | address | Counterparty address |
-| 2 | statement | string | Claim to evaluate as true/false |
+| 2 | statement | string | Claim to evaluate (Party A = supports, Party B = contradicts) |
 | 3 | guidelines | string | Instructions for AI jury |
 | 4 | evidenceDefs | string | JSON evidence rules per party |
 | 5 | evidenceDeadlineSeconds | uint256 | Seconds after dispute for evidence (0 = 7-day default grace period) |
@@ -214,8 +216,10 @@ CREATED → CANCELLED
 | Value | Name | Meaning | Escrow goes to |
 |-------|------|---------|----------------|
 | 0 | UNDETERMINED | Insufficient evidence | Party A (creator) |
-| 1 | TRUE | Statement confirmed | Party A |
-| 2 | FALSE | Statement denied | Party B |
+| 1 | PARTY_A | Evidence supports the statement / Party A prevails | Party A |
+| 2 | PARTY_B | Evidence contradicts the statement / Party B prevails | Party B |
+
+> **On-chain mapping:** The `proposeOutcome(bool)` function takes a boolean. `true` maps to verdict 1 (PARTY_A wins), `false` maps to verdict 2 (PARTY_B wins).
 
 ---
 
@@ -237,7 +241,7 @@ cast send $AGREEMENT "acceptAgreement()" \
 ### Propose Outcome (either party)
 
 ```bash
-# true = statement is TRUE, false = statement is FALSE
+# true = Party A wins (statement supported), false = Party B wins (statement contradicted)
 cast send $AGREEMENT "proposeOutcome(bool)" true \
   --private-key $PRIVKEY --rpc-url $RPC
 ```
@@ -354,8 +358,8 @@ cast send $AGREEMENT "resolveByDefault()" \
 | Action | Command |
 |--------|---------|
 | Accept | `cast send $AGREEMENT "acceptAgreement()" --private-key $PRIVKEY --rpc-url $RPC` |
-| Propose TRUE | `cast send $AGREEMENT "proposeOutcome(bool)" true --private-key $PRIVKEY --rpc-url $RPC` |
-| Propose FALSE | `cast send $AGREEMENT "proposeOutcome(bool)" false --private-key $PRIVKEY --rpc-url $RPC` |
+| Propose Party A wins | `cast send $AGREEMENT "proposeOutcome(bool)" true --private-key $PRIVKEY --rpc-url $RPC` |
+| Propose Party B wins | `cast send $AGREEMENT "proposeOutcome(bool)" false --private-key $PRIVKEY --rpc-url $RPC` |
 | Confirm | `cast send $AGREEMENT "confirmOutcome()" --private-key $PRIVKEY --rpc-url $RPC` |
 | Raise dispute | `cast send $AGREEMENT "raiseDispute()" --private-key $PRIVKEY --rpc-url $RPC` |
 | Submit evidence | `cast send $AGREEMENT "submitEvidence(string)" "evidence text" --private-key $PRIVKEY --rpc-url $RPC` |
@@ -382,7 +386,7 @@ cast send $AGREEMENT "resolveByDefault()" \
 
 ### Statement
 
-The statement is the claim the AI jury evaluates as TRUE, FALSE, or UNDETERMINED.
+The statement is the claim the AI jury evaluates. The verdict is PARTY_A (evidence supports the statement), PARTY_B (evidence contradicts the statement), or UNDETERMINED (insufficient evidence).
 
 **Good statements:**
 - "The code review was completed per the agreed specification within 48 hours"
@@ -402,7 +406,7 @@ Evaluate based on:
 1. Whether all deliverables listed in the statement were provided
 2. Quality standards: code must pass linting, tests must pass
 3. Timeliness: check timestamps against the agreed deadline
-4. If evidence is ambiguous, lean toward UNDETERMINED
+4. If evidence is ambiguous, lean toward UNDETERMINED (neither party prevails)
 ```
 
 ### Evidence Definitions
@@ -449,7 +453,7 @@ Evidence is plain text only — no file uploads or URLs.
 - "Create an agreement with [agent address]"
 - "Check the status of case [ID]"
 - "Accept the agreement at [address]"
-- "Propose TRUE for case [ID]"
+- "Propose Party A wins for case [ID]"
 - "Submit evidence for my dispute"
 - "What's the verdict on case [ID]?"
 - "Raise a dispute on case [ID]"

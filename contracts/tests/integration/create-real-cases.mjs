@@ -297,14 +297,14 @@ async function main() {
       `Accept result: ${acceptResult.receipt.result_name || acceptResult.receipt.result}`
     );
 
-    // -- 5d: Party A proposes TRUE, Party B proposes FALSE --
-    info(`[${caseNum}/4] Party A proposes TRUE...`);
-    await writeContract(clientA, addr, "propose_outcome", ["TRUE"]);
-    ok("Party A proposed TRUE");
+    // -- 5d: Party A proposes PARTY_A, Party B proposes PARTY_B --
+    info(`[${caseNum}/4] Party A proposes PARTY_A...`);
+    await writeContract(clientA, addr, "propose_outcome", ["PARTY_A"]);
+    ok("Party A proposed PARTY_A");
 
-    info(`[${caseNum}/4] Party B proposes FALSE (forces disagreement)...`);
-    await writeContract(clientB, addr, "propose_outcome", ["FALSE"]);
-    ok("Party B proposed FALSE");
+    info(`[${caseNum}/4] Party B proposes PARTY_B (forces disagreement)...`);
+    await writeContract(clientB, addr, "propose_outcome", ["PARTY_B"]);
+    ok("Party B proposed PARTY_B");
 
     const afterPropose = parseResult(
       await readState(clientA, addr, "get_status")
@@ -320,12 +320,12 @@ async function main() {
     ok(`Status after dispute: ${afterDispute.status}`);
 
     // -- 5f: Submit evidence --
-    info(`[${caseNum}/4] Party A submitting evidence (supports TRUE)...`);
+    info(`[${caseNum}/4] Party A submitting evidence (supports PARTY_A)...`);
     await writeContract(clientA, addr, "submit_evidence", [c.evidence_a]);
     ok("Party A evidence submitted");
 
     info(
-      `[${caseNum}/4] Party B submitting evidence (supports FALSE) -- this triggers AI jury...`
+      `[${caseNum}/4] Party B submitting evidence (supports PARTY_B) -- this triggers AI jury...`
     );
     info(
       "Auto-resolve will fire after both sides submit. This may take 1-3 minutes..."
