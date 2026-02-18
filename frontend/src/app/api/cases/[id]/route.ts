@@ -84,6 +84,19 @@ export async function GET(
     }
 
     // Read all fields via multicall
+    // Guard: ensure address has contract code to avoid provider errors
+    try {
+      const bytecode = await publicClient.getBytecode({ address: agreementAddress });
+      if (!bytecode || bytecode === "0x") {
+        return NextResponse.json(
+          { error: "Case not found" },
+          { status: 404, headers: { "Cache-Control": "no-store" } },
+        );
+      }
+    } catch {
+      // If getBytecode fails (RPC issue), proceed with multicall but wrap in try/catch
+    }
+
     const results = await publicClient.multicall({
       contracts: [
         {
