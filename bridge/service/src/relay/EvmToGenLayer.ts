@@ -261,9 +261,19 @@ export class EvmToGenLayer {
           console.log(`[EvmToGenLayer] Oracle finalized: ${txHash}`);
 
           // Best-effort: extract oracle address and verdict/reasoning for UI timeline
-          const oracleAddress: string | undefined =
+          // Prefer fetching receipt to get the deployed contract address reliably
+          const rec = await glGetTransactionReceipt(txHash);
+          let oracleAddress: string | undefined = undefined;
+          if (rec && typeof rec === "object") {
+            oracleAddress =
+              // common shapes observed across backends
+              (rec as any).contract_address || (rec as any).to_address || (rec as any).data?.contract_address;
+          }
+          // Fallback to any address hinted on the tx object
+          if (!oracleAddress) {
             // @ts-expect-error backend-specific
-            (tx as any).to_address || (tx as any).contractAddress || (tx as any).data?.contract_address;
+            oracleAddress = (tx as any).to_address || (tx as any).contractAddress || (tx as any).data?.contract_address;
+          }
 
           let verdictStr = "";
           let reasoningStr = "";
@@ -276,7 +286,6 @@ export class EvmToGenLayer {
           }
 
           // Try to obtain a real timestamp from GL receipt; fallback to now
-          const rec = await glGetTransactionReceipt(txHash);
           const ts = rec && typeof (rec as any).timestamp === "number"
             ? Number((rec as any).timestamp)
             : Math.floor(Date.now() / 1000);

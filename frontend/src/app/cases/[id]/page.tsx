@@ -408,7 +408,6 @@ export default function CaseDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBase, setIsBase] = useState(false);
-  const [oracleAddress, setOracleAddress] = useState<string | null>(null);
 
   const tabParam = searchParams.get("tab");
   const activeTab = tabParam === "docket" ? "docket" : "overview";
@@ -457,16 +456,6 @@ export default function CaseDetailPage({
             proposedOutcomeB: "",
             escrowAmount: casesData.escrowAmount || "0",
           } as MoltContract);
-          // Fetch GenLayer oracle metadata (optional; no error if unavailable)
-          try {
-            const glRes = await fetch(`/api/cases/${encodeURIComponent(address)}/genlayer`);
-            const glData = await glRes.json();
-            if (glRes.ok && !glData.error) {
-              setOracleAddress(glData.oracleAddress || null);
-            }
-          } catch {
-            // Ignore GL metadata failures
-          }
           return;
         }
 
@@ -674,19 +663,7 @@ export default function CaseDetailPage({
                   {contract.reasoning}
                 </p>
               )}
-              {oracleAddress && (
-                <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
-                  <span className="uppercase tracking-wider text-[10px]">GenLayer Oracle</span>
-                  <span className="font-mono">{oracleAddress.slice(0, 10)}...{oracleAddress.slice(-6)}</span>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(oracleAddress)}
-                    className="rounded p-1 hover:text-foreground"
-                    title="Copy GenLayer oracle address"
-                  >
-                    <Copy size={12} />
-                  </button>
-                </div>
-              )}
+              {/* GenLayer oracle address intentionally not shown for now */}
             </div>
           ) : (
             contract.status !== "created" && contract.status !== "active" && (
