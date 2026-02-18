@@ -77,9 +77,12 @@ Respond with ONLY a JSON object, no other text:
         # AI evaluation using GenLayer's equivalence principle
         result_str = gl.eq_principle.prompt_non_comparative(
             lambda: gl.nondet.exec_prompt(task),
-            task="Evaluate a dispute and render a verdict as JSON",
-            criteria="The verdict field must be one of PARTY_A, PARTY_B, or UNDETERMINED. "
-                     "Ignore differences in reasoning wording — only the verdict matters."
+            task="Evaluate a dispute and return strict JSON with both fields",
+            criteria=(
+                "JSON must include fields 'verdict' and 'reasoning'. "
+                "'verdict' must be exactly one of PARTY_A, PARTY_B, UNDETERMINED. "
+                "'reasoning' must be a concise 2-4 sentence explanation grounded in the guidelines and the submitted evidence."
+            ),
         )
 
         try:
@@ -92,7 +95,7 @@ Respond with ONLY a JSON object, no other text:
                 parsed = json.loads(str(result_str))
 
             self.verdict = parsed.get("verdict", "UNDETERMINED")
-            self.reasoning = parsed.get("reasoning", "No reasoning provided")
+            self.reasoning = parsed.get("reasoning", "").strip()
         except (json.JSONDecodeError, TypeError, KeyError) as e:
             self.verdict = "UNDETERMINED"
             self.reasoning = f"Failed to parse LLM response: {str(e)}"
@@ -104,6 +107,26 @@ Respond with ONLY a JSON object, no other text:
             self.reasoning = f"Unexpected verdict '{self.verdict}', defaulting to UNDETERMINED. Original reasoning: {self.reasoning}"
             self.verdict = "UNDETERMINED"
         verdict_uint8 = verdict_map[self.verdict]
+
+        # Fallback: synthesize brief neutral reasoning if still empty
+        if not self.reasoning:
+            try:
+                synth_prompt = f"""You are writing a neutral 2-3 sentence reasoning for an AI jury verdict.
+Verdict: {self.verdict}
+Statement: {statement}
+Guidelines: {guidelines}
+Party A evidence: {evidence_a if evidence_a else '[none]'}
+Party B evidence: {evidence_b if evidence_b else '[none]'}
+
+Write a concise explanation grounded in the guidelines and evidence. Do not include JSON or markup."""
+                rr = gl.nondet.exec_prompt(synth_prompt)
+                if isinstance(rr, str):
+                    rr = rr.replace("```", "").strip()
+                else:
+                    rr = str(rr)
+                self.reasoning = rr[:1000]
+            except Exception:
+                self.reasoning = "Reasoning unavailable"
 
         # Double-wrapped ABI encoding
         # Inner: (address target, uint8 verdict, string reasoning)

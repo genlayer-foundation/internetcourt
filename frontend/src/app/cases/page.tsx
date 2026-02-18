@@ -105,6 +105,10 @@ const STATUS_MAP: Record<string, ContractStatus> = {
 };
 
 function baseToMoltContract(c: Record<string, unknown>): MoltContract {
+  const statusName = (c.statusName as string) || "";
+  const isResolved = statusName === "RESOLVED";
+  const verdictIndex = Number(c.verdict);
+  const verdictStr = isResolved ? (VERDICT_NAMES[verdictIndex] || "") : "";
   return {
     address: c.address as string,
     partyA: (c.partyA as string) || "",
@@ -116,7 +120,7 @@ function baseToMoltContract(c: Record<string, unknown>): MoltContract {
     evidenceA: "",
     evidenceB: "",
     // Only show verdict when server marked it (RESOLVED) — otherwise empty.
-    verdict: (VERDICT_NAMES[Number(c.verdict)] || "") as MoltContract["verdict"],
+    verdict: verdictStr as MoltContract["verdict"],
     reasoning: "",
     proposedOutcomeA: "",
     proposedOutcomeB: "",
@@ -572,7 +576,7 @@ function ContractCard({
   const [copied, setCopied] = useState(false);
   // Verdict is already available from the list API response (via baseToMoltContract),
   // so no per-card detail fetch is needed — eliminates N+1 requests.
-  const displayVerdict = c.verdict || "";
+  const displayVerdict = c.status === "resolved" ? (c.verdict || "") : "";
 
   // Fix #5: Only show date section when dates exist AND are valid
   const createdAtValid = c.createdAt && !isNaN(new Date(c.createdAt).getTime());

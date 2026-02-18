@@ -99,7 +99,13 @@ app.get("/cases/:agreement/gl", (req, res) => {
       links: [],
     });
 
-    return res.json({ entries });
+    return res.json({
+      entries,
+      meta: {
+        oracleAddress: (m.oracleAddress || null) as string | null,
+        oracleTxHash: txHash || null,
+      },
+    });
   } catch (e) {
     console.error("[/cases/:agreement/gl] error:", e);
     return res.status(500).json({ error: "Internal error" });
