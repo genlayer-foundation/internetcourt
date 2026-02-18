@@ -150,8 +150,9 @@ export async function GET(req: NextRequest) {
           results[4].status === "success"
             ? (results[4].result as bigint).toString()
             : "0";
-        const verdict =
+        const rawVerdict =
           results[5].status === "success" ? Number(results[5].result) : 0;
+        const verdict = status === 4 ? rawVerdict : -1; // hide until RESOLVED
 
         // Apply filters
         if (statusFilter !== null && status !== statusFilter) {
@@ -182,7 +183,7 @@ export async function GET(req: NextRequest) {
           statement,
           escrowAmount,
           verdict,
-          verdictName: VERDICT_NAMES[verdict] || "UNDETERMINED",
+          verdictName: status === 4 ? (VERDICT_NAMES[verdict] || "UNDETERMINED") : "",
         });
       }
     }

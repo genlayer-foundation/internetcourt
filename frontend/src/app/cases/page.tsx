@@ -115,6 +115,7 @@ function baseToMoltContract(c: Record<string, unknown>): MoltContract {
     status: STATUS_MAP[(c.statusName as string) || ""] || "created",
     evidenceA: "",
     evidenceB: "",
+    // Only show verdict when server marked it (RESOLVED) — otherwise empty.
     verdict: (VERDICT_NAMES[Number(c.verdict)] || "") as MoltContract["verdict"],
     reasoning: "",
     proposedOutcomeA: "",
@@ -568,6 +569,7 @@ function ContractCard({
   highlight?: boolean;
   index?: number;
 }) {
+  const [copied, setCopied] = useState(false);
   // Verdict is already available from the list API response (via baseToMoltContract),
   // so no per-card detail fetch is needed — eliminates N+1 requests.
   const displayVerdict = c.verdict || "";
@@ -637,9 +639,6 @@ function ContractCard({
                 <span>
                   Counterparty: <span className="font-mono">{formatAddress(c.partyB)}</span>
                 </span>
-                <span className="font-mono text-xs opacity-60">
-                  {formatAddress(c.address)}
-                </span>
                 {c.escrowAmount && c.escrowAmount !== "0" && (
                   <span className="text-xs text-muted-foreground">
                     Escrow: {(Number(c.escrowAmount) / 1e6).toFixed(2)} USDC
@@ -660,6 +659,24 @@ function ContractCard({
                   )}
                 </div>
               )}
+            </div>
+            {/* Top-right: address with copy */}
+            <div className="shrink-0 flex items-center gap-1 text-[11px] text-muted-foreground">
+              <span className="font-mono" title={c.address}>{formatAddress(c.address)}</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(c.address);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="rounded p-1 hover:text-foreground"
+                aria-label="Copy address"
+                title="Copy address"
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+              </button>
             </div>
           </div>
 

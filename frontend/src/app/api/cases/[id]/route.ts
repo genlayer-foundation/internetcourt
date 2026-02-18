@@ -186,7 +186,8 @@ export async function GET(
     }
 
     const statusNum = Number(getResult(0) ?? 0);
-    const verdictNum = Number(getResult(10) ?? 0);
+    const rawVerdict = Number(getResult(10) ?? 0);
+    const verdictNum = statusNum === 4 ? rawVerdict : -1; // show only when RESOLVED
 
     const caseData = {
       id: caseId,
@@ -203,7 +204,7 @@ export async function GET(
       evidenceASubmitted: getResult(8) ?? false,
       evidenceBSubmitted: getResult(9) ?? false,
       verdict: verdictNum,
-      verdictName: VERDICT_NAMES[verdictNum] || "UNDETERMINED",
+      verdictName: statusNum === 4 ? (VERDICT_NAMES[verdictNum] || "UNDETERMINED") : "",
       reasoning: getResult(11) ?? "",
       escrowAmount: ((getResult(12) as bigint) ?? BigInt(0)).toString(),
       joinDeadline: ((getResult(13) as bigint) ?? BigInt(0)).toString(),
