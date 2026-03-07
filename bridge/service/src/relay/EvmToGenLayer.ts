@@ -1,16 +1,17 @@
 /**
- * EvmToGenLayer relay — Base -> GenLayer direction.
+ * EvmToGenLayer relay — Base → GenLayer direction.
  *
- * Polls the InternetCourtFactory on Base for DisputeRequested events.
- * When a new dispute is detected:
- *   1. Fetches all case data from the Agreement contract via free view calls.
- *   2. Deploys a single-use case_resolution.py oracle to GenLayer with the
- *      case data as constructor arguments.
- *   3. Waits for the oracle to finalize (up to 3 minutes).
+ * Polls InternetCourtFactory on Base for DisputeRequested events.
+ * For each new case:
+ *   1. Reads IResolutionTarget.getOracleType() from the case contract.
+ *   2. Looks up the oracle source + arg decoder in ORACLE_REGISTRY.
+ *   3. Reads IResolutionTarget.getOracleArgs() and decodes per-type.
+ *   4. Deploys the oracle to GenLayer with the decoded args + bridge config.
+ *   5. Waits for finalization (up to MAX_FINALIZATION_WAIT_MS).
  *
- * Processed disputes are persisted to a JSON file (bridge/service/data/processed.json)
- * so they survive service restarts. The in-memory Set is loaded from the file
- * on startup and written back after each successful processing.
+ * Adding a new case type requires only:
+ *   - A new entry in ORACLE_REGISTRY (oracle source path + arg decoder)
+ *   - No changes to the relay's core dispatch logic
  */
 
 import { ethers } from "ethers";
@@ -23,43 +24,84 @@ import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
 import { setTimeout as sleep } from "node:timers/promises";
 
-// ----- Persistence paths -----
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, "../../data");
+const DATA_DIR       = path.resolve(__dirname, "../../data");
 const PROCESSED_FILE = path.join(DATA_DIR, "processed.json");
-const GL_META_FILE = path.join(DATA_DIR, "genlayer.json");
+const GL_META_FILE   = path.join(DATA_DIR, "genlayer.json");
 
-// ----- ABIs (human-readable, ethers v6) -----
+// ── Oracle type identifiers — must match keccak256() in Solidity ──────────────
 
-const AGREEMENT_ABI = [
-  "function getStatement() view returns (string)",
-  "function getGuidelines() view returns (string)",
-  "function getEvidenceDefs() view returns (string)",
-  "function getEvidenceA() view returns (string)",
-  "function getEvidenceB() view returns (string)",
-  "function getPartyA() view returns (address)",
-  "function getPartyB() view returns (address)",
-  "function statement() view returns (string)",
-  "function escrowAmount() view returns (uint256)",
-];
+const ORACLE_TYPE_AGENT_DISPUTE  = ethers.id("AGENT_DISPUTE_V1");
+const ORACLE_TYPE_TRADE_FINANCE  = ethers.id("TRADE_FINANCE_V1");
+
+// ── Oracle registry ───────────────────────────────────────────────────────────
+//
+// Each entry maps an oracle type bytes32 → {
+//   sourcePath: path to the GenLayer Python oracle (relative to service root)
+//   decodeArgs: function that ABI-decodes getOracleArgs() bytes into a plain array
+//               suitable for glClient.deployContract({ args: [...] })
+// }
+//
+// The relay appends bridge_sender, target_chain_eid, and target_contract
+// (the factory address) to every oracle's args from config. Each oracle's
+// __init__ must accept these as its final three parameters.
+
+type OracleEntry = {
+  sourcePath: string;
+  decodeArgs: (encoded: string) => unknown[];
+};
+
+const ORACLE_REGISTRY: Record<string, OracleEntry> = {
+
+  // ── Agent dispute — deploys case_resolution.py ────────────────────────────
+  // getOracleArgs() returns: abi.encode(address agreementAddress, string statement,
+  //   string guidelines, string evidenceA, string evidenceB, string evidenceDefs)
+  [ORACLE_TYPE_AGENT_DISPUTE]: {
+    sourcePath: "./contracts/bridge/case_resolution.py",
+    decodeArgs: (encoded) => {
+      const [agreementAddress, statement, guidelines, evidenceA, evidenceB, evidenceDefs] =
+        ethers.AbiCoder.defaultAbiCoder().decode(
+          ["address", "string", "string", "string", "string", "string"],
+          encoded,
+        );
+      return [agreementAddress, statement, guidelines, evidenceA, evidenceB, evidenceDefs];
+    },
+  },
+
+  // ── Trade Finance — deploys ShipmentDeadlineCourt.py ─────────────────────
+  // getOracleArgs() returns: abi.encode(string caseId, address settlementContract,
+  //   string statement, string guidelineVersion, string sheetACid, string sheetBCid)
+  [ORACLE_TYPE_TRADE_FINANCE]: {
+    sourcePath: "./contracts/bridge/ShipmentDeadlineCourt.py",
+    decodeArgs: (encoded) => {
+      const [caseId, settlementContract, statement, guidelineVersion, sheetACid, sheetBCid] =
+        ethers.AbiCoder.defaultAbiCoder().decode(
+          ["string", "address", "string", "string", "string", "string"],
+          encoded,
+        );
+      return [caseId, settlementContract, statement, guidelineVersion, sheetACid, sheetBCid];
+    },
+  },
+};
+
+// ── ABIs ──────────────────────────────────────────────────────────────────────
 
 const FACTORY_ABI = [
   "event DisputeRequested(address indexed agreementAddress, uint256 timestamp)",
 ];
 
-// ----- Constants -----
+const RESOLUTION_TARGET_ABI = [
+  "function getOracleType() view returns (bytes32)",
+  "function getOracleArgs() view returns (bytes)",
+];
 
-/** How far back to look on first run (~30 min of Base blocks at 2s/block) */
-const INITIAL_LOOKBACK_BLOCKS = 1000;
+// ── Timing ────────────────────────────────────────────────────────────────────
 
-/** Maximum time to wait for oracle finalization (ms) */
-const MAX_FINALIZATION_WAIT_MS = 3 * 60 * 1000; // 3 minutes
+const INITIAL_LOOKBACK_BLOCKS  = 2000;  // ~60 min of Base blocks at 2s/block
+const MAX_FINALIZATION_WAIT_MS = 6 * 60 * 1000; // 6 minutes
+const FINALIZATION_POLL_MS     = 5000;
 
-/** Polling interval when waiting for finalization (ms) */
-const FINALIZATION_POLL_MS = 3000;
-
-// ----- Class -----
+// ── Class ─────────────────────────────────────────────────────────────────────
 
 export class EvmToGenLayer {
   private baseProvider: ethers.JsonRpcProvider;
@@ -70,267 +112,144 @@ export class EvmToGenLayer {
 
   constructor() {
     this.baseProvider = new ethers.JsonRpcProvider(config.BASE_RPC_URL);
-    this.factory = new ethers.Contract(
-      config.FACTORY_ADDRESS,
-      FACTORY_ABI,
-      this.baseProvider,
-    );
+    this.factory = new ethers.Contract(config.FACTORY_ADDRESS, FACTORY_ABI, this.baseProvider);
 
-    // Build GenLayer client with the relay wallet account so we can deploy
     const account = createAccount(config.RELAY_PRIVATE_KEY as `0x${string}`);
-    this.glClient = createClient({
-      chain: studionet,
-      endpoint: config.GENLAYER_RPC_URL,
-      account,
-    });
+    this.glClient = createClient({ chain: studionet, endpoint: config.GENLAYER_RPC_URL, account });
 
-    // Load previously processed disputes from disk
     this.processedDisputes = this.loadProcessed();
   }
 
-  // ----- Persistence helpers -----
+  // ── Poll ─────────────────────────────────────────────────────────────────
 
-  /**
-   * Load processed dispute addresses from the JSON file on disk.
-   * Returns an empty Set if the file doesn't exist or is corrupt.
-   */
-  private loadProcessed(): Set<string> {
-    try {
-      if (fs.existsSync(PROCESSED_FILE)) {
-        const data = JSON.parse(fs.readFileSync(PROCESSED_FILE, "utf-8"));
-        console.log(
-          `[EvmToGenLayer] Loaded ${data.length} processed disputes from ${PROCESSED_FILE}`,
-        );
-        return new Set(data);
-      }
-    } catch (e) {
-      console.warn(
-        "[EvmToGenLayer] Could not load processed file, starting fresh:",
-        e,
-      );
-    }
-    return new Set();
-  }
-
-  /**
-   * Persist the current set of processed dispute addresses to disk.
-   * Creates the data directory if it doesn't exist.
-   */
-  private saveProcessed(): void {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(
-      PROCESSED_FILE,
-      JSON.stringify([...this.processedDisputes], null, 2),
-    );
-  }
-
-  /** Load persisted GenLayer metadata map { agreementLower: {...} } */
-  private loadGlMeta(): Record<string, any> {
-    try {
-      if (fs.existsSync(GL_META_FILE)) {
-        return JSON.parse(fs.readFileSync(GL_META_FILE, "utf-8"));
-      }
-    } catch (e) {
-      console.warn("[EvmToGenLayer] Could not load GL meta file, starting empty:", e);
-    }
-    return {};
-  }
-
-  /** Atomic write to persist GenLayer metadata */
-  private saveGlMeta(meta: Record<string, any>): void {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    const tmp = GL_META_FILE + ".tmp";
-    fs.writeFileSync(tmp, JSON.stringify(meta, null, 2));
-    fs.renameSync(tmp, GL_META_FILE);
-  }
-
-  /**
-   * Single poll iteration. Called on a setInterval from the entry point.
-   */
   async poll(): Promise<void> {
     const currentBlock = await this.baseProvider.getBlockNumber();
 
     if (this.lastBlock === 0) {
-      // On first run, look back a reasonable distance
       this.lastBlock = Math.max(0, currentBlock - INITIAL_LOOKBACK_BLOCKS);
     }
+    if (currentBlock < this.lastBlock) return;
 
-    if (currentBlock < this.lastBlock) return; // chain re-org safety
-
-    // Query for DisputeRequested events in the block range
-    const filter = this.factory.filters.DisputeRequested();
     const events = await this.factory.queryFilter(
-      filter,
+      this.factory.filters.DisputeRequested(),
       this.lastBlock,
       currentBlock,
     );
 
     for (const event of events) {
       const log = event as ethers.EventLog;
-      const agreementAddress: string = log.args[0];
+      const caseAddress: string = log.args[0];
 
-      if (this.processedDisputes.has(agreementAddress)) continue;
+      if (this.processedDisputes.has(caseAddress.toLowerCase())) continue;
 
-      console.log(
-        `[EvmToGenLayer] New dispute detected: ${agreementAddress} (block ${log.blockNumber})`,
-      );
+      console.log(`[EvmToGenLayer] DisputeRequested: ${caseAddress} (block ${log.blockNumber})`);
 
       try {
-        await this.processDispute(agreementAddress);
-        this.processedDisputes.add(agreementAddress);
+        await this.processCase(caseAddress);
+        this.processedDisputes.add(caseAddress.toLowerCase());
         this.saveProcessed();
       } catch (err) {
-        console.error(
-          `[EvmToGenLayer] Failed to process dispute ${agreementAddress}:`,
-          err,
-        );
+        console.error(`[EvmToGenLayer] Failed to process ${caseAddress}:`, err);
       }
     }
 
     this.lastBlock = currentBlock + 1;
   }
 
-  /**
-   * Fetch case data from Base and deploy the oracle to GenLayer.
-   */
-  private async processDispute(agreementAddress: string): Promise<void> {
-    const agreement = new ethers.Contract(
-      agreementAddress,
-      AGREEMENT_ABI,
-      this.baseProvider,
-    );
+  // ── Core dispatch ─────────────────────────────────────────────────────────
 
-    // Fetch all case data via free view calls (zero gas cost)
-    console.log(`[EvmToGenLayer] Fetching case data for ${agreementAddress}...`);
+  private async processCase(caseAddress: string): Promise<void> {
+    const caseContract = new ethers.Contract(caseAddress, RESOLUTION_TARGET_ABI, this.baseProvider);
 
-    const [statement, guidelines, evidenceDefs, evidenceA, evidenceB] =
-      await Promise.all([
-        agreement.getStatement() as Promise<string>,
-        agreement.getGuidelines() as Promise<string>,
-        agreement.getEvidenceDefs() as Promise<string>,
-        agreement.getEvidenceA() as Promise<string>,
-        agreement.getEvidenceB() as Promise<string>,
-      ]);
+    // 1. Read oracle type
+    const oracleType: string = await caseContract.getOracleType();
+    const entry = ORACLE_REGISTRY[oracleType];
 
-    console.log(
-      `[EvmToGenLayer] Case data fetched. Statement: "${statement.slice(0, 80)}..."`,
-    );
+    if (!entry) {
+      console.error(
+        `[EvmToGenLayer] Unknown oracle type ${oracleType} for ${caseAddress}. ` +
+        `Add it to ORACLE_REGISTRY. Skipping.`,
+      );
+      return;
+    }
 
-    // Read the oracle contract source
-    const oracleCode = fs.readFileSync(config.ORACLE_CONTRACT_PATH, "utf-8");
+    console.log(`[EvmToGenLayer] Oracle type: ${oracleType === ORACLE_TYPE_TRADE_FINANCE
+      ? "TRADE_FINANCE_V1" : "AGENT_DISPUTE_V1"}`);
 
-    // Deploy single-use oracle to GenLayer.
-    // Constructor args must match case_resolution.py __init__ signature:
-    //   agreement_address, statement, guidelines, evidence_a, evidence_b,
-    //   evidence_defs, bridge_sender, target_chain_eid, target_contract
-    console.log(
-      `[EvmToGenLayer] Deploying oracle to GenLayer for ${agreementAddress}...`,
-    );
+    // 2. Read encoded oracle args from case contract
+    const encodedArgs: string = await caseContract.getOracleArgs();
 
+    // 3. Decode per oracle type
+    const caseArgs = entry.decodeArgs(encodedArgs);
+
+    // 4. Load oracle source
+    const oraclePath = path.resolve(__dirname, "../..", entry.sourcePath);
+    const oracleCode = fs.readFileSync(oraclePath, "utf-8");
+
+    // 5. Build final args: [...caseArgs, bridge_sender, target_chain_eid, target_contract]
+    //    All oracle __init__ functions accept these three as their last parameters.
+    const fullArgs = [
+      ...caseArgs,
+      config.BRIDGE_SENDER,   // bridge_sender (str)
+      config.LZ_DST_EID,      // target_chain_eid (int)
+      config.FACTORY_ADDRESS, // target_contract — factory receives the verdict
+    ];
+
+    console.log(`[EvmToGenLayer] Deploying oracle for ${caseAddress}...`);
+    console.log(`[EvmToGenLayer] Oracle: ${path.basename(entry.sourcePath)}`);
+
+    // 6. Deploy to GenLayer
     const txHash = await this.glClient.deployContract({
       code: oracleCode,
-      args: [
-        agreementAddress, // agreement_address (str)
-        statement, // statement (str)
-        guidelines, // guidelines (str)
-        evidenceA, // evidence_a (str)
-        evidenceB, // evidence_b (str)
-        evidenceDefs, // evidence_defs (str)
-        config.BRIDGE_SENDER, // bridge_sender (str)
-        config.LZ_DST_EID, // target_chain_eid (int)
-        config.FACTORY_ADDRESS, // target_contract (str)
-      ],
+      args: fullArgs as any,
+      leaderOnly: false,
     });
 
-    console.log(`[EvmToGenLayer] Oracle deploy tx: ${txHash}`);
+    console.log(`[EvmToGenLayer] Deploy tx: ${txHash}`);
+    console.log(`[EvmToGenLayer] Explorer: https://explorer-studio.genlayer.com/transactions/${txHash}`);
+    console.log(`[EvmToGenLayer] Waiting for AI jury consensus...`);
 
-    // Wait for the oracle transaction to finalize (up to 3 minutes).
-    // The oracle runs its AI evaluation in the constructor, so finalization
-    // means the verdict has been produced and sent to BridgeSender.
-    const maxIterations = Math.ceil(
-      MAX_FINALIZATION_WAIT_MS / FINALIZATION_POLL_MS,
-    );
+    // 7. Wait for finalization
+    await this.waitForFinalization(txHash as TransactionHash, caseAddress);
+  }
 
-    for (let i = 0; i < maxIterations; i++) {
+  // ── Finalization wait ─────────────────────────────────────────────────────
+
+  private async waitForFinalization(txHash: TransactionHash, caseAddress: string): Promise<void> {
+    const maxIter = Math.ceil(MAX_FINALIZATION_WAIT_MS / FINALIZATION_POLL_MS);
+
+    for (let i = 0; i < maxIter; i++) {
+      await sleep(FINALIZATION_POLL_MS);
+
       try {
-        const tx = await this.glClient.getTransaction({ hash: txHash as TransactionHash });
+        const tx = await this.glClient.getTransaction({ hash: txHash });
 
         if (tx.statusName === "FINALIZED") {
-          console.log(`[EvmToGenLayer] Oracle finalized: ${txHash}`);
-
-          // Best-effort: extract oracle address and verdict/reasoning for UI timeline
-          // Prefer fetching receipt to get the deployed contract address reliably
-          const rec = await glGetTransactionReceipt(txHash);
-          let oracleAddress: string | undefined = undefined;
-          if (rec && typeof rec === "object") {
-            oracleAddress =
-              // common shapes observed across backends
-              (rec as any).contract_address || (rec as any).to_address || (rec as any).data?.contract_address;
-          }
-          // Fallback to any address hinted on the tx object
-          if (!oracleAddress) {
-            // @ts-expect-error backend-specific
-            oracleAddress = (tx as any).to_address || (tx as any).contractAddress || (tx as any).data?.contract_address;
-          }
-
-          let verdictStr = "";
-          let reasoningStr = "";
-          if (oracleAddress) {
-            const state = await glGetContractState(oracleAddress);
-            if (state) {
-              verdictStr = String((state as any).verdict || "");
-              reasoningStr = String((state as any).reasoning || "");
-            }
-          }
-
-          // Try to obtain a real timestamp from GL receipt; fallback to now
-          const ts = rec && typeof (rec as any).timestamp === "number"
-            ? Number((rec as any).timestamp)
-            : Math.floor(Date.now() / 1000);
-
-          // Persist minimal GL metadata for docket (non-blocking)
-          try {
-            const meta = this.loadGlMeta();
-            meta[agreementAddress.toLowerCase()] = {
-              oracleTxHash: txHash,
-              oracleAddress: oracleAddress || null,
-              verdict: verdictStr || null,
-              reasoning: reasoningStr || null,
-              timestamp: ts,
-            };
-            this.saveGlMeta(meta);
-            console.log(`[EvmToGenLayer] Saved GL metadata for ${agreementAddress}`);
-          } catch (e) {
-            console.warn("[EvmToGenLayer] Failed to persist GL metadata:", e);
-          }
-
+          console.log(`[EvmToGenLayer] ✅ Oracle finalized: ${txHash}`);
+          await this.persistGlMeta(txHash as string, tx, caseAddress);
           return;
         }
 
         if (tx.statusName === "CANCELED") {
-          console.error(`[EvmToGenLayer] Oracle was canceled: ${txHash}`);
+          console.error(`[EvmToGenLayer] Oracle canceled: ${txHash}`);
           return;
         }
 
-        // Check for terminal failure states
-        if (
-          tx.statusName === "UNDETERMINED" ||
-          tx.resultName === "FAILURE" ||
-          tx.resultName === "DISAGREE" ||
-          tx.resultName === "DETERMINISTIC_VIOLATION"
-        ) {
+        if (["UNDETERMINED", "FAILURE", "DISAGREE", "DETERMINISTIC_VIOLATION"].includes(
+          tx.statusName ?? tx.resultName ?? "",
+        )) {
           console.error(
-            `[EvmToGenLayer] Oracle failed with status=${tx.statusName} result=${tx.resultName}: ${txHash}`,
+            `[EvmToGenLayer] Oracle failed: status=${tx.statusName} result=${tx.resultName}`,
           );
           return;
         }
-      } catch {
-        // getTransaction may throw if the tx is too new
-      }
 
-      await sleep(FINALIZATION_POLL_MS);
+        if (i % 6 === 0) {
+          console.log(`[EvmToGenLayer]   [${i * FINALIZATION_POLL_MS / 1000}s] status=${tx.statusName}`);
+        }
+      } catch {
+        // tx may not be indexed yet — keep polling
+      }
     }
 
     console.error(
@@ -338,33 +257,97 @@ export class EvmToGenLayer {
     );
   }
 
+  // ── Metadata persistence ──────────────────────────────────────────────────
+
+  private async persistGlMeta(txHash: string, tx: any, caseAddress: string): Promise<void> {
+    try {
+      // Oracle address is in tx.data.contract_address
+      const oracleAddress: string | null =
+        tx?.data?.contract_address ?? tx?.to_address ?? null;
+
+      // Read verdict from oracle contract state via eth_getTransactionReceipt
+      let verdict = "";
+      let reasoning = "";
+      if (oracleAddress) {
+        const state = await glCall<any>("gen_call", [{
+          type: "read",
+          to: oracleAddress,
+          from: "0x0000000000000000000000000000000000000000",
+          data: "{}",
+        }]);
+        verdict   = state?.verdict ?? "";
+        reasoning = state?.verdict_reason ?? state?.reasoning ?? "";
+      }
+
+      const meta = this.loadGlMeta();
+      meta[caseAddress.toLowerCase()] = {
+        oracleTxHash:  txHash,
+        oracleAddress: oracleAddress ?? null,
+        verdict:       verdict || null,
+        reasoning:     reasoning || null,
+        timestamp:     Math.floor(Date.now() / 1000),
+      };
+      this.saveGlMeta(meta);
+      console.log(`[EvmToGenLayer] Saved GL metadata for ${caseAddress}`);
+    } catch (e) {
+      console.warn("[EvmToGenLayer] Could not persist GL metadata:", e);
+    }
+  }
+
+  // ── Disk persistence ──────────────────────────────────────────────────────
+
+  private loadProcessed(): Set<string> {
+    try {
+      if (fs.existsSync(PROCESSED_FILE)) {
+        const data = JSON.parse(fs.readFileSync(PROCESSED_FILE, "utf-8"));
+        console.log(`[EvmToGenLayer] Loaded ${data.length} processed cases`);
+        return new Set(data);
+      }
+    } catch (e) {
+      console.warn("[EvmToGenLayer] Could not load processed file, starting fresh:", e);
+    }
+    return new Set();
+  }
+
+  private saveProcessed(): void {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(PROCESSED_FILE, JSON.stringify([...this.processedDisputes], null, 2));
+  }
+
+  private loadGlMeta(): Record<string, any> {
+    try {
+      if (fs.existsSync(GL_META_FILE)) {
+        return JSON.parse(fs.readFileSync(GL_META_FILE, "utf-8"));
+      }
+    } catch { /* empty */ }
+    return {};
+  }
+
+  private saveGlMeta(meta: Record<string, any>): void {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    const tmp = GL_META_FILE + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(meta, null, 2));
+    fs.renameSync(tmp, GL_META_FILE);
+  }
 }
 
-// ----- Helpers: GenLayer raw RPC -----
+// ── GenLayer raw JSON-RPC ─────────────────────────────────────────────────────
 
-async function glJsonRpc<T = unknown>(method: string, params: unknown[]): Promise<T | null> {
+async function glCall<T = unknown>(method: string, params: unknown[]): Promise<T | null> {
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10_000);
-    const res = await fetch(config.GENLAYER_RPC_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-      signal: controller.signal,
-    } as RequestInit);
-    clearTimeout(timer);
+    const res = await fetch(
+      process.env.GENLAYER_RPC_URL || "https://studio.genlayer.com/api",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+        signal: AbortSignal.timeout(10_000),
+      },
+    );
     if (!res.ok) return null;
     const data = await res.json();
     return (data?.result as T) ?? null;
   } catch {
     return null;
   }
-}
-
-async function glGetContractState(address: string): Promise<unknown | null> {
-  return glJsonRpc("gen_getContractState", [address]);
-}
-
-async function glGetTransactionReceipt(txHash: string): Promise<unknown | null> {
-  return glJsonRpc("gen_getTransactionReceipt", [txHash]);
 }

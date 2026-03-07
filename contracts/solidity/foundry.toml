@@ -1,0 +1,8 @@
+[profile.default]
+src = "contracts"
+out = "forge-out"
+libs = ["node_modules"]
+remappings = ["@openzeppelin/=node_modules/@openzeppelin/"]
+via_ir = true
+optimizer = true
+optimizer_runs = 200

@@ -42,10 +42,14 @@ export const config = {
   RELAY_PRIVATE_KEY: process.env.RELAY_PRIVATE_KEY!,
 
   // ---------- Paths ----------
-  /** Path to the case_resolution.py oracle contract source */
+  /** Path to the case_resolution.py oracle contract source (legacy — now resolved via ORACLE_REGISTRY) */
   ORACLE_CONTRACT_PATH:
     process.env.ORACLE_CONTRACT_PATH ||
     "./contracts/bridge/case_resolution.py",
+
+  // ---------- InternetCourt factory v2 ----------
+  // Updated when InternetCourtFactory was redeployed with registerCase() support.
+  // Previous factory: 0xb981298fb5E1D27ade6f88014C2f24c30137BC9a
 
   // ---------- Timing ----------
   /** How often to poll Base for DisputeRequested events (ms) */

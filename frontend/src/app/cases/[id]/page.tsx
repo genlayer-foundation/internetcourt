@@ -8,6 +8,7 @@ import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS } from "@/lib/constants";
 import type { MoltContract, ContractStatus } from "@/lib/types";
 import { Loader2, AlertCircle, Copy, Check, ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { EvidenceBlock } from "@/components/EvidenceBlock";
 
 const STATUS_ORDER: ContractStatus[] = [
   "created",
@@ -81,14 +82,10 @@ function CopyableAddress({ address }: { address: string }) {
   );
 }
 
-function formatEvidence(raw: string): string {
-  if (!raw) return "";
-  try {
-    return JSON.stringify(JSON.parse(raw), null, 2);
-  } catch {
-    return raw;
-  }
-}
+// Evidence is stored on-chain as a plain string.
+// We keep it human-readable and optionally enrich with link previews.
+// (URLs/IPFS are NOT interpreted by the chain; this is UI-only.)
+
 
 function EvidenceDefsSummary({ defs }: { defs: MoltContract["evidenceDefs"] }) {
   if (!defs?.party_a && !defs?.party_b) return null;
@@ -350,15 +347,8 @@ function DocketTab({ address, isBase }: { address: string; isBase: boolean }) {
 
                     {/* Evidence block */}
                     {entry.evidence && (
-                      <div className="mt-2 rounded-md border border-border bg-card/80 px-3.5 py-2.5">
-                        <div className="mb-1 text-[9px] font-bold uppercase tracking-[1.5px] text-muted-foreground/60">
-                          Evidence
-                        </div>
-                        <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-foreground/80">
-                          {(() => {
-                            try { return JSON.stringify(JSON.parse(entry.evidence), null, 2); } catch { return entry.evidence; }
-                          })()}
-                        </pre>
+                      <div className="mt-2">
+                        <EvidenceBlock raw={entry.evidence} dense />
                       </div>
                     )}
 
@@ -597,12 +587,7 @@ export default function CaseDetailPage({
               )}
               {contract.evidenceA && (
                 <div className="mt-3 rounded-[10px] border-l-[3px] border-blue-600 bg-card p-5">
-                  <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Evidence
-                  </div>
-                  <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
-                    {formatEvidence(contract.evidenceA)}
-                  </pre>
+                  <EvidenceBlock raw={contract.evidenceA} tone="blue" />
                 </div>
               )}
             </div>
@@ -638,12 +623,7 @@ export default function CaseDetailPage({
               )}
               {contract.evidenceB && (
                 <div className="mt-3 rounded-[10px] border-l-[3px] border-pink-600 bg-card p-5">
-                  <div className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Evidence
-                  </div>
-                  <pre className="font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
-                    {formatEvidence(contract.evidenceB)}
-                  </pre>
+                  <EvidenceBlock raw={contract.evidenceB} tone="pink" />
                 </div>
               )}
             </div>

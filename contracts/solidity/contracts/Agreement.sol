@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IResolutionTarget} from "./IResolutionTarget.sol";
 
 interface IInternetCourtFactory {
     function requestDispute(address agreementAddress) external;
@@ -22,7 +23,7 @@ interface IInternetCourtFactory {
  *   1. Mutual agreement (2-of-2): Both parties propose the same outcome -> resolves without jury
  *   2. Dispute path: Evidence submitted -> AI jury evaluates -> verdict delivered via bridge
  */
-contract Agreement {
+contract Agreement is IResolutionTarget {
     using SafeERC20 for IERC20;
 
     // ──────────────────────────────────────────────
@@ -525,6 +526,35 @@ contract Agreement {
 
     function getTotalEscrow() external view returns (uint256) {
         return escrowAmount;
+    }
+
+    // ── IResolutionTarget: oracle dispatch ────────────────────────────────────
+
+    /// @notice Oracle type for agent disputes. Relay deploys case_resolution.py.
+    bytes32 public constant ORACLE_TYPE = keccak256("AGENT_DISPUTE_V1");
+
+    function getOracleType() external pure override returns (bytes32) {
+        return ORACLE_TYPE;
+    }
+
+    /**
+     * @notice Returns ABI-encoded constructor args for case_resolution.py:
+     *         (agreement_address, statement, guidelines, evidence_a, evidence_b,
+     *          evidence_defs, bridge_sender, target_chain_eid, target_contract)
+     *
+     *         bridge_sender and target_chain_eid are injected by the relay from
+     *         its own config; they are not stored on-chain. The relay appends them
+     *         after decoding this payload. Encoded here: address + 6 strings.
+     */
+    function getOracleArgs() external view override returns (bytes memory) {
+        return abi.encode(
+            address(this), // agreement_address
+            statement,
+            guidelines,
+            evidenceA,
+            evidenceB,
+            evidenceDefs
+        );
     }
 
     // ──────────────────────────────────────────────

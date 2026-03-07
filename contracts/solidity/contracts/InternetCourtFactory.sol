@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IGenLayerBridgeReceiver} from "./bridge/IGenLayerBridgeReceiver.sol";
+import {IResolutionTarget} from "./IResolutionTarget.sol";
 import {Agreement} from "./Agreement.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -9,36 +10,43 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 /**
  * @title InternetCourtFactory
- * @notice Factory that deploys Agreement contracts and receives bridge verdicts from GenLayer.
- *         Implements IGenLayerBridgeReceiver to process cross-chain verdict messages.
+ * @notice Universal registry and verdict router for InternetCourt cases.
  *
- *         The factory serves two roles:
- *         1. Deploy new Agreement contracts (with escrow forwarding)
- *         2. Receive and route AI jury verdicts from GenLayer via the bridge
+ *         Two registration paths:
+ *           1. createAgreement() — factory deploys an Agreement contract (agent disputes)
+ *           2. registerCase()    — external contract self-registers (trade finance, etc.)
+ *
+ *         All registered cases implement IResolutionTarget. The factory routes
+ *         bridge verdicts to IResolutionTarget(caseAddr).setResolution(verdict, reasoning).
+ *         Each case type handles its own escrow and settlement logic internally.
+ *
+ *         The relay reads IResolutionTarget.getOracleType() and getOracleArgs() to
+ *         dispatch the correct GenLayer oracle without any case-type logic in the relay.
  */
 contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
     using SafeERC20 for IERC20;
 
     // ──────────────────────────────────────────────
-    //  State variables
+    //  State
     // ──────────────────────────────────────────────
 
-    /// @notice Address of the BridgeReceiver contract. Only this address can deliver verdicts.
+    /// @notice Address of the BridgeReceiver. Only it may deliver verdicts.
     address public bridgeReceiver;
 
-    /// @notice Auto-incrementing agreement ID counter
+    /// @notice Auto-incrementing case ID counter.
     uint256 public nextAgreementId;
 
-    /// @notice Track deployed agreements for verification
+    /// @notice Registered case address → registered flag.
+    ///         Covers both factory-deployed Agreement contracts and self-registered externals.
     mapping(address => bool) public deployedAgreements;
 
-    /// @notice Agreement ID -> Agreement address
+    /// @notice Case ID → case address.
     mapping(uint256 => address) public agreements;
 
-    /// @notice Agreement address -> Agreement ID (reverse mapping for O(1) lookup)
+    /// @notice Case address → case ID (reverse lookup).
     mapping(address => uint256) public agreementIds;
 
-    /// @notice Block number at which the factory was deployed (for efficient event indexing)
+    /// @notice Block at deployment (for efficient event indexing).
     uint256 public immutable deploymentBlock;
 
     // ──────────────────────────────────────────────
@@ -52,6 +60,9 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         address partyB
     );
 
+    /// @notice Emitted when any registered case enters dispute resolution.
+    ///         The relay watches this event and uses IResolutionTarget.getOracleType()
+    ///         + getOracleArgs() to dispatch the correct oracle.
     event DisputeRequested(
         address indexed agreementAddress,
         uint256 timestamp
@@ -62,36 +73,28 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         uint8 verdict
     );
 
+    /// @notice Emitted when an external contract self-registers as a case.
+    event CaseRegistered(
+        uint256 indexed id,
+        address indexed caseAddress
+    );
+
     // ──────────────────────────────────────────────
     //  Constructor
     // ──────────────────────────────────────────────
 
-    /**
-     * @param _bridgeReceiver Address of the BridgeReceiver on this chain
-     * @param _owner Admin address
-     */
     constructor(address _bridgeReceiver, address _owner) Ownable(_owner) {
         deploymentBlock = block.number;
         bridgeReceiver = _bridgeReceiver;
     }
 
     // ──────────────────────────────────────────────
-    //  Agreement creation
+    //  Agreement creation (agent disputes)
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Create a new Agreement contract. Party A deposits USDC escrow via ERC-20 transferFrom.
-     * @param partyB Address of the counterparty
-     * @param _statement The claim to be evaluated
-     * @param _guidelines Instructions for AI jury evaluation
-     * @param _evidenceDefs Evidence type definitions for each side
-     * @param _evidenceDeadlineSeconds Evidence submission window (seconds after dispute)
-     * @param _usdcToken Address of the USDC token contract
-     * @param _escrowAmount Amount of USDC to escrow
-     * @param _joinDeadline Timestamp by which party B must accept (0 = no deadline)
-     * @param _maxEvidenceLength Maximum length of evidence in bytes (0 = no limit)
-     * @param _constraints Additional constraints string
-     * @return The address of the deployed Agreement contract
+     * @notice Deploy a new Agreement contract for an agent-to-agent (or agent-to-human) dispute.
+     *         Party A deposits USDC escrow; escrow is forwarded to the Agreement.
      */
     function createAgreement(
         address partyB,
@@ -111,13 +114,13 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
         }
 
         Agreement agreement = new Agreement(
-            msg.sender,         // partyA
+            msg.sender,
             partyB,
             _statement,
             _guidelines,
             _evidenceDefs,
             _evidenceDeadlineSeconds,
-            address(this),      // factory address for callbacks
+            address(this),
             _usdcToken,
             _escrowAmount,
             _joinDeadline,
@@ -129,49 +132,29 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
             IERC20(_usdcToken).safeTransfer(address(agreement), _escrowAmount);
         }
 
-        uint256 id = nextAgreementId++;
-        address addr = address(agreement);
-        deployedAgreements[addr] = true;
-        agreements[id] = addr;
-        agreementIds[addr] = id;
-
-        emit AgreementCreated(id, addr, msg.sender, partyB);
-        return addr;
+        uint256 id = _register(address(agreement));
+        emit AgreementCreated(id, address(agreement), msg.sender, partyB);
+        return address(agreement);
     }
 
     // ──────────────────────────────────────────────
-    //  Bridge receiver implementation
+    //  External case registration (trade finance, etc.)
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Process a bridge message containing a verdict from GenLayer.
-     *         Called by BridgeReceiver after LayerZero delivers the message.
-     * @param message ABI-encoded: (address agreementAddress, bytes resolutionData)
-     *                where resolutionData = ABI-encoded: (address target, uint8 verdict, string reasoning)
+     * @notice Called by an external contract to register itself as a case and
+     *         trigger dispute resolution. The caller must implement IResolutionTarget.
+     *
+     *         The relay will pick up the DisputeRequested event, call
+     *         getOracleType() + getOracleArgs() on msg.sender, and deploy the
+     *         appropriate GenLayer oracle automatically.
+     *
+     * @return id  The assigned case ID.
      */
-    function processBridgeMessage(
-        uint32 /* srcChainId */,
-        address /* srcSender */,
-        bytes calldata message
-    ) external override {
-        // Only the BridgeReceiver can deliver verdicts
-        require(msg.sender == bridgeReceiver, "Only bridge receiver");
-
-        // Decode inner message: (address agreementAddress, bytes resolutionData)
-        (address agreementAddress, bytes memory resolutionData) =
-            abi.decode(message, (address, bytes));
-
-        // Verify the agreement was deployed by this factory
-        require(deployedAgreements[agreementAddress], "Unknown agreement");
-
-        // Decode resolution: (address target, uint8 verdict, string reasoning)
-        (, uint8 _verdict, string memory _reasoning) =
-            abi.decode(resolutionData, (address, uint8, string));
-
-        // Route verdict to the specific agreement
-        Agreement(agreementAddress).setResolution(_verdict, _reasoning);
-
-        emit VerdictReceived(agreementAddress, _verdict);
+    function registerCase() external returns (uint256 id) {
+        id = _register(msg.sender);
+        emit CaseRegistered(id, msg.sender);
+        emit DisputeRequested(msg.sender, block.timestamp);
     }
 
     // ──────────────────────────────────────────────
@@ -179,26 +162,68 @@ contract InternetCourtFactory is IGenLayerBridgeReceiver, Ownable {
     // ──────────────────────────────────────────────
 
     /**
-     * @notice Called by an Agreement contract when it transitions to RESOLVING.
-     *         Emits a DisputeRequested event that the relay service watches for.
-     * @param agreementAddress Address of the agreement requesting dispute resolution
+     * @notice Called by an Agreement contract when it enters RESOLVING state.
+     *         Emits DisputeRequested for the relay to pick up.
      */
     function requestDispute(address agreementAddress) external {
-        require(deployedAgreements[agreementAddress], "Unknown agreement");
-        require(msg.sender == agreementAddress, "Only agreement can request");
-
+        require(deployedAgreements[agreementAddress], "Unknown case");
+        require(msg.sender == agreementAddress, "Only case can request");
         emit DisputeRequested(agreementAddress, block.timestamp);
+    }
+
+    // ──────────────────────────────────────────────
+    //  Bridge verdict delivery
+    // ──────────────────────────────────────────────
+
+    /**
+     * @notice Receive and route a verdict from GenLayer via the bridge.
+     *         Called by BridgeReceiver after LayerZero delivers the message.
+     *
+     * @param message ABI-encoded:
+     *   (address caseAddress, bytes resolutionData)
+     *   where resolutionData = ABI-encoded (address _ignored, uint8 verdict, string reasoning)
+     *
+     *   Routes to IResolutionTarget(caseAddress).setResolution(verdict, reasoning).
+     *   The case contract handles its own escrow settlement.
+     */
+    function processBridgeMessage(
+        uint32 /* srcChainId */,
+        address /* srcSender */,
+        bytes calldata message
+    ) external override {
+        require(msg.sender == bridgeReceiver, "Only bridge receiver");
+
+        (address caseAddress, bytes memory resolutionData) =
+            abi.decode(message, (address, bytes));
+
+        require(deployedAgreements[caseAddress], "Unknown case");
+
+        (, uint8 _verdict, string memory _reasoning) =
+            abi.decode(resolutionData, (address, uint8, string));
+
+        // Generic: works for Agreement, TradeFxSettlement, or any future IResolutionTarget
+        IResolutionTarget(caseAddress).setResolution(_verdict, _reasoning);
+
+        emit VerdictReceived(caseAddress, _verdict);
     }
 
     // ──────────────────────────────────────────────
     //  Admin
     // ──────────────────────────────────────────────
 
-    /**
-     * @notice Update the bridge receiver address. Only callable by owner.
-     * @param _bridgeReceiver New BridgeReceiver address
-     */
     function setBridgeReceiver(address _bridgeReceiver) external onlyOwner {
         bridgeReceiver = _bridgeReceiver;
+    }
+
+    // ──────────────────────────────────────────────
+    //  Internal
+    // ──────────────────────────────────────────────
+
+    function _register(address caseAddr) internal returns (uint256 id) {
+        require(!deployedAgreements[caseAddr], "Already registered");
+        id = nextAgreementId++;
+        deployedAgreements[caseAddr] = true;
+        agreements[id] = caseAddr;
+        agreementIds[caseAddr] = id;
     }
 }
