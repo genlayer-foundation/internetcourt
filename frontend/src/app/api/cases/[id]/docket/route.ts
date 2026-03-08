@@ -55,8 +55,24 @@ const lzLink = (txHash: string): DocketLink => ({
 const getVerdictName = (verdict: number): string =>
   (["UNDETERMINED", "PARTY A", "PARTY B"])[verdict] || "UNKNOWN";
 
+// ShipmentVerdictReceived.verdict uses factory/IC numbering: 0=UNDETERMINED, 1=PARTY_A (TIMELY), 2=PARTY_B (LATE)
 const shipmentVerdictLabel = (v: number): string =>
-  v === 3 ? "TIMELY — exporter wins" : v === 4 ? "LATE — importer wins" : "UNDETERMINED";
+  v === 1 ? "TIMELY — exporter wins" : v === 2 ? "LATE — importer wins" : "UNDETERMINED";
+
+// Decode bytes32 to human-readable ASCII, stripping null bytes
+const bytes32ToAscii = (hex: string): string => {
+  try {
+    const clean = hex.replace(/^0x/, "").replace(/00+$/, "");
+    let result = "";
+    for (let i = 0; i < clean.length; i += 2) {
+      const code = parseInt(clean.slice(i, i + 2), 16);
+      if (code > 31 && code < 127) result += String.fromCharCode(code);
+    }
+    return result || hex;
+  } catch {
+    return hex;
+  }
+};
 
 // TradeFx ABI for log decoding
 const TFX_ABI = parseAbi([
@@ -227,21 +243,21 @@ async function buildTradeFxDocket(
     });
   });
 
-  // RateLocked — GenLayer oracle delivered rate via relayer
+  // RateLocked — GenLayer oracle delivered rate via LayerZero bridge → BridgeReceiver → receiveRate()
   rateLockedLogs.forEach((log) => {
     const rate = log.args.rate ? (Number(log.args.rate) / 1e6).toFixed(6) : "—";
     const settlement = log.args.settlementAmount ? (Number(log.args.settlementAmount) / 1e18).toLocaleString() : "—";
-    const benchmarkId = log.args.benchmarkId ? (log.args.benchmarkId as string).replace(/\0/g, "").trim() : "—";
+    const benchmarkId = log.args.benchmarkId ? bytes32ToAscii(log.args.benchmarkId as string) : "—";
     docket.push({
       action: "FX benchmark locked",
       txHash: log.transactionHash!,
       blockNumber: Number(log.blockNumber),
       timestamp: t(log),
       actor: null,
-      details: `Rate: ${rate} PEN/BOB · Settlement amount: ${settlement} PEN · Benchmark: ${benchmarkId}`,
+      details: `Rate: ${rate} PEN/BOB · Settlement: ${settlement} PEN · Benchmark: ${benchmarkId}\nRate fetched by GenLayer oracle, delivered to Base via LayerZero bridge.`,
       evidence: null,
-      source: "GenLayer",
-      links: [basescanLink(log.transactionHash!)],
+      source: "LayerZero",
+      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
     });
   });
 
@@ -258,8 +274,8 @@ async function buildTradeFxDocket(
       actor: null,
       details: `Prior rate: ${prior} → Rolled rate: ${rolled} PEN/BOB · New due date: ${newDue}`,
       evidence: null,
-      source: "GenLayer",
-      links: [basescanLink(log.transactionHash!)],
+      source: "LayerZero",
+      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
     });
   });
 
