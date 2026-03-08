@@ -177,6 +177,174 @@ const result = await fetch("https://studio.genlayer.com/api", {
 // Parse error.data.receipt.contract_state (base64 values)
 ```
 
+## Writing New Court / Oracle Contracts
+
+> For the full GenLayer developer guide (all storage types, testing framework, SDK reference), see the `genlayer` skill. This section covers the minimum needed to create a new InternetCourt-compatible contract.
+
+### File Headers (Required)
+
+Every GenLayer contract MUST start with these two lines or deployment fails with `absent_runner_comment`:
+
+```python
+# v0.1.0
+# { "Depends": "py-genlayer:latest" }
+```
+
+### Contract Skeleton — Court Type
+
+```python
+# v0.1.0
+# { "Depends": "py-genlayer:latest" }
+from genlayer import *
+import json
+
+class MyNewCourt(gl.Contract):
+    statement: str
+    evidence_a: str
+    evidence_b: str
+    verdict: str        # "TRUE" | "FALSE" | "UNDETERMINED"
+    reasoning: str
+    status: str
+
+    def __init__(self, statement: str, evidence_a: str, evidence_b: str):
+        self.statement = statement
+        self.evidence_a = evidence_a
+        self.evidence_b = evidence_b
+        self.verdict = ""
+        self.reasoning = ""
+        self.status = "pending"
+
+    @gl.public.write
+    def resolve(self) -> None:
+        # Copy storage to locals — storage NOT accessible inside nondet blocks
+        stmt = self.statement
+        ev_a = self.evidence_a
+        ev_b = self.evidence_b
+
+        def nondet():
+            prompt = f"""You are an impartial AI juror.
+## Statement
+{stmt}
+## Party A Evidence
+{ev_a}
+## Party B Evidence
+{ev_b}
+Respond with JSON: {{"verdict": "TRUE" or "FALSE" or "UNDETERMINED", "reasoning": "..."}}"""
+            result = gl.nondet.exec_prompt(prompt)
+            if isinstance(result, str):
+                result = result.replace("```json", "").replace("```", "").strip()
+            return result
+
+        # USE prompt_non_comparative for AI reasoning (not prompt_comparative)
+        result_str = gl.eq_principle.prompt_non_comparative(
+            nondet,
+            task="Evaluate a dispute and return a verdict",
+            criteria="Verdict must be TRUE, FALSE, or UNDETERMINED. Reasoning must address evidence.",
+        )
+
+        parsed = json.loads(result_str) if isinstance(result_str, str) else result_str
+        self.verdict = parsed["verdict"]
+        self.reasoning = parsed["reasoning"]
+        self.status = "resolved"
+
+    @gl.public.view
+    def get_status(self) -> str:
+        return json.dumps({"status": self.status, "verdict": self.verdict, "reasoning": self.reasoning})
+```
+
+### Contract Skeleton — Oracle Type
+
+```python
+# v0.1.0
+# { "Depends": "py-genlayer:latest" }
+from genlayer import *
+import json
+
+class MyNewOracle(gl.Contract):
+    result: str
+    status: str
+
+    def __init__(self, query_url: str):
+        self.status = "pending"
+        self.result = ""
+
+        # For oracles: USE prompt_comparative (all validators fetch independently)
+        url = query_url
+
+        def nondet():
+            resp = gl.nondet.web.get(url)
+            data = json.loads(resp.body.decode())
+            return json.dumps({"value": data["rate"], "source": url})
+
+        result_str = gl.eq_principle.prompt_comparative(
+            nondet,
+            principle="Results are equivalent if the numeric values are within 1% of each other",
+        )
+        self.result = result_str
+        self.status = "resolved"
+
+    @gl.public.view
+    def get_result(self) -> str:
+        return self.result
+```
+
+### Choosing the Right Equivalence Principle
+
+| Task | Use | Why |
+|------|-----|-----|
+| AI jury / reasoning / evaluation | `prompt_non_comparative` | Different LLMs produce different prose; only the verdict matters |
+| Oracle / price feed / API data | `prompt_comparative` or `strict_eq` | All validators should independently get the same value |
+
+**Key rule:** If two honest validators would produce legitimately different text (AI reasoning), use `prompt_non_comparative`. If they should get the same number, use `prompt_comparative`.
+
+### Storage Types Quick Reference
+
+| Python | GenLayer | Notes |
+|--------|----------|-------|
+| `int` | `u256` | `u256(value)`, arithmetic needs `int()` conversion |
+| `list` | `DynArray[T]` | Persistent array |
+| `dict` | `TreeMap[K,V]` | Keys must be `str` or `u256` |
+| address | `Address` | Handle both `str` and `bytes` in constructor |
+
+### Testing Quick Reference
+
+```bash
+pip install genlayer-test cloudpickle
+genlayer-test
+```
+
+```python
+def test_court(direct_vm, direct_deploy):
+    direct_vm.sender = b'\x01' * 20
+    direct_vm.mock_llm(r".*impartial AI juror.*", '{"verdict": "TRUE", "reasoning": "Test."}')
+    contract = direct_deploy("contracts/MyNewCourt.py", "statement", "ev_a", "ev_b")
+    contract.resolve()
+    assert contract.verdict == "TRUE"
+```
+
+**Critical:** `prompt_non_comparative` is broken in direct test mode. Patch it in `conftest.py`:
+
+```python
+def _patch_prompt_non_comparative():
+    import genlayer.gl.eq_principle as eq_mod
+    import genlayer.gl.vm as vm_mod
+    from genlayer.gl._internal import _lazy_api
+    from genlayer.py.types import Lazy
+    import typing
+
+    @_lazy_api
+    def patched(fn: typing.Callable[[], str], *, task: str, criteria: str) -> Lazy[str]:
+        def validator_fn(leaders_res: vm_mod.Result) -> bool:
+            return vm_mod.spawn_sandbox(fn) == leaders_res
+        return vm_mod.run_nondet_unsafe.lazy(fn, validator_fn)
+
+    eq_mod.prompt_non_comparative = patched
+    import genlayer.gl as gl_mod
+    gl_mod.eq_principle.prompt_non_comparative = patched
+```
+
+Call `_patch_prompt_non_comparative()` **after** `direct_deploy()` loads the SDK.
+
 ## Do Not Overclaim
 
 1. **FX benchmark delivery is relayer-mediated, not LayerZero.** The relayer calls `receiveRate()` directly on the Base contract. The rate is a public market number — verifiable but not cryptographically bridged.
