@@ -13,7 +13,7 @@ import {
   addTrackedAddress,
   removeTrackedAddress,
 } from "@/lib/contract-store";
-import type { MoltContract, ContractStatus } from "@/lib/types";
+import type { InternetContract, ContractStatus } from "@/lib/types";
 import { Plus, Trash2, RefreshCw, Loader2, AlertCircle, Copy, Check, X } from "lucide-react";
 
 const STATUSES: Array<ContractStatus | "ALL"> = [
@@ -30,7 +30,7 @@ const CACHE_KEY = "internetcourt:cases:cache";
 const CACHE_MAX_AGE_MS = 2 * 60 * 1000; // 2 minutes
 
 interface CachedCases {
-  contracts: MoltContract[];
+  contracts: InternetContract[];
   timestamp: number;
 }
 
@@ -46,7 +46,7 @@ function loadCache(): CachedCases | null {
   }
 }
 
-function saveCache(contracts: MoltContract[]) {
+function saveCache(contracts: InternetContract[]) {
   try {
     const data: CachedCases = { contracts, timestamp: Date.now() };
     localStorage.setItem(CACHE_KEY, JSON.stringify(data));
@@ -94,7 +94,7 @@ function formatCourtDate(isoString: string, relative = false): string {
   });
 }
 
-/** Convert Base Sepolia API case to MoltContract format */
+/** Convert Base Sepolia API case to InternetContract format */
 const STATUS_MAP: Record<string, ContractStatus> = {
   CREATED: "created",
   ACTIVE: "active",
@@ -104,7 +104,7 @@ const STATUS_MAP: Record<string, ContractStatus> = {
   CANCELLED: "cancelled",
 };
 
-function baseToMoltContract(c: Record<string, unknown>): MoltContract {
+function baseToInternetContract(c: Record<string, unknown>): InternetContract {
   const statusName = (c.statusName as string) || "";
   const isResolved = statusName === "RESOLVED";
   const verdictIndex = Number(c.verdict);
@@ -119,13 +119,14 @@ function baseToMoltContract(c: Record<string, unknown>): MoltContract {
     status: STATUS_MAP[(c.statusName as string) || ""] || "created",
     evidenceA: "",
     evidenceB: "",
-    // Only show verdict when server marked it (RESOLVED) — otherwise empty.
-    verdict: verdictStr as MoltContract["verdict"],
+    verdict: verdictStr as InternetContract["verdict"],
     reasoning: "",
     proposedOutcomeA: "",
     proposedOutcomeB: "",
-    chainId: 84532, // Base Sepolia
+    chainId: 84532,
     chainName: "Base Sepolia",
+    baseFactory: (c.factoryAddress as string) || undefined,
+    factoryId: typeof c.id === "number" ? c.id : undefined,
     escrowAmount: (c.escrowAmount as string) || "0",
     createdAt: (c.createdAt as string) || undefined,
     updatedAt: (c.updatedAt as string) || undefined,
@@ -133,7 +134,7 @@ function baseToMoltContract(c: Record<string, unknown>): MoltContract {
 }
 
 /** Deduplicate contracts by address (case-insensitive) */
-function deduplicateContracts(allContracts: MoltContract[]): MoltContract[] {
+function deduplicateContracts(allContracts: InternetContract[]): InternetContract[] {
   const seen = new Set<string>();
   return allContracts.filter((c) => {
     const key = c.address.toLowerCase();
@@ -145,7 +146,7 @@ function deduplicateContracts(allContracts: MoltContract[]): MoltContract[] {
 
 export default function CasesPage() {
   const [filter, setFilter] = useState<ContractStatus | "ALL">("ALL");
-  const [contracts, setContracts] = useState<MoltContract[]>([]);
+  const [contracts, setContracts] = useState<InternetContract[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -197,11 +198,11 @@ export default function CasesPage() {
     const allWarnings: string[] = [];
 
     // Launch Base + tracked fetches in parallel
-    const basePromise: Promise<{ cases: MoltContract[]; _aborted?: boolean; _error?: string }> =
+    const basePromise: Promise<{ cases: InternetContract[]; _aborted?: boolean; _error?: string }> =
       fetchJson("/api/cases?limit=100")
         .then((data) => {
-          if (gen !== fetchGenRef.current) return { cases: [] as MoltContract[] };
-          const baseCases: MoltContract[] = (data.cases || []).map(baseToMoltContract);
+          if (gen !== fetchGenRef.current) return { cases: [] as InternetContract[] };
+          const baseCases: InternetContract[] = (data.cases || []).map(baseToInternetContract);
           // Show Base cases as soon as they arrive (intermediate update)
           setContracts(baseCases);
           setShowingCache(false);
@@ -210,11 +211,11 @@ export default function CasesPage() {
         })
         .catch((err) => {
           if (err instanceof DOMException && err.name === "AbortError") {
-            return { cases: [] as MoltContract[], _aborted: true };
+            return { cases: [] as InternetContract[], _aborted: true };
           }
           const msg = err instanceof Error ? err.message : "Base fetch failed";
           console.warn("[cases] Base Sepolia fetch failed:", msg);
-          return { cases: [] as MoltContract[], _error: msg };
+          return { cases: [] as InternetContract[], _error: msg };
         });
 
     const trackedPromise =
@@ -242,7 +243,7 @@ export default function CasesPage() {
     if (gen !== fetchGenRef.current) return;
     clearTimeout(timeout);
 
-    const baseCases: MoltContract[] = baseResult.cases || [];
+    const baseCases: InternetContract[] = baseResult.cases || [];
 
     // Handle Base errors
     if (baseResult._aborted) {
@@ -263,7 +264,7 @@ export default function CasesPage() {
     Object.assign(allErrors, trackedData.errors || {});
 
     // Merge Base cases + tracked and deduplicate
-    const trackedCases: MoltContract[] = (trackedData.cases || []).map(baseToMoltContract);
+    const trackedCases: InternetContract[] = (trackedData.cases || []).map(baseToInternetContract);
     const merged = deduplicateContracts([
       ...baseCases,
       ...trackedCases,
@@ -572,12 +573,12 @@ function ContractCard({
   highlight,
   index = 0,
 }: {
-  contract: MoltContract;
+  contract: InternetContract;
   highlight?: boolean;
   index?: number;
 }) {
   const [copied, setCopied] = useState(false);
-  // Verdict is already available from the list API response (via baseToMoltContract),
+  // Verdict is already available from the list API response (via baseToInternetContract),
   // so no per-card detail fetch is needed — eliminates N+1 requests.
   const displayVerdict = c.status === "resolved" ? (c.verdict || "") : "";
 
@@ -607,6 +608,22 @@ function ContractCard({
                 >
                   Base
                 </Badge>
+                {/* Factory badge — shows which factory version registered this case */}
+                {c.baseFactory && (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-mono font-medium bg-gray-50 text-gray-500 border-gray-200"
+                    title={c.baseFactory}
+                  >
+                    factory {
+                      c.baseFactory.toLowerCase() === "0xd533cb0b52e85b3f506b6f0c28b8f6bc4e449dda"
+                        ? "v2"
+                        : c.baseFactory.toLowerCase() === "0xb981298fb5e1d27ade6f88014c2f24c30137bc9a"
+                        ? "v1"
+                        : `${c.baseFactory.slice(0, 6)}…`
+                    }
+                  </Badge>
+                )}
                 {c.incomplete && (
                   <Badge
                     variant="outline"

@@ -23,7 +23,7 @@ export interface EvidenceDefinitions {
   };
 }
 
-export interface MoltContract {
+export interface InternetContract {
   address: string;
   partyA: string;
   partyB: string;

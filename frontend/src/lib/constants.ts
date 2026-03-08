@@ -14,6 +14,7 @@ export const NAV_LINKS = [
 
 // --- Contract addresses (Base Sepolia) ---
 
+/** Active factory — used for new case creation */
 export const BASE_FACTORY_ADDRESS =
   "0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda" as `0x${string}`;
 
@@ -21,6 +22,28 @@ export const MOCK_USDC_ADDRESS =
   "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f" as `0x${string}`;
 
 export const DEPLOYMENT_BLOCK = 37943500;
+
+/**
+ * Multi-factory registry — all factories whose cases appear in the /cases index.
+ * Add new entries here as factories are deployed; order is display order (newest first).
+ * `deploymentBlock` is used to bound event log queries efficiently.
+ */
+export const FACTORY_REGISTRY: Array<{
+  address: `0x${string}`;
+  label: string;
+  deploymentBlock: number;
+}> = [
+  {
+    address: "0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda",
+    label: "v2",
+    deploymentBlock: 24700000,
+  },
+  {
+    address: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
+    label: "v1",
+    deploymentBlock: 21000000,
+  },
+];
 
 export const BASE_CHAIN_ID = 84532;
 

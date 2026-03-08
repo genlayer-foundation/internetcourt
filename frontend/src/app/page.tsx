@@ -26,7 +26,7 @@ import {
   PackageCheck,
   Activity,
 } from "lucide-react";
-import type { MoltContract } from "@/lib/types";
+import type { InternetContract } from "@/lib/types";
 import { formatAddress } from "@/lib/utils";
 import {
   STATUS_LABELS,
@@ -355,7 +355,7 @@ function CaseTypeExplainer() {
   );
 }
 
-function CaseCard({ contract }: { contract: MoltContract }) {
+function CaseCard({ contract }: { contract: InternetContract }) {
   const statusLabel = STATUS_LABELS[contract.status] || "UNKNOWN";
   const statusColor = STATUS_COLORS[contract.status] || "border-[#0a0a0a] text-[#0a0a0a]";
   const isResolved = contract.status === "resolved";
@@ -421,7 +421,7 @@ function SkeletonCard() {
 }
 
 function LatestCases() {
-  const [cases, setCases] = useState<MoltContract[]>([]);
+  const [cases, setCases] = useState<InternetContract[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -440,7 +440,7 @@ function LatestCases() {
       }
 
       const data = await res.json();
-      const allCases: MoltContract[] = [];
+      const allCases: InternetContract[] = [];
 
       for (const c of data.cases || []) {
         allCases.push({
@@ -450,10 +450,10 @@ function LatestCases() {
           statement: c.statement || "",
           guidelines: "",
           evidenceDefs: {},
-          status: (STATUS_NAMES[c.status] || "UNKNOWN").toLowerCase() as MoltContract["status"],
+          status: (STATUS_NAMES[c.status] || "UNKNOWN").toLowerCase() as InternetContract["status"],
           evidenceA: "",
           evidenceB: "",
-          verdict: "" as MoltContract["verdict"],
+          verdict: "" as InternetContract["verdict"],
           reasoning: "",
           proposedOutcomeA: "",
           proposedOutcomeB: "",

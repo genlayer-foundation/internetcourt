@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STATUS_COLORS, VERDICT_COLORS, STATUS_LABELS } from "@/lib/constants";
-import type { MoltContract, ContractStatus } from "@/lib/types";
+import type { InternetContract, ContractStatus } from "@/lib/types";
 import { Loader2, AlertCircle, Copy, Check, ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { EvidenceBlock } from "@/components/EvidenceBlock";
@@ -87,7 +87,7 @@ function CopyableAddress({ address }: { address: string }) {
 // (URLs/IPFS are NOT interpreted by the chain; this is UI-only.)
 
 
-function EvidenceDefsSummary({ defs }: { defs: MoltContract["evidenceDefs"] }) {
+function EvidenceDefsSummary({ defs }: { defs: InternetContract["evidenceDefs"] }) {
   if (!defs?.party_a && !defs?.party_b) return null;
 
   const formatDef = (def: typeof defs.party_a) => {
@@ -394,7 +394,7 @@ export default function CaseDetailPage({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [contract, setContract] = useState<MoltContract | null>(null);
+  const [contract, setContract] = useState<InternetContract | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBase, setIsBase] = useState(false);
@@ -421,7 +421,7 @@ export default function CaseDetailPage({
         const casesData = await casesRes.json();
 
         if (casesRes.ok && !casesData.error) {
-          // Adapt Base Sepolia response to MoltContract format
+          // Adapt Base Sepolia response to InternetContract format
           const statusMap: Record<string, ContractStatus> = {
             CREATED: "created", ACTIVE: "active", DISPUTED: "disputed",
             RESOLVING: "resolving", RESOLVED: "resolved", CANCELLED: "cancelled",
@@ -445,7 +445,7 @@ export default function CaseDetailPage({
             proposedOutcomeA: "",
             proposedOutcomeB: "",
             escrowAmount: casesData.escrowAmount || "0",
-          } as MoltContract);
+          } as InternetContract);
           return;
         }
 
