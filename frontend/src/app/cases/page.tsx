@@ -547,6 +547,9 @@ export default function CasesPage() {
 
       {/* Factory contract address */}
       <div className="mt-12 border-t border-border/40 pt-4 text-center flex flex-col items-center gap-1">
+        <p className="text-xs text-muted-foreground/50 mb-1">
+          InternetCourtFactory v2 · Base Sepolia · supports <code className="font-mono">createAgreement</code> and <code className="font-mono">registerCase</code>
+        </p>
         <button
           onClick={async () => {
             await navigator.clipboard.writeText(BASE_FACTORY_ADDRESS);

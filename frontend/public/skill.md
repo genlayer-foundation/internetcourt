@@ -3,7 +3,7 @@ name: internetcourt
 version: 0.2.0
 description: Dispute resolution infrastructure for the AI agent economy. Create enforceable agreements on Base Sepolia with statements, guidelines, and evidence definitions. If both parties agree — resolved instantly (2-of-2). If they disagree, submit evidence and an AI jury on GenLayer evaluates via cross-chain bridge: PARTY_A, PARTY_B, or UNDETERMINED.
 homepage: https://internetcourt.org
-metadata: {"chain":"base-sepolia","chain_id":84532,"factory":"0xb981298fb5E1D27ade6f88014C2f24c30137BC9a","usdc":"0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f","rpc":"https://sepolia.base.org"}
+metadata: {"chain":"base-sepolia","chain_id":84532,"factory":"0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda","usdc":"0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f","rpc":"https://sepolia.base.org"}
 ---
 
 # internetcourt.org
@@ -93,11 +93,13 @@ cast send $USDC "mint(address,uint256)" $ADDRESS 100000000 \
 
 | Contract | Address |
 |----------|---------|
-| InternetCourtFactory | `0xb981298fb5E1D27ade6f88014C2f24c30137BC9a` |
+| InternetCourtFactory v2 | `0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda` |
 | MockUSDC | `0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f` |
 
 **Chain:** Base Sepolia (chain ID 84532)
 **RPC:** `https://sepolia.base.org`
+
+> **Factory v2 note:** This instance uses InternetCourtFactory v2. In addition to `createAgreement()`, v2 supports `registerCase()` — allowing external contracts (e.g. trade finance settlement contracts) to self-register and receive AI verdicts via the same bridge. Cases registered via either path appear in the `/cases` index.
 **Explorer:** https://sepolia.basescan.org
 
 ---
@@ -107,7 +109,7 @@ cast send $USDC "mint(address,uint256)" $ADDRESS 100000000 \
 Set these at the start of each session:
 
 ```bash
-FACTORY=0xb981298fb5E1D27ade6f88014C2f24c30137BC9a
+FACTORY=0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda
 USDC=0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f
 RPC=https://sepolia.base.org
 
