@@ -15,12 +15,12 @@ export const NAV_LINKS = [
 // --- Contract addresses (Base Sepolia) ---
 
 export const BASE_FACTORY_ADDRESS =
-  "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a" as `0x${string}`;
+  "0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda" as `0x${string}`;
 
 export const MOCK_USDC_ADDRESS =
   "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f" as `0x${string}`;
 
-export const DEPLOYMENT_BLOCK = 37657150;
+export const DEPLOYMENT_BLOCK = 37943500;
 
 export const BASE_CHAIN_ID = 84532;
 

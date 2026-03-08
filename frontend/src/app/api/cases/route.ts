@@ -104,54 +104,43 @@ export async function GET(req: NextRequest) {
         }
 
         // Read basic fields via multicall
+        // Try to read standard Agreement fields first, fall back to TradeFx names if failure
         const results = await publicClient.multicall({
           contracts: [
-            {
-              address: agreementAddress,
-              abi: AGREEMENT_ABI,
-              functionName: "status",
-            },
-            {
-              address: agreementAddress,
-              abi: AGREEMENT_ABI,
-              functionName: "partyA",
-            },
-            {
-              address: agreementAddress,
-              abi: AGREEMENT_ABI,
-              functionName: "partyB",
-            },
-            {
-              address: agreementAddress,
-              abi: AGREEMENT_ABI,
-              functionName: "statement",
-            },
-            {
-              address: agreementAddress,
-              abi: AGREEMENT_ABI,
-              functionName: "escrowAmount",
-            },
-            {
-              address: agreementAddress,
-              abi: AGREEMENT_ABI,
-              functionName: "verdict",
-            },
+            { address: agreementAddress, abi: AGREEMENT_ABI, functionName: "status" },
+            { address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyA" },
+            { address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyB" },
+            { address: agreementAddress, abi: AGREEMENT_ABI, functionName: "statement" },
+            { address: agreementAddress, abi: AGREEMENT_ABI, functionName: "escrowAmount" },
+            { address: agreementAddress, abi: AGREEMENT_ABI, functionName: "verdict" },
+            // Fallbacks for TradeFxSettlement
+            { address: agreementAddress, abi: parseAbi(["function exporter() view returns (address)"]), functionName: "exporter" },
+            { address: agreementAddress, abi: parseAbi(["function importer() view returns (address)"]), functionName: "importer" },
+            { address: agreementAddress, abi: parseAbi(["function shipmentStatement() view returns (string)"]), functionName: "shipmentStatement" },
+            { address: agreementAddress, abi: parseAbi(["function fundedAmount() view returns (uint256)"]), functionName: "fundedAmount" },
+            { address: agreementAddress, abi: parseAbi(["function shipmentStatus() view returns (uint8)"]), functionName: "shipmentStatus" },
           ],
         });
 
-        const status = results[0].status === "success" ? Number(results[0].result) : 0;
-        const partyA =
-          results[1].status === "success" ? (results[1].result as string) : "";
-        const partyB =
-          results[2].status === "success" ? (results[2].result as string) : "";
-        const statement =
-          results[3].status === "success" ? (results[3].result as string) : "";
-        const escrowAmount =
-          results[4].status === "success"
-            ? (results[4].result as bigint).toString()
-            : "0";
-        const rawVerdict =
-          results[5].status === "success" ? Number(results[5].result) : 0;
+        const statusRaw = results[0].status === "success" ? Number(results[0].result) : null;
+        const partyA = results[1].status === "success" ? (results[1].result as string) : (results[6].status === "success" ? (results[6].result as string) : "");
+        const partyB = results[2].status === "success" ? (results[2].result as string) : (results[7].status === "success" ? (results[7].result as string) : "");
+        const statement = results[3].status === "success" ? (results[3].result as string) : (results[8].status === "success" ? (results[8].result as string) : "");
+        const escrowAmount = results[4].status === "success" 
+          ? (results[4].result as bigint).toString() 
+          : (results[9].status === "success" ? (results[9].result as bigint).toString() : "0");
+        
+        // Map TradeFx status to IC status for listing
+        // TradeFx: 0=DRAFT, 6=SETTLED, 7=CANCELLED
+        // IC: 0=CREATED, 4=RESOLVED, 5=CANCELLED
+        let status = statusRaw !== null ? statusRaw : 0;
+        if (results[10].status === "success") {
+           // If we have shipmentStatus, this is a TradeFx contract
+           const shipStat = Number(results[10].result);
+           if (shipStat >= 3) status = 4; // Resolved
+        }
+
+        const rawVerdict = results[5].status === "success" ? Number(results[5].result) : 0;
         const verdict = status === 4 ? rawVerdict : -1; // hide until RESOLVED
 
         // Apply filters
