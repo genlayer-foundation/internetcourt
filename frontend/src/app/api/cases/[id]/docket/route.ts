@@ -246,7 +246,7 @@ async function buildTradeFxDocket(
 
   // RateLocked — GenLayer oracle delivered rate via LayerZero bridge → BridgeReceiver → receiveRate()
   rateLockedLogs.forEach((log) => {
-    const rate = log.args.rate ? (Number(log.args.rate) / 1e6).toFixed(6) : "—";
+    const rate = log.args.rate ? (Number(log.args.rate) / 1e18).toFixed(6) : "—";
     const settlement = log.args.settlementAmount ? (Number(log.args.settlementAmount) / 1e18).toLocaleString() : "—";
     const benchmarkId = log.args.benchmarkId ? bytes32ToAscii(log.args.benchmarkId as string) : "—";
     docket.push({
@@ -255,17 +255,20 @@ async function buildTradeFxDocket(
       blockNumber: Number(log.blockNumber),
       timestamp: t(log),
       actor: null,
-      details: `Rate: ${rate} PEN/BOB · Settlement: ${settlement} PEN · Benchmark: ${benchmarkId}\nRate fetched by GenLayer oracle, delivered to Base via LayerZero bridge.`,
+      details: `Rate: ${rate} PEN/BOB · Settlement: ${settlement} PEN · Benchmark: ${benchmarkId}\nBenchmark fetched by GenLayer oracle, delivered to Base via bridge.`,
       evidence: null,
-      source: "LayerZero",
-      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
+      source: "GenLayer",
+      links: [
+        basescanLink(log.transactionHash!),
+        { label: "GenLayer Oracle", url: "https://explorer-studio.genlayer.com/contracts/0x3B8501bAcaB70dedbC6f8B8EFCB888ba66cbc73e" },
+      ],
     });
   });
 
   // RateRolled
   rateRolledLogs.forEach((log) => {
-    const prior = log.args.priorRate ? (Number(log.args.priorRate) / 1e6).toFixed(6) : "—";
-    const rolled = log.args.rolledRate ? (Number(log.args.rolledRate) / 1e6).toFixed(6) : "—";
+    const prior = log.args.priorRate ? (Number(log.args.priorRate) / 1e18).toFixed(6) : "—";
+    const rolled = log.args.rolledRate ? (Number(log.args.rolledRate) / 1e18).toFixed(6) : "—";
     const newDue = log.args.newDueDate ? new Date(Number(log.args.newDueDate) * 1000).toISOString().split("T")[0] : "—";
     docket.push({
       action: "Rate rolled to new due date",
