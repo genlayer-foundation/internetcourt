@@ -312,24 +312,35 @@ async function buildTradeFxDocket(
     });
   });
 
-  // ShipmentContested — dispute branch entered
+  // ShipmentContested + DisputeRequested — same tx in practice.
+  // Merge into one entry: "Shipment disputed — forwarded to AI jury via bridge"
+  // If the txHashes differ, fall back to separate entries.
+  const disputeHashSet = new Set(disputeRequestedLogs.map((l) => l.transactionHash));
+
   shipmentContestedLogs.forEach((log) => {
     const deadline = log.args.contestDeadline ? new Date(Number(log.args.contestDeadline) * 1000).toUTCString() : "—";
+    const sameAsBridge = disputeHashSet.has(log.transactionHash!);
     docket.push({
-      action: "Shipment timing contested — dispute opened",
+      action: sameAsBridge
+        ? "Shipment disputed — case registered and forwarded to AI jury via bridge"
+        : "Shipment timing contested — dispute opened",
       txHash: log.transactionHash!,
       blockNumber: Number(log.blockNumber),
       timestamp: t(log),
       actor: log.args.contestant || null,
-      details: `Statement: "${log.args.statement || "—"}"\nEvidence deadline: ${deadline}\nIC case registered via InternetCourtFactory`,
+      details: `Statement: "${log.args.statement || "—"}"\nEvidence deadline: ${deadline}`,
       evidence: null,
-      source: "Base",
-      links: [basescanLink(log.transactionHash!)],
+      source: sameAsBridge ? "LayerZero" : "Base",
+      links: sameAsBridge
+        ? [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)]
+        : [basescanLink(log.transactionHash!)],
     });
   });
 
-  // DisputeRequested (factory event — bridge outbound)
+  // DisputeRequested — only emit if NOT already merged with ShipmentContested above
+  const contestedHashSet = new Set(shipmentContestedLogs.map((l) => l.transactionHash));
   disputeRequestedLogs.forEach((log) => {
+    if (contestedHashSet.has(log.transactionHash!)) return; // merged above
     docket.push({
       action: "Dispute forwarded via LayerZero bridge",
       txHash: log.transactionHash!,
@@ -343,40 +354,52 @@ async function buildTradeFxDocket(
     });
   });
 
-  // VerdictReceived (factory event — bridge inbound)
-  verdictReceivedLogs.forEach((log) => {
-    const v = log.args.verdict !== undefined ? Number(log.args.verdict) : 0;
+  // VerdictReceived (LZ inbound) + ShipmentVerdictReceived (Base) + SettlementCancelledByVerdict
+  // are typically all in the same tx. Merge into one entry per unique txHash.
+  // Build index: txHash → merged info
+  const verdictTxSet = new Set([
+    ...verdictReceivedLogs.map((l) => l.transactionHash),
+    ...shipmentVerdictLogs.map((l) => l.transactionHash),
+    ...settlementCancelledLogs.map((l) => l.transactionHash),
+  ]);
+
+  for (const txHash of verdictTxSet) {
+    const lzLog    = verdictReceivedLogs.find((l) => l.transactionHash === txHash);
+    const baseLog  = shipmentVerdictLogs.find((l) => l.transactionHash === txHash);
+    const cancelLog = settlementCancelledLogs.find((l) => l.transactionHash === txHash);
+    const refundLog = cancelLog; // same as cancel for importer refund
+
+    const anyLog = lzLog ?? baseLog;
+    if (!anyLog) continue;
+
+    const v = baseLog?.args?.verdict !== undefined ? Number(baseLog.args.verdict) : (lzLog?.args?.verdict !== undefined ? Number(lzLog.args.verdict) : 0);
+    const label = shipmentVerdictLabel(v);
+    const reasoning = baseLog?.args?.reasonSummary || null;
+    const refundAmount = refundLog?.args?.refundAmount
+      ? (Number(refundLog.args.refundAmount) / 1e18).toLocaleString()
+      : null;
+
+    const outcome = refundAmount
+      ? `${refundAmount} MockPEN refunded to importer`
+      : label.includes("exporter") ? "Settlement proceeds to exporter" : null;
+
     docket.push({
-      action: `AI verdict relayed via LayerZero: ${getVerdictName(v)}`,
-      txHash: log.transactionHash!,
-      blockNumber: Number(log.blockNumber),
-      timestamp: t(log),
+      action: `Verdict received via bridge: ${label}`,
+      txHash,
+      blockNumber: Number(anyLog.blockNumber),
+      timestamp: t(anyLog),
       actor: null,
-      details: "GenLayer AI jury verdict delivered to Base Sepolia via LayerZero V2.",
+      details: [reasoning, outcome].filter(Boolean).join("\n") || null,
       evidence: null,
       source: "LayerZero",
-      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
+      links: [basescanLink(txHash), lzLink(txHash)],
     });
-  });
+  }
 
-  // ShipmentVerdictReceived — verdict applied to contract
-  shipmentVerdictLogs.forEach((log) => {
-    const v = log.args.verdict !== undefined ? Number(log.args.verdict) : 0;
-    docket.push({
-      action: `Verdict delivered: ${shipmentVerdictLabel(v)}`,
-      txHash: log.transactionHash!,
-      blockNumber: Number(log.blockNumber),
-      timestamp: t(log),
-      actor: log.args.deliveredBy || null,
-      details: log.args.reasonSummary || null,
-      evidence: null,
-      source: "Base",
-      links: [basescanLink(log.transactionHash!)],
-    });
-  });
-
-  // Settled — funds released to exporter
+  // Settled — funds released to exporter (no dispute path — plain accept → settle)
   settledLogs.forEach((log) => {
+    // Skip if this tx was already merged into the verdict entry above
+    if (verdictTxSet.has(log.transactionHash!)) return;
     const amount = log.args.amount ? (Number(log.args.amount) / 1e18).toLocaleString() : "—";
     docket.push({
       action: "Settlement released to exporter",
@@ -385,22 +408,6 @@ async function buildTradeFxDocket(
       timestamp: t(log),
       actor: log.args.exporter || null,
       details: `${amount} MockPEN transferred to exporter.`,
-      evidence: null,
-      source: "Base",
-      links: [basescanLink(log.transactionHash!)],
-    });
-  });
-
-  // SettlementCancelledByVerdict — refund to importer
-  settlementCancelledLogs.forEach((log) => {
-    const amount = log.args.refundAmount ? (Number(log.args.refundAmount) / 1e18).toLocaleString() : "—";
-    docket.push({
-      action: "Settlement cancelled — funds refunded to importer",
-      txHash: log.transactionHash!,
-      blockNumber: Number(log.blockNumber),
-      timestamp: t(log),
-      actor: log.args.importer || null,
-      details: `${amount} MockPEN returned to importer per LATE verdict.`,
       evidence: null,
       source: "Base",
       links: [basescanLink(log.transactionHash!)],
@@ -484,11 +491,43 @@ async function buildTradeFxDocket(
     });
   });
 
-  // Merge GenLayer relay entries (oracle evaluation log, if relay is configured)
+  // GenLayer entry — single collapsed entry, timestamp placed between dispute and verdict.
+  // Compute bounds from the docket we just built.
   try {
-    const glEntries = await glEntriesPromise;
-    if (glEntries.length) docket.push(...glEntries);
-  } catch { /* relay not configured — skip */ }
+    const rawGlEntries = await glEntriesPromise;
+    if (rawGlEntries.length > 0) {
+      // Find the timestamp of the dispute forwarded event (lower bound)
+      const contestedTs = docket
+        .filter((e) => e.source === "LayerZero" && e.action.includes("disputed"))
+        .map((e) => e.timestamp)
+        .find((ts) => ts > 0) ?? 0;
+
+      // Find the timestamp of the verdict received event (upper bound)
+      const verdictTs = docket
+        .filter((e) => e.source === "LayerZero" && e.action.includes("Verdict received"))
+        .map((e) => e.timestamp)
+        .find((ts) => ts > 0) ?? 0;
+
+      // Compute midpoint; fall back to simple offsets if bounds unknown
+      const glTimestamp = contestedTs > 0 && verdictTs > contestedTs
+        ? Math.floor((contestedTs + verdictTs) / 2)
+        : contestedTs > 0
+        ? contestedTs + 240  // ~4 min after dispute
+        : verdictTs > 0
+        ? verdictTs - 60     // ~1 min before verdict
+        : (rawGlEntries[0]?.timestamp ?? 0);
+
+      // Collapse to single GenLayer entry: prefer the verdict entry (most informative)
+      const verdictEntry = rawGlEntries.find((e) => e.action.toLowerCase().includes("verdict"));
+      const entry = verdictEntry ?? rawGlEntries[0];
+
+      docket.push({
+        ...entry,
+        timestamp: glTimestamp,
+        blockNumber: 0, // GenLayer has no Base block number
+      });
+    }
+  } catch { /* GL entries unavailable — skip */ }
 
   docket.sort((a, b) => a.timestamp !== b.timestamp ? a.timestamp - b.timestamp : a.blockNumber - b.blockNumber);
   return docket;
@@ -681,50 +720,23 @@ export async function GET(
       if (!meta) return [];
 
       const glExplorerUrl = `https://explorer-studio.genlayer.com/transactions/${meta.oracleTxHash}`;
-      const entries: DocketEntry[] = [];
-
-      // Entry 1: oracle deployed
-      entries.push({
-        action: "AI jury oracle deployed on GenLayer",
+      // Single collapsed GenLayer entry — oracle deploys + evaluates + dispatches in one tx.
+      // Timestamp will be overridden by buildTradeFxDocket using actual Base event bounds.
+      const validatorLine = meta.validators
+        ? `${meta.validators.agree + meta.validators.disagree} validators · ${meta.validators.agree} agree · ${meta.validators.disagree} disagree`
+        : null;
+      const verdictLine = meta.verdict ?? "UNDETERMINED";
+      const entries: DocketEntry[] = [{
+        action: `AI jury evaluated — verdict: ${verdictLine}`,
         txHash: meta.oracleTxHash,
         blockNumber: 0,
-        timestamp: meta.timestamp - 60, // approximate: deployed ~1 min before verdict
+        timestamp: meta.timestamp, // will be overridden in buildTradeFxDocket
         actor: null,
-        details: meta.validators
-          ? `${meta.validators.agree + meta.validators.disagree} validators · ${meta.validators.agree} agree · ${meta.validators.disagree} disagree`
-          : null,
+        details: [validatorLine].filter(Boolean).join("\n") || null,
         evidence: null,
         source: "GenLayer",
         links: [{ label: "GenLayer Explorer", url: glExplorerUrl }],
-      });
-
-      // Entry 2: verdict reached (if available)
-      if (meta.verdict) {
-        entries.push({
-          action: `AI jury verdict: ${meta.verdict}`,
-          txHash: meta.oracleTxHash,
-          blockNumber: 0,
-          timestamp: meta.timestamp,
-          actor: null,
-          details: meta.reasoning ?? null,
-          evidence: null,
-          source: "GenLayer",
-          links: [{ label: "GenLayer Explorer", url: glExplorerUrl }],
-        });
-      }
-
-      // Entry 3: verdict dispatched to bridge
-      entries.push({
-        action: "Verdict dispatched to LayerZero bridge",
-        txHash: meta.oracleTxHash,
-        blockNumber: 0,
-        timestamp: meta.timestamp + 5,
-        actor: null,
-        details: "BridgeSender.send_message() called on GenLayer → bridge picks up → zkSync Sepolia → Base Sepolia.",
-        evidence: null,
-        source: "GenLayer",
-        links: [{ label: "GenLayer Explorer", url: glExplorerUrl }],
-      });
+      }];
 
       return entries;
     })();
