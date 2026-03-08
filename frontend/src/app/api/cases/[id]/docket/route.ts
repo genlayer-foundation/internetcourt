@@ -246,7 +246,7 @@ async function buildTradeFxDocket(
 
   // RateLocked — GenLayer oracle delivered rate via LayerZero bridge → BridgeReceiver → receiveRate()
   rateLockedLogs.forEach((log) => {
-    const rate = log.args.rate ? (Number(log.args.rate) / 1e6).toFixed(6) : "—";
+    const rate = log.args.rate ? (Number(log.args.rate) / 1e18).toFixed(6) : "—";
     const settlement = log.args.settlementAmount ? (Number(log.args.settlementAmount) / 1e18).toLocaleString() : "—";
     const benchmarkId = log.args.benchmarkId ? bytes32ToAscii(log.args.benchmarkId as string) : "—";
     docket.push({
@@ -264,8 +264,8 @@ async function buildTradeFxDocket(
 
   // RateRolled
   rateRolledLogs.forEach((log) => {
-    const prior = log.args.priorRate ? (Number(log.args.priorRate) / 1e6).toFixed(6) : "—";
-    const rolled = log.args.rolledRate ? (Number(log.args.rolledRate) / 1e6).toFixed(6) : "—";
+    const prior = log.args.priorRate ? (Number(log.args.priorRate) / 1e18).toFixed(6) : "—";
+    const rolled = log.args.rolledRate ? (Number(log.args.rolledRate) / 1e18).toFixed(6) : "—";
     const newDue = log.args.newDueDate ? new Date(Number(log.args.newDueDate) * 1000).toISOString().split("T")[0] : "—";
     docket.push({
       action: "Rate rolled to new due date",
