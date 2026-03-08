@@ -117,14 +117,22 @@ async function fetchCasesFromFactory(
         : (results[9].status === "success" ? (results[9].result as bigint).toString() : "0");
 
       // Map TradeFx status → IC status
+      const isTradeFx = results[10].status === "success";
+      const shipStat = isTradeFx ? Number(results[10].result) : null;
       let status = statusRaw !== null ? statusRaw : 0;
-      if (results[10].status === "success") {
-        const shipStat = Number(results[10].result);
-        if (shipStat >= 3) status = 4; // RESOLVED
+      if (isTradeFx && shipStat !== null) {
+        if (shipStat === 3 || shipStat === 4) status = 4; // TIMELY/LATE → RESOLVED
+        else if (shipStat === 5 || shipStat === 2) status = 3; // UNDETERMINED/CONTESTED → RESOLVING
       }
 
-      const rawVerdict = results[5].status === "success" ? Number(results[5].result) : 0;
-      const verdict = status === 4 ? rawVerdict : -1;
+      // For TradeFx: derive verdict from shipmentStatus, not Agreement verdict()
+      let rawVerdict: number;
+      if (isTradeFx && shipStat !== null) {
+        rawVerdict = shipStat === 3 ? 1 : shipStat === 4 ? 2 : 0; // PARTY A / PARTY B / UNDETERMINED
+      } else {
+        rawVerdict = results[5].status === "success" ? Number(results[5].result) : 0;
+      }
+      const verdict = (status === 4 || (isTradeFx && shipStat !== null && shipStat >= 3)) ? rawVerdict : -1;
 
       if (statusFilter !== null && status !== statusFilter) continue;
       if (partyFilter && partyA.toLowerCase() !== partyFilter && partyB.toLowerCase() !== partyFilter) continue;

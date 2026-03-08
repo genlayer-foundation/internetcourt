@@ -23,11 +23,18 @@ const TRADEFX_ABI = parseAbi([
 // TradeFx shipmentStatus: 0=NONE,1=ACCEPTED,2=CONTESTED,3=TIMELY,4=LATE,5=UNDETERMINED
 // Map to IC status: 0=CREATED,1=ACTIVE,2=DISPUTED,3=RESOLVING,4=RESOLVED,5=CANCELLED
 function tradeFxStatusToIc(tfStatus: number, shipStatus: number): number {
-  if (tfStatus === 7) return 5; // CANCELLED
-  if (tfStatus === 6) return 4; // SETTLED → RESOLVED
-  if (shipStatus === 2) return 3; // CONTESTED → RESOLVING
-  if (tfStatus >= 3) return 2;   // FUNDED/ROLLED → DISPUTED (funded, in flight)
-  return 1;                       // anything else → ACTIVE
+  // Shipment verdict already received — check verdict first, regardless of trade settlement status.
+  // TIMELY (3) or LATE (4): case is fully resolved.
+  if (shipStatus === 3 || shipStatus === 4) return 4; // RESOLVED
+  // UNDETERMINED (5): AI jury returned undetermined, manual review pending.
+  if (shipStatus === 5) return 3; // RESOLVING
+  // CONTESTED (2): waiting for AI jury.
+  if (shipStatus === 2) return 3; // RESOLVING
+  // No verdict yet — fall back to trade status.
+  if (tfStatus === 7) return 5; // CANCELLED (no verdict, e.g. mutual cancel)
+  if (tfStatus === 6) return 4; // SETTLED (accepted path, no contest)
+  if (tfStatus >= 3) return 2;  // FUNDED/ROLLED → funds locked, DISPUTED
+  return 1;                      // ACTIVE
 }
 
 // Map TradeFx shipmentStatus to verdict name
@@ -202,12 +209,13 @@ export async function GET(
       evidenceB = "";
       evidenceASubmitted = false;
       evidenceBSubmitted = false;
-      const isResolved = statusNum === 4;
-      verdictName = isResolved ? shipStatusToVerdict(shipStatus) : "";
-      verdictNum = isResolved
+      // Show verdict whenever shipStatus carries a verdict (>= 3), not just when fully RESOLVED.
+      const hasVerdict = shipStatus >= 3;
+      verdictName = hasVerdict ? shipStatusToVerdict(shipStatus) : "";
+      verdictNum = hasVerdict
         ? (verdictName === "PARTY A" ? 1 : verdictName === "PARTY B" ? 2 : 0)
         : -1;
-      reasoning = isResolved
+      reasoning = hasVerdict
         ? `Shipment verdict: ${shipStatus === 3 ? "TIMELY" : shipStatus === 4 ? "LATE" : "UNDETERMINED"}. See docket for full AI jury reasoning.`
         : "";
       escrowAmount = ((get(21) as bigint) ?? BigInt(0)).toString();
