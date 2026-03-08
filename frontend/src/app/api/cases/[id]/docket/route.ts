@@ -255,10 +255,13 @@ async function buildTradeFxDocket(
       blockNumber: Number(log.blockNumber),
       timestamp: t(log),
       actor: null,
-      details: `Rate: ${rate} PEN/BOB · Settlement: ${settlement} PEN · Benchmark: ${benchmarkId}\nRate fetched by GenLayer oracle, delivered to Base via LayerZero bridge.`,
+      details: `Rate: ${rate} PEN/BOB · Settlement: ${settlement} PEN · Benchmark: ${benchmarkId}\nBenchmark fetched by GenLayer oracle, delivered to Base via bridge.`,
       evidence: null,
-      source: "LayerZero",
-      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
+      source: "GenLayer",
+      links: [
+        basescanLink(log.transactionHash!),
+        { label: "GenLayer Oracle", url: "https://explorer-studio.genlayer.com/contracts/0x3B8501bAcaB70dedbC6f8B8EFCB888ba66cbc73e" },
+      ],
     });
   });
 
