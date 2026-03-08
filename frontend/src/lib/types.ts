@@ -42,6 +42,7 @@ export interface InternetContract {
   chainName?: string;
   factoryId?: number;
   baseFactory?: string;
+  factoryLabel?: string;
   escrowAmount?: string;
   // Timestamps (optional — derived from blockchain events)
   createdAt?: string; // ISO 8601 string

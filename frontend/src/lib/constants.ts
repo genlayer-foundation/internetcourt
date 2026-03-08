@@ -21,12 +21,12 @@ export const BASE_FACTORY_ADDRESS =
 export const MOCK_USDC_ADDRESS =
   "0x58C27C7C1Ff5DBF480c956acf6b119508b6FBa4f" as `0x${string}`;
 
-export const DEPLOYMENT_BLOCK = 37943500;
-
 /**
  * Multi-factory registry — all factories whose cases appear in the /cases index.
  * Add new entries here as factories are deployed; order is display order (newest first).
- * `deploymentBlock` is used to bound event log queries efficiently.
+ * `deploymentBlock` bounds event log queries — use the factory's on-chain deploymentBlock()
+ * return value, not a guess. Wrong values here cause the timestamp fetch to scan millions of
+ * extra blocks and time out.
  */
 export const FACTORY_REGISTRY: Array<{
   address: `0x${string}`;
@@ -36,12 +36,12 @@ export const FACTORY_REGISTRY: Array<{
   {
     address: "0xd533cB0B52E85b3F506b6f0c28b8f6bc4E449Dda",
     label: "v2",
-    deploymentBlock: 24700000,
+    deploymentBlock: 38576182, // cast call 0xd533... "deploymentBlock()(uint256)"
   },
   {
     address: "0xb981298fb5E1D27ade6f88014C2f24c30137BC9a",
     label: "v1",
-    deploymentBlock: 21000000,
+    deploymentBlock: 37657150, // cast call 0xb981... "deploymentBlock()(uint256)"
   },
 ];
 

@@ -126,6 +126,7 @@ function baseToInternetContract(c: Record<string, unknown>): InternetContract {
     chainId: 84532,
     chainName: "Base Sepolia",
     baseFactory: (c.factoryAddress as string) || undefined,
+    factoryLabel: (c.factoryLabel as string) || undefined,
     factoryId: typeof c.id === "number" ? c.id : undefined,
     escrowAmount: (c.escrowAmount as string) || "0",
     createdAt: (c.createdAt as string) || undefined,
@@ -609,19 +610,13 @@ function ContractCard({
                   Base
                 </Badge>
                 {/* Factory badge — shows which factory version registered this case */}
-                {c.baseFactory && (
+                {c.factoryLabel && (
                   <Badge
                     variant="outline"
                     className="text-[10px] font-mono font-medium bg-gray-50 text-gray-500 border-gray-200"
                     title={c.baseFactory}
                   >
-                    factory {
-                      c.baseFactory.toLowerCase() === "0xd533cb0b52e85b3f506b6f0c28b8f6bc4e449dda"
-                        ? "v2"
-                        : c.baseFactory.toLowerCase() === "0xb981298fb5e1d27ade6f88014c2f24c30137bc9a"
-                        ? "v1"
-                        : `${c.baseFactory.slice(0, 6)}…`
-                    }
+                    factory {c.factoryLabel}
                   </Badge>
                 )}
                 {c.incomplete && (
