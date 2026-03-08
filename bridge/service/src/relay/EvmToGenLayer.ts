@@ -265,18 +265,45 @@ export class EvmToGenLayer {
       const oracleAddress: string | null =
         tx?.data?.contract_address ?? tx?.to_address ?? null;
 
-      // Read verdict from oracle contract state via eth_getTransactionReceipt
+      // Read verdict from oracle contract state.
+      // gen_call with empty msgpack dict (0x80) triggers a controlled error whose
+      // error.data.receipt.contract_state contains the full class variable state.
       let verdict = "";
       let reasoning = "";
       if (oracleAddress) {
-        const state = await glCall<any>("gen_call", [{
-          type: "read",
-          to: oracleAddress,
-          from: "0x0000000000000000000000000000000000000000",
-          data: "{}",
-        }]);
-        verdict   = state?.verdict ?? "";
-        reasoning = state?.verdict_reason ?? state?.reasoning ?? "";
+        try {
+          const res = await fetch(
+            process.env.GENLAYER_RPC_URL || "https://studio.genlayer.com/api",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                jsonrpc: "2.0", id: 1,
+                method: "gen_call",
+                params: [{ type: "read", to: oracleAddress, from: "0x0000000000000000000000000000000000000000", data: "0x80" }],
+              }),
+              signal: AbortSignal.timeout(15_000),
+            },
+          );
+          const data = await res.json() as any;
+          // Contract state comes back in error.data.receipt.contract_state (base64-encoded values)
+          const contractState: Record<string, string> =
+            data?.error?.data?.receipt?.contract_state ?? {};
+
+          for (const encoded of Object.values(contractState)) {
+            try {
+              const decoded = Buffer.from(encoded, "base64").toString("utf-8").replace(/\0/g, "").trim();
+              if (decoded === "TIMELY" || decoded === "LATE" || decoded === "UNDETERMINED") {
+                verdict = decoded;
+              } else if (decoded.length > 20 && !decoded.startsWith("#") && !decoded.startsWith("0x") && !decoded.startsWith("Qm") && !decoded.startsWith("shipment")) {
+                // Heuristic: long readable string that isn't code/CID/metadata = reasoning
+                if (decoded.length > reasoning.length) reasoning = decoded;
+              }
+            } catch { /* skip non-utf8 */ }
+          }
+        } catch (e) {
+          console.warn("[EvmToGenLayer] Could not read oracle state:", e);
+        }
       }
 
       const meta = this.loadGlMeta();

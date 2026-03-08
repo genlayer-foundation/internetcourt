@@ -6,6 +6,7 @@ import {
 } from "@/lib/contracts";
 import { parseAbi, parseAbiItem, formatUnits } from "viem";
 import { FACTORY_REGISTRY } from "@/lib/constants";
+import { getGlOracleMeta } from "@/lib/gl-oracle-meta";
 
 interface DocketLink {
   label: string;
@@ -657,21 +658,76 @@ export async function GET(
 
     const currentBlock = await publicClient.getBlockNumber();
 
-    // Kick off GenLayer relay fetch in parallel (best-effort)
+    // GenLayer oracle entries: try relay service first, fall back to static metadata.
     const relayBaseUrl = process.env.RELAY_BASE_URL?.trim();
-    const glEntriesPromise: Promise<DocketEntry[]> = relayBaseUrl
-      ? (async () => {
-          try {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 10_000);
-            const r = await fetch(`${relayBaseUrl.replace(/\/$/, "")}/cases/${agreementAddress}/gl`, { signal: controller.signal });
-            clearTimeout(timeout);
-            if (!r.ok) return [];
+    const glEntriesPromise: Promise<DocketEntry[]> = (async () => {
+      // 1. Try relay service if configured
+      if (relayBaseUrl) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10_000);
+          const r = await fetch(`${relayBaseUrl.replace(/\/$/, "")}/cases/${agreementAddress}/gl`, { signal: controller.signal });
+          clearTimeout(timeout);
+          if (r.ok) {
             const data = await r.json();
-            return (data.entries || []) as DocketEntry[];
-          } catch { return []; }
-        })()
-      : Promise.resolve([]);
+            const entries = (data.entries || []) as DocketEntry[];
+            if (entries.length > 0) return entries;
+          }
+        } catch { /* fall through to static */ }
+      }
+
+      // 2. Fall back to static GL oracle metadata (always available on Vercel)
+      const meta = getGlOracleMeta(agreementAddress);
+      if (!meta) return [];
+
+      const glExplorerUrl = `https://explorer-studio.genlayer.com/transactions/${meta.oracleTxHash}`;
+      const entries: DocketEntry[] = [];
+
+      // Entry 1: oracle deployed
+      entries.push({
+        action: "AI jury oracle deployed on GenLayer",
+        txHash: meta.oracleTxHash,
+        blockNumber: 0,
+        timestamp: meta.timestamp - 60, // approximate: deployed ~1 min before verdict
+        actor: null,
+        details: meta.validators
+          ? `${meta.validators.agree + meta.validators.disagree} validators · ${meta.validators.agree} agree · ${meta.validators.disagree} disagree`
+          : null,
+        evidence: null,
+        source: "GenLayer",
+        links: [{ label: "GenLayer Explorer", url: glExplorerUrl }],
+      });
+
+      // Entry 2: verdict reached (if available)
+      if (meta.verdict) {
+        entries.push({
+          action: `AI jury verdict: ${meta.verdict}`,
+          txHash: meta.oracleTxHash,
+          blockNumber: 0,
+          timestamp: meta.timestamp,
+          actor: null,
+          details: meta.reasoning ?? null,
+          evidence: null,
+          source: "GenLayer",
+          links: [{ label: "GenLayer Explorer", url: glExplorerUrl }],
+        });
+      }
+
+      // Entry 3: verdict dispatched to bridge
+      entries.push({
+        action: "Verdict dispatched to LayerZero bridge",
+        txHash: meta.oracleTxHash,
+        blockNumber: 0,
+        timestamp: meta.timestamp + 5,
+        actor: null,
+        details: "BridgeSender.send_message() called on GenLayer → bridge picks up → zkSync Sepolia → Base Sepolia.",
+        evidence: null,
+        source: "GenLayer",
+        links: [{ label: "GenLayer Explorer", url: glExplorerUrl }],
+      });
+
+      return entries;
+    })();
 
     // Detect contract type and route to correct docket builder
     const tradeFx = await isTradeFx(agreementAddress);
