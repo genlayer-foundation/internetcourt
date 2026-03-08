@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   publicClient,
-  FACTORY_ADDRESS,
   FACTORY_ABI,
   AGREEMENT_ABI,
 } from "@/lib/contracts";
-import { parseAbiItem, formatUnits } from "viem";
+import { parseAbi, parseAbiItem, formatUnits } from "viem";
+import { FACTORY_REGISTRY } from "@/lib/constants";
 
 interface DocketLink {
   label: string;
@@ -24,8 +24,6 @@ interface DocketEntry {
   links: DocketLink[];
 }
 
-// Base Sepolia limits eth_getLogs to 10,000 blocks per query.
-// This helper chunks a log query into 10k-block windows and combines results.
 async function getLogsChunked(params: {
   address: `0x${string}`;
   event: any;
@@ -36,19 +34,570 @@ async function getLogsChunked(params: {
   const CHUNK_SIZE = BigInt(9999);
   const { fromBlock, toBlock, ...rest } = params;
   const logs: any[] = [];
-
   for (let start = fromBlock; start <= toBlock; start += CHUNK_SIZE + BigInt(1)) {
     const end = start + CHUNK_SIZE > toBlock ? toBlock : start + CHUNK_SIZE;
-    const chunk = await publicClient.getLogs({
-      ...(rest as any),
-      fromBlock: start,
-      toBlock: end,
-    });
+    const chunk = await publicClient.getLogs({ ...(rest as any), fromBlock: start, toBlock: end });
     logs.push(...chunk);
   }
-
   return logs;
 }
+
+const basescanLink = (txHash: string): DocketLink => ({
+  label: "Basescan",
+  url: `https://sepolia.basescan.org/tx/${txHash}`,
+});
+
+const lzLink = (txHash: string): DocketLink => ({
+  label: "LayerZero Scan",
+  url: `https://testnet.layerzeroscan.com/tx/${txHash}`,
+});
+
+const getVerdictName = (verdict: number): string =>
+  (["UNDETERMINED", "PARTY A", "PARTY B"])[verdict] || "UNKNOWN";
+
+const shipmentVerdictLabel = (v: number): string =>
+  v === 3 ? "TIMELY — exporter wins" : v === 4 ? "LATE — importer wins" : "UNDETERMINED";
+
+// TradeFx ABI for log decoding
+const TFX_ABI = parseAbi([
+  "event TradeCreated(address indexed exporter, address indexed importer, uint256 invoiceAmount, uint256 dueDate, string invoiceRef)",
+  "event RateLockRequested(address indexed requester, uint256 timestamp)",
+  "event RateLocked(uint256 rate, bytes32 benchmarkType, bytes32 benchmarkId, uint256 asOfTimestamp, uint256 settlementAmount)",
+  "event RateRolled(uint256 priorRate, uint256 rolledRate, uint256 rollCost, uint256 oldDueDate, uint256 newDueDate, bytes32 benchmarkId, uint256 asOfTimestamp)",
+  "event Funded(address indexed funder, uint256 amount, uint256 timestamp)",
+  "event Settled(address indexed exporter, uint256 amount, uint256 timestamp)",
+  "event Cancelled(uint8 reasonCode, address indexed by, uint256 refundAmount, address indexed refundTo)",
+  "event ShipmentAccepted(address indexed by, bool afterDeadline, uint256 timestamp)",
+  "event ShipmentContested(address indexed contestant, string manifestCid, string statement, uint256 contestDeadline, uint256 timestamp)",
+  "event ShipmentVerdictReceived(uint8 verdict, string caseId, string reasonSummary, address indexed deliveredBy, bool fromCourtContract, uint256 timestamp)",
+  "event SettlementCancelledByVerdict(address indexed importer, uint256 refundAmount)",
+  "event SettlementManualReview(string caseId, uint256 reviewDeadline, uint256 timestamp)",
+  "event ManualReviewResolved(address indexed arbitrator, bool timeliness, string reason, uint256 timestamp)",
+  "event ManualReviewTimedOut(address indexed caller, uint256 timestamp)",
+  "event ExceptionFlagged(uint8 reasonCode, bytes32 evidenceRef, address indexed flagger)",
+]);
+
+/**
+ * Find which factory registered this contract address.
+ * Returns { factoryAddress, deploymentBlock } or null.
+ */
+async function findFactory(agreementAddress: string) {
+  for (const f of FACTORY_REGISTRY) {
+    try {
+      const nextId = Number(await publicClient.readContract({ address: f.address, abi: FACTORY_ABI, functionName: "nextAgreementId" }));
+      const BATCH = 20;
+      for (let start = 0; start < nextId; start += BATCH) {
+        const ids = Array.from({ length: Math.min(BATCH, nextId - start) }, (_, i) => start + i);
+        const addrs = await Promise.all(ids.map((i) => publicClient.readContract({ address: f.address, abi: FACTORY_ABI, functionName: "agreements", args: [BigInt(i)] })));
+        for (let i = 0; i < ids.length; i++) {
+          if ((addrs[i] as string).toLowerCase() === agreementAddress.toLowerCase()) {
+            return { factoryAddress: f.address, caseId: ids[i], deploymentBlock: BigInt(f.deploymentBlock) };
+          }
+        }
+      }
+    } catch { /* skip */ }
+  }
+  return null;
+}
+
+/**
+ * Detect if address is a TradeFxSettlement contract by checking for exporter().
+ */
+async function isTradeFx(address: `0x${string}`): Promise<boolean> {
+  try {
+    await publicClient.readContract({ address, abi: parseAbi(["function exporter() view returns (address)"]), functionName: "exporter" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ─── TradeFx docket builder ───────────────────────────────────────────────────
+
+async function buildTradeFxDocket(
+  agreementAddress: `0x${string}`,
+  fromBlock: bigint,
+  currentBlock: bigint,
+  glEntriesPromise: Promise<DocketEntry[]>,
+  factoryAddress: `0x${string}`,
+  caseId: number,
+  deployBlock: bigint,
+): Promise<DocketEntry[]> {
+  // Fetch TradeFx-specific events in parallel
+  const fetch = (eventSig: string) =>
+    getLogsChunked({ address: agreementAddress, event: parseAbiItem(eventSig), fromBlock, toBlock: currentBlock }).catch(() => []);
+
+  const [
+    tradeCreatedLogs,
+    rateLockRequestedLogs,
+    rateLockedLogs,
+    rateRolledLogs,
+    fundedLogs,
+    settledLogs,
+    cancelledLogs,
+    shipmentAcceptedLogs,
+    shipmentContestedLogs,
+    shipmentVerdictLogs,
+    settlementCancelledLogs,
+    manualReviewLogs,
+    manualReviewResolvedLogs,
+    manualReviewTimedOutLogs,
+    exceptionFlaggedLogs,
+  ] = await Promise.all([
+    fetch("event TradeCreated(address indexed exporter, address indexed importer, uint256 invoiceAmount, uint256 dueDate, string invoiceRef)"),
+    fetch("event RateLockRequested(address indexed requester, uint256 timestamp)"),
+    fetch("event RateLocked(uint256 rate, bytes32 benchmarkType, bytes32 benchmarkId, uint256 asOfTimestamp, uint256 settlementAmount)"),
+    fetch("event RateRolled(uint256 priorRate, uint256 rolledRate, uint256 rollCost, uint256 oldDueDate, uint256 newDueDate, bytes32 benchmarkId, uint256 asOfTimestamp)"),
+    fetch("event Funded(address indexed funder, uint256 amount, uint256 timestamp)"),
+    fetch("event Settled(address indexed exporter, uint256 amount, uint256 timestamp)"),
+    fetch("event Cancelled(uint8 reasonCode, address indexed by, uint256 refundAmount, address indexed refundTo)"),
+    fetch("event ShipmentAccepted(address indexed by, bool afterDeadline, uint256 timestamp)"),
+    fetch("event ShipmentContested(address indexed contestant, string manifestCid, string statement, uint256 contestDeadline, uint256 timestamp)"),
+    fetch("event ShipmentVerdictReceived(uint8 verdict, string caseId, string reasonSummary, address indexed deliveredBy, bool fromCourtContract, uint256 timestamp)"),
+    fetch("event SettlementCancelledByVerdict(address indexed importer, uint256 refundAmount)"),
+    fetch("event SettlementManualReview(string caseId, uint256 reviewDeadline, uint256 timestamp)"),
+    fetch("event ManualReviewResolved(address indexed arbitrator, bool timeliness, string reason, uint256 timestamp)"),
+    fetch("event ManualReviewTimedOut(address indexed caller, uint256 timestamp)"),
+    fetch("event ExceptionFlagged(uint8 reasonCode, bytes32 evidenceRef, address indexed flagger)"),
+  ]);
+
+  // Factory events for this case (bridge crossings)
+  const [disputeRequestedLogs, verdictReceivedLogs] = await Promise.all([
+    getLogsChunked({
+      address: factoryAddress,
+      event: parseAbiItem("event DisputeRequested(address indexed agreementAddress, uint256 timestamp)"),
+      args: { agreementAddress },
+      fromBlock: deployBlock,
+      toBlock: currentBlock,
+    }).catch(() => []),
+    getLogsChunked({
+      address: factoryAddress,
+      event: parseAbiItem("event VerdictReceived(address indexed agreementAddress, uint8 verdict)"),
+      args: { agreementAddress },
+      fromBlock: deployBlock,
+      toBlock: currentBlock,
+    }).catch(() => []),
+  ]);
+
+  // Collect all unique block numbers for timestamp lookup
+  const allLogs = [
+    ...tradeCreatedLogs, ...rateLockRequestedLogs, ...rateLockedLogs, ...rateRolledLogs,
+    ...fundedLogs, ...settledLogs, ...cancelledLogs, ...shipmentAcceptedLogs,
+    ...shipmentContestedLogs, ...shipmentVerdictLogs, ...settlementCancelledLogs,
+    ...manualReviewLogs, ...manualReviewResolvedLogs, ...manualReviewTimedOutLogs,
+    ...exceptionFlaggedLogs, ...disputeRequestedLogs, ...verdictReceivedLogs,
+  ];
+
+  const uniqueBlocks = [...new Set(allLogs.map((l) => l.blockNumber))];
+  const blockData = await Promise.all(uniqueBlocks.map((bn) => publicClient.getBlock({ blockNumber: bn })));
+  const ts = new Map<bigint, number>(blockData.map((b) => [b.number, Number(b.timestamp)]));
+
+  const docket: DocketEntry[] = [];
+  const t = (log: any) => ts.get(log.blockNumber) || 0;
+
+  // TradeCreated — contract deployed / trade initiated
+  tradeCreatedLogs.forEach((log) => {
+    const due = log.args.dueDate ? new Date(Number(log.args.dueDate) * 1000).toISOString().split("T")[0] : "—";
+    const notional = log.args.invoiceAmount ? (Number(log.args.invoiceAmount) / 1e18).toLocaleString() : "—";
+    docket.push({
+      action: "Trade created",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.exporter || null,
+      details: `Invoice: ${notional} BOB · Due: ${due} · Ref: ${log.args.invoiceRef || "—"}\nExporter: ${log.args.exporter}\nImporter: ${log.args.importer}`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // RateLockRequested
+  rateLockRequestedLogs.forEach((log) => {
+    docket.push({
+      action: "Rate lock requested",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.requester || null,
+      details: "Exporter requested FX benchmark from GenLayer oracle.",
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // RateLocked — GenLayer oracle delivered rate via relayer
+  rateLockedLogs.forEach((log) => {
+    const rate = log.args.rate ? (Number(log.args.rate) / 1e6).toFixed(6) : "—";
+    const settlement = log.args.settlementAmount ? (Number(log.args.settlementAmount) / 1e18).toLocaleString() : "—";
+    const benchmarkId = log.args.benchmarkId ? (log.args.benchmarkId as string).replace(/\0/g, "").trim() : "—";
+    docket.push({
+      action: "FX benchmark locked",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: null,
+      details: `Rate: ${rate} PEN/BOB · Settlement amount: ${settlement} PEN · Benchmark: ${benchmarkId}`,
+      evidence: null,
+      source: "GenLayer",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // RateRolled
+  rateRolledLogs.forEach((log) => {
+    const prior = log.args.priorRate ? (Number(log.args.priorRate) / 1e6).toFixed(6) : "—";
+    const rolled = log.args.rolledRate ? (Number(log.args.rolledRate) / 1e6).toFixed(6) : "—";
+    const newDue = log.args.newDueDate ? new Date(Number(log.args.newDueDate) * 1000).toISOString().split("T")[0] : "—";
+    docket.push({
+      action: "Rate rolled to new due date",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: null,
+      details: `Prior rate: ${prior} → Rolled rate: ${rolled} PEN/BOB · New due date: ${newDue}`,
+      evidence: null,
+      source: "GenLayer",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // Funded — importer escrowed settlement amount
+  fundedLogs.forEach((log) => {
+    const amount = log.args.amount ? (Number(log.args.amount) / 1e18).toLocaleString() : "—";
+    docket.push({
+      action: "Settlement amount escrowed",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.funder || null,
+      details: `${amount} MockPEN locked in contract. 7-day contest window opened.`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ShipmentAccepted
+  shipmentAcceptedLogs.forEach((log) => {
+    const late = log.args.afterDeadline ? " (after deadline — no contest raised)" : "";
+    docket.push({
+      action: "Shipment accepted" + late,
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.by || null,
+      details: "No contest raised. Settlement proceeds to release.",
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ShipmentContested — dispute branch entered
+  shipmentContestedLogs.forEach((log) => {
+    const deadline = log.args.contestDeadline ? new Date(Number(log.args.contestDeadline) * 1000).toUTCString() : "—";
+    docket.push({
+      action: "Shipment timing contested — dispute opened",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.contestant || null,
+      details: `Statement: "${log.args.statement || "—"}"\nEvidence deadline: ${deadline}\nIC case registered via InternetCourtFactory`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // DisputeRequested (factory event — bridge outbound)
+  disputeRequestedLogs.forEach((log) => {
+    docket.push({
+      action: "Dispute forwarded via LayerZero bridge",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: null,
+      details: "Cross-chain message dispatched from Base Sepolia to GenLayer for AI jury evaluation.",
+      evidence: null,
+      source: "LayerZero",
+      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
+    });
+  });
+
+  // VerdictReceived (factory event — bridge inbound)
+  verdictReceivedLogs.forEach((log) => {
+    const v = log.args.verdict !== undefined ? Number(log.args.verdict) : 0;
+    docket.push({
+      action: `AI verdict relayed via LayerZero: ${getVerdictName(v)}`,
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: null,
+      details: "GenLayer AI jury verdict delivered to Base Sepolia via LayerZero V2.",
+      evidence: null,
+      source: "LayerZero",
+      links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
+    });
+  });
+
+  // ShipmentVerdictReceived — verdict applied to contract
+  shipmentVerdictLogs.forEach((log) => {
+    const v = log.args.verdict !== undefined ? Number(log.args.verdict) : 0;
+    docket.push({
+      action: `Verdict delivered: ${shipmentVerdictLabel(v)}`,
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.deliveredBy || null,
+      details: log.args.reasonSummary || null,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // Settled — funds released to exporter
+  settledLogs.forEach((log) => {
+    const amount = log.args.amount ? (Number(log.args.amount) / 1e18).toLocaleString() : "—";
+    docket.push({
+      action: "Settlement released to exporter",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.exporter || null,
+      details: `${amount} MockPEN transferred to exporter.`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // SettlementCancelledByVerdict — refund to importer
+  settlementCancelledLogs.forEach((log) => {
+    const amount = log.args.refundAmount ? (Number(log.args.refundAmount) / 1e18).toLocaleString() : "—";
+    docket.push({
+      action: "Settlement cancelled — funds refunded to importer",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.importer || null,
+      details: `${amount} MockPEN returned to importer per LATE verdict.`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // Cancelled
+  cancelledLogs.forEach((log) => {
+    const amount = log.args.refundAmount ? (Number(log.args.refundAmount) / 1e18).toLocaleString() : "—";
+    docket.push({
+      action: "Trade cancelled",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.by || null,
+      details: `Reason code: ${log.args.reasonCode ?? "—"} · Refund: ${amount} MockPEN`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // SettlementManualReview
+  manualReviewLogs.forEach((log) => {
+    const deadline = log.args.reviewDeadline ? new Date(Number(log.args.reviewDeadline) * 1000).toUTCString() : "—";
+    docket.push({
+      action: "Evidence insufficient — manual review window opened",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: null,
+      details: `AI verdict: UNDETERMINED. Arbitrator may resolve within 14 days.\nReview deadline: ${deadline}`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ManualReviewResolved
+  manualReviewResolvedLogs.forEach((log) => {
+    docket.push({
+      action: `Manual review resolved: ${log.args.timeliness ? "TIMELY" : "LATE"}`,
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.arbitrator || null,
+      details: log.args.reason || null,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ManualReviewTimedOut
+  manualReviewTimedOutLogs.forEach((log) => {
+    docket.push({
+      action: "Manual review timed out — default refund to importer",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.caller || null,
+      details: "14-day review window expired with no ruling. Importer bears evidence burden; funds returned.",
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ExceptionFlagged
+  exceptionFlaggedLogs.forEach((log) => {
+    docket.push({
+      action: "Exception flagged",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.flagger || null,
+      details: `Reason code: ${log.args.reasonCode ?? "—"}`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // Merge GenLayer relay entries (oracle evaluation log, if relay is configured)
+  try {
+    const glEntries = await glEntriesPromise;
+    if (glEntries.length) docket.push(...glEntries);
+  } catch { /* relay not configured — skip */ }
+
+  docket.sort((a, b) => a.timestamp !== b.timestamp ? a.timestamp - b.timestamp : a.blockNumber - b.blockNumber);
+  return docket;
+}
+
+// ─── Agreement.sol docket builder (unchanged from original) ──────────────────
+
+async function buildAgreementDocket(
+  agreementAddress: `0x${string}`,
+  factoryAddress: `0x${string}`,
+  caseId: number,
+  deployBlock: bigint,
+  currentBlock: bigint,
+  glEntriesPromise: Promise<DocketEntry[]>,
+): Promise<DocketEntry[]> {
+  const creationLogs = await getLogsChunked({
+    address: factoryAddress,
+    event: parseAbiItem("event AgreementCreated(uint256 indexed id, address agreementAddress, address partyA, address partyB)"),
+    args: { id: BigInt(caseId) },
+    fromBlock: deployBlock,
+    toBlock: currentBlock,
+  }).catch(() => []);
+
+  const fromBlock = creationLogs[0]?.blockNumber ?? deployBlock;
+
+  const fetch = (sig: string) =>
+    getLogsChunked({ address: agreementAddress, event: parseAbiItem(sig), fromBlock, toBlock: currentBlock }).catch(() => []);
+
+  const [
+    agreementAcceptedLogs, outcomeProposedLogs, outcomeConfirmedLogs,
+    disputeRaisedLogs, evidenceSubmittedLogs, resolutionTriggeredLogs,
+    resolvedLogs, fundsClaimedLogs, cancelledLogs,
+  ] = await Promise.all([
+    fetch("event AgreementAccepted(address indexed partyB, uint256 escrowAmount)"),
+    fetch("event OutcomeProposed(address indexed proposer, bool statementIsTrue)"),
+    fetch("event OutcomeConfirmed(uint8 verdict)"),
+    fetch("event DisputeRaised(address indexed raisedBy, uint256 evidenceDeadline)"),
+    fetch("event EvidenceSubmitted(address indexed submitter)"),
+    fetch("event ResolutionTriggered(uint256 timestamp)"),
+    fetch("event Resolved(uint8 verdict, string reasoning)"),
+    fetch("event FundsClaimed(address indexed claimant, uint256 amount)"),
+    fetch("event Cancelled(address indexed cancelledBy)"),
+  ]);
+
+  const [disputeRequestedLogs, verdictReceivedLogs] = await Promise.all([
+    getLogsChunked({ address: factoryAddress, event: parseAbiItem("event DisputeRequested(address indexed agreementAddress, uint256 timestamp)"), args: { agreementAddress }, fromBlock: deployBlock, toBlock: currentBlock }).catch(() => []),
+    getLogsChunked({ address: factoryAddress, event: parseAbiItem("event VerdictReceived(address indexed agreementAddress, uint8 verdict)"), args: { agreementAddress }, fromBlock: deployBlock, toBlock: currentBlock }).catch(() => []),
+  ]);
+
+  const [statement, partyA, partyB, escrowAmount, evidenceA, evidenceB, evidenceDeadlineSeconds] = await Promise.all([
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "statement" }).catch(() => ""),
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyA" }).catch(() => ""),
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyB" }).catch(() => ""),
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "escrowAmount" }).catch(() => BigInt(0)),
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceA" }).catch(() => ""),
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceB" }).catch(() => ""),
+    publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceDeadlineSeconds" }).catch(() => BigInt(0)),
+  ]);
+
+  const escrowFormatted = formatUnits(escrowAmount as bigint, 6);
+
+  const allLogs = [
+    ...creationLogs, ...agreementAcceptedLogs, ...outcomeProposedLogs, ...outcomeConfirmedLogs,
+    ...disputeRaisedLogs, ...evidenceSubmittedLogs, ...resolutionTriggeredLogs,
+    ...resolvedLogs, ...fundsClaimedLogs, ...cancelledLogs,
+    ...disputeRequestedLogs, ...verdictReceivedLogs,
+  ];
+
+  const uniqueBlocks = [...new Set(allLogs.map((l) => l.blockNumber))];
+  const blockData = await Promise.all(uniqueBlocks.map((bn) => publicClient.getBlock({ blockNumber: bn })));
+  const ts = new Map<bigint, number>(blockData.map((b) => [b.number, Number(b.timestamp)]));
+  const t = (log: any) => ts.get(log.blockNumber) || 0;
+
+  const docket: DocketEntry[] = [];
+
+  creationLogs.forEach((log) => {
+    docket.push({ action: "Agreement created", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.partyA || null, details: `Statement: "${statement}"\nParty A: ${partyA}\nParty B: ${partyB}\nEscrow: ${escrowFormatted} USDC`, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  agreementAcceptedLogs.forEach((log) => {
+    const amt = log.args.escrowAmount ? formatUnits(log.args.escrowAmount, 6) : "0";
+    docket.push({ action: "Party B accepted the agreement", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.partyB || null, details: `Escrow deposited: ${amt} USDC`, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  outcomeProposedLogs.forEach((log) => {
+    docket.push({ action: `Outcome proposed: ${log.args.statementIsTrue ? "Party A Wins" : "Party B Wins"}`, txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.proposer || null, details: null, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  outcomeConfirmedLogs.forEach((log) => {
+    docket.push({ action: "Outcome confirmed by mutual agreement", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: null, details: `Verdict: ${getVerdictName(Number(log.args.verdict ?? 0))}`, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  disputeRaisedLogs.forEach((log) => {
+    const deadlineSec = Number(evidenceDeadlineSeconds || 0);
+    docket.push({ action: "Dispute raised — evidence window opened", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.raisedBy || null, details: `Evidence deadline: ${deadlineSec > 0 ? Math.round(deadlineSec / 60) + " minutes" : "none"}`, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  evidenceSubmittedLogs.forEach((log) => {
+    const submitter = (log.args.submitter || "").toLowerCase();
+    const isA = submitter === (partyA as string).toLowerCase();
+    docket.push({ action: `Evidence submitted by ${isA ? "Party A" : "Party B"}`, txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.submitter || null, details: null, evidence: isA ? (evidenceA as string) || null : (evidenceB as string) || null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  resolutionTriggeredLogs.forEach((log) => {
+    docket.push({ action: "Resolution triggered — sent to AI jury", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: null, details: "Both parties submitted evidence. Case forwarded to AI jury for judgment.", evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  disputeRequestedLogs.forEach((log) => {
+    docket.push({ action: "Dispute forwarded via LayerZero bridge", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: null, details: "Cross-chain message dispatched from Base for AI jury evaluation.", evidence: null, source: "LayerZero", links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)] });
+  });
+  resolvedLogs.forEach((log) => {
+    docket.push({ action: `Verdict delivered: ${getVerdictName(Number(log.args.verdict ?? 0))}`, txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: null, details: log.args.reasoning || null, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  verdictReceivedLogs.forEach((log) => {
+    docket.push({ action: `Verdict received from bridge: ${getVerdictName(Number(log.args.verdict ?? 0))}`, txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: null, details: "Verdict relayed via LayerZero V2 to Base Sepolia.", evidence: null, source: "LayerZero", links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)] });
+  });
+  fundsClaimedLogs.forEach((log) => {
+    docket.push({ action: "Funds claimed", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.claimant || null, details: `${log.args.amount ? formatUnits(log.args.amount, 6) : "0"} USDC withdrawn`, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+  cancelledLogs.forEach((log) => {
+    docket.push({ action: "Agreement cancelled", txHash: log.transactionHash!, blockNumber: Number(log.blockNumber), timestamp: t(log), actor: log.args.cancelledBy || null, details: `Escrow of ${escrowFormatted} USDC returned`, evidence: null, source: "Base", links: [basescanLink(log.transactionHash!)] });
+  });
+
+  try {
+    const glEntries = await glEntriesPromise;
+    if (glEntries.length) docket.push(...glEntries);
+  } catch { /* relay not configured */ }
+
+  docket.sort((a, b) => a.timestamp !== b.timestamp ? a.timestamp - b.timestamp : a.blockNumber - b.blockNumber);
+  return docket;
+}
+
+// ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function GET(
   _req: NextRequest,
@@ -56,516 +605,71 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-
     let agreementAddress: `0x${string}`;
-    let caseId: number;
+    let caseId: number = -1;
+    let factoryAddress: `0x${string}` = FACTORY_REGISTRY[0].address;
+    let deployBlock: bigint = BigInt(FACTORY_REGISTRY[0].deploymentBlock);
 
-    // Support both numeric IDs and contract addresses
     if (id.startsWith("0x") && id.length === 42) {
       agreementAddress = id as `0x${string}`;
-      caseId = -1;
-
-      const total = Number(
-        await publicClient.readContract({
-          address: FACTORY_ADDRESS,
-          abi: FACTORY_ABI,
-          functionName: "nextAgreementId",
-        }),
-      );
-
-      for (let i = 0; i < total; i++) {
-        const addr = await publicClient.readContract({
-          address: FACTORY_ADDRESS,
-          abi: FACTORY_ABI,
-          functionName: "agreements",
-          args: [BigInt(i)],
-        });
-        if (addr.toLowerCase() === agreementAddress.toLowerCase()) {
-          caseId = i;
-          break;
-        }
-      }
-
-      if (caseId === -1) {
-        return NextResponse.json(
-          { error: "Contract not found on Base" },
-          { status: 404, headers: { "Cache-Control": "no-store" } },
-        );
+      const found = await findFactory(agreementAddress);
+      if (found) {
+        caseId = found.caseId;
+        factoryAddress = found.factoryAddress;
+        deployBlock = found.deploymentBlock;
       }
     } else {
       caseId = parseInt(id, 10);
-
       if (isNaN(caseId) || caseId < 0) {
-        return NextResponse.json(
-          { error: "Invalid case ID" },
-          { status: 400, headers: { "Cache-Control": "no-store" } },
-        );
+        return NextResponse.json({ error: "Invalid case ID" }, { status: 400, headers: { "Cache-Control": "no-store" } });
       }
-
-      agreementAddress = await publicClient.readContract({
-        address: FACTORY_ADDRESS,
-        abi: FACTORY_ABI,
-        functionName: "agreements",
-        args: [BigInt(caseId)],
-      });
-
-      if (
-        agreementAddress === "0x0000000000000000000000000000000000000000"
-      ) {
-        return NextResponse.json(
-          { error: "Case not found" },
-          { status: 404, headers: { "Cache-Control": "no-store" } },
-        );
+      for (const f of FACTORY_REGISTRY) {
+        try {
+          const addr = await publicClient.readContract({ address: f.address, abi: FACTORY_ABI, functionName: "agreements", args: [BigInt(caseId)] }) as string;
+          if (addr && addr !== "0x0000000000000000000000000000000000000000") {
+            agreementAddress = addr as `0x${string}`;
+            factoryAddress = f.address;
+            deployBlock = BigInt(f.deploymentBlock);
+            break;
+          }
+        } catch { /* skip */ }
+      }
+      if (!agreementAddress!) {
+        return NextResponse.json({ error: "Case not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
       }
     }
 
-    // Start fetching GenLayer entries from relay (optional)
-    const relayBaseUrl = process.env.RELAY_BASE_URL?.trim();
-    const glEntriesPromise: Promise<DocketEntry[]> = (async () => {
-      if (!relayBaseUrl) return [];
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10_000);
-        const r = await fetch(
-          `${relayBaseUrl.replace(/\/$/, "")}/cases/${agreementAddress}/gl`,
-          { signal: controller.signal },
-        );
-        clearTimeout(timeout);
-        if (!r.ok) return [];
-        const data = await r.json();
-        return (data.entries || []) as DocketEntry[];
-      } catch {
-        return [];
-      }
-    })();
-
-    // Use factory's deploymentBlock for efficient event indexing
     const currentBlock = await publicClient.getBlockNumber();
-    const deployBlock = await publicClient.readContract({
-      address: FACTORY_ADDRESS,
-      abi: FACTORY_ABI,
-      functionName: "deploymentBlock",
-    });
-    let fromBlock = deployBlock as bigint;
 
-    // Search for creation event to narrow subsequent queries
-    const creationLogs = await getLogsChunked({
-      address: FACTORY_ADDRESS,
-      event: parseAbiItem(
-        "event AgreementCreated(uint256 indexed id, address agreementAddress, address partyA, address partyB)",
-      ),
-      args: { id: BigInt(caseId) },
-      fromBlock,
-      toBlock: currentBlock,
-    });
+    // Kick off GenLayer relay fetch in parallel (best-effort)
+    const relayBaseUrl = process.env.RELAY_BASE_URL?.trim();
+    const glEntriesPromise: Promise<DocketEntry[]> = relayBaseUrl
+      ? (async () => {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10_000);
+            const r = await fetch(`${relayBaseUrl.replace(/\/$/, "")}/cases/${agreementAddress}/gl`, { signal: controller.signal });
+            clearTimeout(timeout);
+            if (!r.ok) return [];
+            const data = await r.json();
+            return (data.entries || []) as DocketEntry[];
+          } catch { return []; }
+        })()
+      : Promise.resolve([]);
 
-    // If found, narrow subsequent queries to start from the creation block
-    if (creationLogs.length > 0) {
-      fromBlock = creationLogs[0].blockNumber;
-    }
+    // Detect contract type and route to correct docket builder
+    const tradeFx = await isTradeFx(agreementAddress);
 
-    // Fetch all Agreement events
-    const [
-      agreementAcceptedLogs,
-      outcomeProposedLogs,
-      outcomeConfirmedLogs,
-      disputeRaisedLogs,
-      evidenceSubmittedLogs,
-      resolutionTriggeredLogs,
-      resolvedLogs,
-      fundsClaimedLogs,
-      cancelledLogs,
-    ] = await Promise.all([
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event AgreementAccepted(address indexed partyB, uint256 escrowAmount)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event OutcomeProposed(address indexed proposer, bool statementIsTrue)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem("event OutcomeConfirmed(uint8 verdict)"),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event DisputeRaised(address indexed raisedBy, uint256 evidenceDeadline)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event EvidenceSubmitted(address indexed submitter)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem("event ResolutionTriggered(uint256 timestamp)"),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event Resolved(uint8 verdict, string reasoning)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event FundsClaimed(address indexed claimant, uint256 amount)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: agreementAddress,
-        event: parseAbiItem(
-          "event Cancelled(address indexed cancelledBy)",
-        ),
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-    ]);
+    const docket = tradeFx
+      ? await buildTradeFxDocket(agreementAddress, deployBlock, currentBlock, glEntriesPromise, factoryAddress, caseId, deployBlock)
+      : await buildAgreementDocket(agreementAddress, factoryAddress, caseId, deployBlock, currentBlock, glEntriesPromise);
 
-    // Fetch Factory events filtered by this agreement (reuse creationLogs from above)
-    const agreementCreatedLogs = creationLogs;
-    const [
-      disputeRequestedLogs,
-      verdictReceivedLogs,
-    ] = await Promise.all([
-      getLogsChunked({
-        address: FACTORY_ADDRESS,
-        event: parseAbiItem(
-          "event DisputeRequested(address indexed agreementAddress, uint256 timestamp)",
-        ),
-        args: {
-          agreementAddress: agreementAddress,
-        },
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-      getLogsChunked({
-        address: FACTORY_ADDRESS,
-        event: parseAbiItem(
-          "event VerdictReceived(address indexed agreementAddress, uint8 verdict)",
-        ),
-        args: {
-          agreementAddress: agreementAddress,
-        },
-        fromBlock,
-        toBlock: currentBlock,
-      }),
-    ]);
-
-    // Collect all unique block numbers
-    const allLogs = [
-      ...agreementAcceptedLogs,
-      ...outcomeProposedLogs,
-      ...outcomeConfirmedLogs,
-      ...disputeRaisedLogs,
-      ...evidenceSubmittedLogs,
-      ...resolutionTriggeredLogs,
-      ...resolvedLogs,
-      ...fundsClaimedLogs,
-      ...cancelledLogs,
-      ...agreementCreatedLogs,
-      ...disputeRequestedLogs,
-      ...verdictReceivedLogs,
-    ];
-
-    const uniqueBlocks = [
-      ...new Set(allLogs.map((log) => log.blockNumber)),
-    ];
-
-    // Fetch all block timestamps in parallel
-    const blockData = await Promise.all(
-      uniqueBlocks.map((blockNumber) =>
-        publicClient.getBlock({ blockNumber }),
-      ),
-    );
-
-    const blockTimestamps = new Map<bigint, number>();
-    blockData.forEach((block) => {
-      blockTimestamps.set(block.number, Number(block.timestamp));
-    });
-
-    // Helper to get verdict name
-    const getVerdictName = (verdict: number): string => {
-      const names = ["UNDETERMINED", "PARTY A", "PARTY B"];
-      return names[verdict] || "UNKNOWN";
-    };
-
-    const basescanLink = (txHash: string): DocketLink => ({
-      label: "Basescan",
-      url: `https://sepolia.basescan.org/tx/${txHash}`,
-    });
-
-    const lzLink = (txHash: string): DocketLink => ({
-      label: "LayerZero Scan",
-      url: `https://testnet.layerzeroscan.com/tx/${txHash}`,
-    });
-
-    // Read contract state for enrichment (statement, evidence, parties, escrow)
-    const [
-      statement,
-      partyA,
-      partyB,
-      escrowAmount,
-      evidenceA,
-      evidenceB,
-      evidenceDeadlineSeconds,
-    ] = await Promise.all([
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "statement" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyA" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "partyB" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "escrowAmount" }).catch(() => BigInt(0)),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceA" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceB" }).catch(() => ""),
-      publicClient.readContract({ address: agreementAddress, abi: AGREEMENT_ABI, functionName: "evidenceDeadlineSeconds" }).catch(() => BigInt(0)),
-    ]);
-
-    const escrowFormatted = formatUnits(escrowAmount as bigint, 6);
-
-    // Process all events into docket entries
-    const docket: DocketEntry[] = [];
-
-    // AgreementCreated
-    agreementCreatedLogs.forEach((log) => {
-      docket.push({
-        action: "Agreement created",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.partyA || null,
-        details: `Statement: "${statement}"\nParty A: ${partyA}\nParty B: ${partyB}\nEscrow: ${escrowFormatted} USDC`,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // AgreementAccepted
-    agreementAcceptedLogs.forEach((log) => {
-      const amt = log.args.escrowAmount
-        ? formatUnits(log.args.escrowAmount, 6)
-        : "0";
-      docket.push({
-        action: "Party B accepted the agreement",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.partyB || null,
-        details: `Escrow deposited: ${amt} USDC`,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // OutcomeProposed
-    outcomeProposedLogs.forEach((log) => {
-      const outcome = log.args.statementIsTrue ? "Party A Wins" : "Party B Wins";
-      docket.push({
-        action: `Outcome proposed: ${outcome}`,
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.proposer || null,
-        details: null,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // OutcomeConfirmed
-    outcomeConfirmedLogs.forEach((log) => {
-      const verdict = log.args.verdict !== undefined ? log.args.verdict : 0;
-      docket.push({
-        action: "Outcome confirmed by mutual agreement",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: null,
-        details: `Verdict: ${getVerdictName(verdict)}`,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // DisputeRaised
-    disputeRaisedLogs.forEach((log) => {
-      const deadlineSec = Number(evidenceDeadlineSeconds || 0);
-      const deadlineStr = deadlineSec > 0 ? `${Math.round(deadlineSec / 60)} minutes` : "none";
-      docket.push({
-        action: "Dispute raised — evidence window opened",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.raisedBy || null,
-        details: `Evidence deadline: ${deadlineStr}`,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // EvidenceSubmitted — include evidence text
-    evidenceSubmittedLogs.forEach((log) => {
-      const submitter = (log.args.submitter || "").toLowerCase();
-      const isPartyA = submitter === (partyA as string).toLowerCase();
-      const evidenceText = isPartyA ? (evidenceA as string) : (evidenceB as string);
-      const partyLabel = isPartyA ? "Party A" : "Party B";
-      docket.push({
-        action: `Evidence submitted by ${partyLabel}`,
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.submitter || null,
-        details: null,
-        evidence: evidenceText || null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // ResolutionTriggered
-    resolutionTriggeredLogs.forEach((log) => {
-      docket.push({
-        action: "Resolution triggered — sent to AI jury",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: null,
-        details: "Both parties submitted evidence. Case forwarded to AI jury for judgment.",
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // DisputeRequested (bridge outbound)
-    disputeRequestedLogs.forEach((log) => {
-      docket.push({
-        action: "Dispute forwarded via LayerZero bridge",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: null,
-        details: "Cross-chain message dispatched from Base for AI jury evaluation.",
-        evidence: null,
-        source: "LayerZero",
-        links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
-      });
-    });
-
-    // Resolved (verdict received on Base)
-    resolvedLogs.forEach((log) => {
-      const verdict = log.args.verdict !== undefined ? log.args.verdict : 0;
-      docket.push({
-        action: `Verdict delivered: ${getVerdictName(verdict)}`,
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: null,
-        details: log.args.reasoning || null,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // VerdictReceived (bridge inbound)
-    verdictReceivedLogs.forEach((log) => {
-      const verdict = log.args.verdict !== undefined ? log.args.verdict : 0;
-      docket.push({
-        action: `Verdict received from bridge: ${getVerdictName(verdict)}`,
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: null,
-        details: "Verdict relayed via LayerZero V2 to Base Sepolia.",
-        evidence: null,
-        source: "LayerZero",
-        links: [basescanLink(log.transactionHash!), lzLink(log.transactionHash!)],
-      });
-    });
-
-    // FundsClaimed
-    fundsClaimedLogs.forEach((log) => {
-      const amount = log.args.amount
-        ? formatUnits(log.args.amount, 6)
-        : "0";
-      docket.push({
-        action: "Funds claimed",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.claimant || null,
-        details: `${amount} USDC withdrawn from escrow`,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // Cancelled
-    cancelledLogs.forEach((log) => {
-      docket.push({
-        action: "Agreement cancelled",
-        txHash: log.transactionHash!,
-        blockNumber: Number(log.blockNumber),
-        timestamp: blockTimestamps.get(log.blockNumber) || 0,
-        actor: log.args.cancelledBy || null,
-        details: `Escrow of ${escrowFormatted} USDC returned to creator`,
-        evidence: null,
-        source: "Base",
-        links: [basescanLink(log.transactionHash!)],
-      });
-    });
-
-    // Merge GenLayer entries and sort by timestamp then block number
-    try {
-      const glEntries = await glEntriesPromise;
-      if (glEntries.length) docket.push(...glEntries);
-    } catch {}
-
-    docket.sort((a, b) => {
-      if (a.timestamp !== b.timestamp) return a.timestamp - b.timestamp;
-      return a.blockNumber - b.blockNumber;
-    });
-
-    return NextResponse.json({ docket }, {
+    return NextResponse.json({ docket, contractType: tradeFx ? "TradeFxSettlement" : "Agreement" }, {
       headers: { "Cache-Control": "no-store" },
     });
+
   } catch (err) {
-    console.error(
-      "GET /api/cases/[id]/docket error:",
-      err instanceof Error ? err.message : err,
-    );
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal error" },
-      { status: 500, headers: { "Cache-Control": "no-store" } },
-    );
+    console.error("GET /api/cases/[id]/docket error:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Internal error" }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }
