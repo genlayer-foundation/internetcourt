@@ -17,6 +17,11 @@ const TRADEFX_ABI = parseAbi([
   "function shipmentStatus() view returns (uint8)",
   "function icCaseId() view returns (uint256)",
   "function status() view returns (uint8)",
+  "function shipmentCourtSheetACid() view returns (string)",
+  "function shipmentCourtSheetBCid() view returns (string)",
+  "function shipmentVerdictReason() view returns (string)",
+  "function shipmentCaseId() view returns (string)",
+  "function shipmentVerdictAt() view returns (uint256)",
 ]);
 
 // TradeFx status: 0=DRAFT,1=RATE_PENDING,2=RATE_LOCKED,3=FUNDED,4=ROLL_PENDING,5=ROLLED,6=SETTLED,7=CANCELLED
@@ -173,6 +178,12 @@ export async function GET(
         { address: addr, abi: TRADEFX_ABI, functionName: "shipmentStatus" },
         { address: addr, abi: TRADEFX_ABI, functionName: "icCaseId" },
         { address: addr, abi: TRADEFX_ABI, functionName: "status" },
+        // TradeFx evidence + verdict detail [25–29]
+        { address: addr, abi: TRADEFX_ABI, functionName: "shipmentCourtSheetACid" },
+        { address: addr, abi: TRADEFX_ABI, functionName: "shipmentCourtSheetBCid" },
+        { address: addr, abi: TRADEFX_ABI, functionName: "shipmentVerdictReason" },
+        { address: addr, abi: TRADEFX_ABI, functionName: "shipmentCaseId" },
+        { address: addr, abi: TRADEFX_ABI, functionName: "shipmentVerdictAt" },
       ],
     });
 
@@ -213,10 +224,13 @@ export async function GET(
         party_a: { description: "Customs exit receipt or equivalent crossing document" },
         party_b: { description: "Border gate event record" },
       };
-      evidenceA = "";
-      evidenceB = "";
-      evidenceASubmitted = false;
-      evidenceBSubmitted = false;
+      // TradeFx evidence = IPFS court sheet CIDs (submitted via contestShipment, not IC evidence flow)
+      const courtSheetA = (get(25) as string) ?? "";
+      const courtSheetB = (get(26) as string) ?? "";
+      evidenceA = courtSheetA ? `ipfs://${courtSheetA}` : "";
+      evidenceB = courtSheetB ? `ipfs://${courtSheetB}` : "";
+      evidenceASubmitted = courtSheetA !== "";
+      evidenceBSubmitted = courtSheetB !== "";
       // Show verdict whenever a resolution exists:
       // shipStatus >= 3 (TIMELY/LATE/UNDETERMINED/RETURN_REQUIRED) OR
       // shipStatus === 2 (CONTESTED) but trade is SETTLED (graduated penalty applied).
@@ -230,8 +244,10 @@ export async function GET(
         : shipStatus === 6 ? "VERY LATE — return required"
         : (shipStatus === 2 && tfStatus === 6) ? "LATE — graduated penalty applied"
         : "UNDETERMINED";
+      // Use on-chain verdict reasoning if available, otherwise generic label
+      const onChainReasoning = (get(27) as string) ?? "";
       reasoning = hasVerdict
-        ? `Shipment verdict: ${verdictLabel}. See docket for full AI jury reasoning.`
+        ? (onChainReasoning || `Shipment verdict: ${verdictLabel}. See docket for full AI jury reasoning.`)
         : "";
       escrowAmount = ((get(21) as bigint) ?? BigInt(0)).toString();
     } else {
@@ -275,10 +291,12 @@ export async function GET(
       verdictName,
       reasoning,
       escrowAmount,
-      // Agreement.sol-only fields (null for TradeFx)
+      // Agreement.sol fields (TradeFx maps disputeTimestamp from shipmentVerdictAt)
       joinDeadline: isTradeFx ? null : ((get(13) as bigint) ?? BigInt(0)).toString(),
       evidenceDeadlineSeconds: isTradeFx ? null : ((get(14) as bigint) ?? BigInt(0)).toString(),
-      disputeTimestamp: isTradeFx ? null : ((get(15) as bigint) ?? BigInt(0)).toString(),
+      disputeTimestamp: isTradeFx
+        ? ((get(29) as bigint) ?? BigInt(0)).toString()  // shipmentVerdictAt
+        : ((get(15) as bigint) ?? BigInt(0)).toString(),
       maxEvidenceLength: isTradeFx ? null : ((get(16) as bigint) ?? BigInt(0)).toString(),
       constraints: isTradeFx ? null : (get(17) as string) ?? "",
     }, { headers: { "Cache-Control": "no-store" } });
