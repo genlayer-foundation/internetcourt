@@ -20,15 +20,20 @@ const TRADEFX_ABI = parseAbi([
 ]);
 
 // TradeFx status: 0=DRAFT,1=RATE_PENDING,2=RATE_LOCKED,3=FUNDED,4=ROLL_PENDING,5=ROLLED,6=SETTLED,7=CANCELLED
-// TradeFx shipmentStatus: 0=NONE,1=ACCEPTED,2=CONTESTED,3=TIMELY,4=LATE,5=UNDETERMINED
+// TradeFx shipmentStatus: 0=NONE,1=ACCEPTED,2=CONTESTED,3=TIMELY,4=LATE,5=UNDETERMINED,6=RETURN_REQUIRED
 // Map to IC status: 0=CREATED,1=ACTIVE,2=DISPUTED,3=RESOLVING,4=RESOLVED,5=CANCELLED
 function tradeFxStatusToIc(tfStatus: number, shipStatus: number): number {
   // Shipment verdict already received — check verdict first, regardless of trade settlement status.
   // TIMELY (3) or LATE (4): case is fully resolved.
   if (shipStatus === 3 || shipStatus === 4) return 4; // RESOLVED
+  // RETURN_REQUIRED (6): VERY_LATE verdict received, penalty path active → resolved.
+  if (shipStatus === 6) return 4; // RESOLVED
   // UNDETERMINED (5): AI jury returned undetermined, manual review pending.
   if (shipStatus === 5) return 3; // RESOLVING
-  // CONTESTED (2): waiting for AI jury.
+  // CONTESTED (2) + SETTLED (6): _settleWithPenalty was called (graduated penalty)
+  // but shipmentStatus was not updated. Trade is settled → resolved.
+  if (shipStatus === 2 && tfStatus === 6) return 4; // RESOLVED
+  // CONTESTED (2): still waiting for AI jury.
   if (shipStatus === 2) return 3; // RESOLVING
   // No verdict yet — fall back to trade status.
   if (tfStatus === 7) return 5; // CANCELLED (no verdict, e.g. mutual cancel)
@@ -38,10 +43,13 @@ function tradeFxStatusToIc(tfStatus: number, shipStatus: number): number {
 }
 
 // Map TradeFx shipmentStatus to verdict name
-function shipStatusToVerdict(shipStatus: number): string {
+function shipStatusToVerdict(shipStatus: number, tfStatus: number): string {
   if (shipStatus === 3) return "PARTY A"; // TIMELY → exporter wins
   if (shipStatus === 4) return "PARTY B"; // LATE → importer wins
   if (shipStatus === 5) return "UNDETERMINED";
+  if (shipStatus === 6) return "PARTY B"; // RETURN_REQUIRED → importer wins (penalty applied)
+  // Graduated penalty: CONTESTED + SETTLED means penalty was applied → importer wins
+  if (shipStatus === 2 && tfStatus === 6) return "PARTY B";
   return "";
 }
 
@@ -209,14 +217,21 @@ export async function GET(
       evidenceB = "";
       evidenceASubmitted = false;
       evidenceBSubmitted = false;
-      // Show verdict whenever shipStatus carries a verdict (>= 3), not just when fully RESOLVED.
-      const hasVerdict = shipStatus >= 3;
-      verdictName = hasVerdict ? shipStatusToVerdict(shipStatus) : "";
+      // Show verdict whenever a resolution exists:
+      // shipStatus >= 3 (TIMELY/LATE/UNDETERMINED/RETURN_REQUIRED) OR
+      // shipStatus === 2 (CONTESTED) but trade is SETTLED (graduated penalty applied).
+      const hasVerdict = shipStatus >= 3 || (shipStatus === 2 && tfStatus === 6);
+      verdictName = hasVerdict ? shipStatusToVerdict(shipStatus, tfStatus) : "";
       verdictNum = hasVerdict
         ? (verdictName === "PARTY A" ? 1 : verdictName === "PARTY B" ? 2 : 0)
         : -1;
+      const verdictLabel = shipStatus === 3 ? "TIMELY"
+        : shipStatus === 4 ? "LATE"
+        : shipStatus === 6 ? "VERY LATE — return required"
+        : (shipStatus === 2 && tfStatus === 6) ? "LATE — graduated penalty applied"
+        : "UNDETERMINED";
       reasoning = hasVerdict
-        ? `Shipment verdict: ${shipStatus === 3 ? "TIMELY" : shipStatus === 4 ? "LATE" : "UNDETERMINED"}. See docket for full AI jury reasoning.`
+        ? `Shipment verdict: ${verdictLabel}. See docket for full AI jury reasoning.`
         : "";
       escrowAmount = ((get(21) as bigint) ?? BigInt(0)).toString();
     } else {

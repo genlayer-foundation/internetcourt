@@ -79,6 +79,48 @@ const GL_ORACLE_META: Record<string, GlOracleMeta> = {
     validators: { agree: 4, disagree: 1 },
   },
 
+  // ── TradeFx Scenario D — LATE_1_4 (2 days late, 99.5% to exporter) ─────────
+  // icCaseId = 6 | TradeFxSettlement: 0x08FB300E1290Fa3e12cdeD8B2Bf050Edd46fFf73
+  "0x08fb300e1290fa3e12cded8b2bf050edd46fff73": {
+    oracleTxHash:  "0xdf87c6c4611f8f12eaec576708aa2aef918379bf51790adc6102c05385fd3812",
+    oracleAddress: "0x7ccef76Cbf7D206fF430e5971d55147a5F39C8e5",
+    verdict:       "LATE_1_4",
+    reasoning:
+      "Both documents show the shipment crossed Bolivian customs on 2026-04-07, " +
+      "which is 2 days after the deadline of 2026-04-05. Truck plates match (3456-BP). " +
+      "Delay of 2 days falls in the LATE_1_4 bucket (1-4 days).",
+    timestamp: 1773069600,
+    validators: { agree: 4, disagree: 1 },
+  },
+
+  // ── TradeFx Scenario F — LATE_7_8 (8 days late, 98.5% to exporter) ────────
+  // icCaseId = 8 | TradeFxSettlement: 0x8edE7afc449CcA494fF3066aB020be143d784F91
+  "0x8ede7afc449cca494ff3066ab020be143d784f91": {
+    oracleTxHash:  "0xc10b7c597681345e9ab364c940aa5199a110df0d7c9e8790b62f4d63a6b6bb5f",
+    oracleAddress: "0x7E23f5cC75fdcFCCa2EF81588D54c43da8b97D62",
+    verdict:       "LATE_7_8",
+    reasoning:
+      "Both documents show the shipment crossed Bolivian customs on 2026-04-13, " +
+      "which is 8 days after the deadline of 2026-04-05. Truck plates match (3456-BP). " +
+      "Delay of 8 days falls in the LATE_7_8 bucket (7-8 days).",
+    timestamp: 1773069700,
+    validators: { agree: 4, disagree: 1 },
+  },
+
+  // ── TradeFx Scenario G2 — VERY_LATE (12 days late, return required → timeout → 98.5%) ─
+  // TradeFxSettlement_ShortWindow: 0x2d14F1Ad43D90e8db1209A6cE3c1959c85b4D9e1
+  "0x2d14f1ad43d90e8db1209a6ce3c1959c85b4d9e1": {
+    oracleTxHash:  "0x75b7f88c7613ae2d4286f2567015b6061bc219e66f67e8cd6bca796d6bf0dba4",
+    oracleAddress: "0x3Ed65579cEF4e9616F92402F9894231Baa3245C5",
+    verdict:       "VERY_LATE",
+    reasoning:
+      "Both documents show the shipment crossed Bolivian customs on 2026-04-17, " +
+      "which is 12 days after the deadline of 2026-04-05. Truck plates match (3456-BP). " +
+      "Delay of 12 days exceeds 8 days, falling in the VERY_LATE bucket.",
+    timestamp: 1773082000,
+    validators: { agree: 4, disagree: 1 },
+  },
+
   // ── Agent-dispute cases (v2 factory, no shipment verdict) ─────────────────
   "0x778e3528940849432619142a8d7ac172486353bf": {
     oracleTxHash:  "0x1b21b3e20174bb368fdb99987ac73f2f655135c1c450fb2c07fec1765d6e68bf",

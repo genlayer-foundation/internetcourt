@@ -56,9 +56,18 @@ const lzLink = (txHash: string): DocketLink => ({
 const getVerdictName = (verdict: number): string =>
   (["UNDETERMINED", "PARTY A", "PARTY B"])[verdict] || "UNKNOWN";
 
-// ShipmentVerdictReceived.verdict uses factory/IC numbering: 0=UNDETERMINED, 1=PARTY_A (TIMELY), 2=PARTY_B (LATE)
-const shipmentVerdictLabel = (v: number): string =>
-  v === 1 ? "TIMELY — exporter wins" : v === 2 ? "LATE — importer wins" : "UNDETERMINED";
+// ShipmentVerdictReceived.verdict codes from ShipmentDeadlineCourt:
+// 1=ON_TIME, 2=LATE_1_4, 3=LATE_5_6, 4=LATE_7_8, 5=VERY_LATE, 6=UNDETERMINED
+// (Legacy IC numbering: 0=UNDETERMINED, 1=PARTY_A, 2=PARTY_B — only used by Agreement.sol)
+const shipmentVerdictLabel = (v: number): string => {
+  if (v === 1) return "TIMELY — exporter wins";
+  if (v === 2) return "LATE (1-4 days) — importer wins";
+  if (v === 3) return "LATE (5-6 days) — importer wins";
+  if (v === 4) return "LATE (7-8 days) — importer wins";
+  if (v === 5) return "VERY LATE (>8 days) — importer wins";
+  if (v === 6) return "UNDETERMINED";
+  return "UNDETERMINED";
+};
 
 // Decode bytes32 to human-readable ASCII, stripping null bytes
 const bytes32ToAscii = (hex: string): string => {

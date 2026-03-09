@@ -119,20 +119,29 @@ async function fetchCasesFromFactory(
       // Map TradeFx status → IC status
       const isTradeFx = results[10].status === "success";
       const shipStat = isTradeFx ? Number(results[10].result) : null;
+      // Also need trade-level status to detect CONTESTED+SETTLED (graduated penalty)
+      const tfStatusRaw = isTradeFx && results[0].status === "success" ? Number(results[0].result) : 0;
       let status = statusRaw !== null ? statusRaw : 0;
       if (isTradeFx && shipStat !== null) {
         if (shipStat === 3 || shipStat === 4) status = 4; // TIMELY/LATE → RESOLVED
+        else if (shipStat === 6) status = 4; // RETURN_REQUIRED → RESOLVED
+        else if (shipStat === 2 && tfStatusRaw === 6) status = 4; // CONTESTED+SETTLED (graduated penalty) → RESOLVED
         else if (shipStat === 5 || shipStat === 2) status = 3; // UNDETERMINED/CONTESTED → RESOLVING
       }
 
       // For TradeFx: derive verdict from shipmentStatus, not Agreement verdict()
       let rawVerdict: number;
       if (isTradeFx && shipStat !== null) {
-        rawVerdict = shipStat === 3 ? 1 : shipStat === 4 ? 2 : 0; // PARTY A / PARTY B / UNDETERMINED
+        // PARTY A (1) = TIMELY; PARTY B (2) = any LATE variant or RETURN_REQUIRED
+        if (shipStat === 3) rawVerdict = 1; // TIMELY → PARTY A
+        else if (shipStat === 4 || shipStat === 6) rawVerdict = 2; // LATE or RETURN_REQUIRED → PARTY B
+        else if (shipStat === 2 && tfStatusRaw === 6) rawVerdict = 2; // CONTESTED+SETTLED → PARTY B
+        else rawVerdict = 0; // UNDETERMINED
       } else {
         rawVerdict = results[5].status === "success" ? Number(results[5].result) : 0;
       }
-      const verdict = (status === 4 || (isTradeFx && shipStat !== null && shipStat >= 3)) ? rawVerdict : -1;
+      const hasVerdict = status === 4 || (isTradeFx && shipStat !== null && (shipStat >= 3 || (shipStat === 2 && tfStatusRaw === 6)));
+      const verdict = hasVerdict ? rawVerdict : -1;
 
       if (statusFilter !== null && status !== statusFilter) continue;
       if (partyFilter && partyA.toLowerCase() !== partyFilter && partyB.toLowerCase() !== partyFilter) continue;
