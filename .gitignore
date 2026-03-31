@@ -56,3 +56,6 @@ bridge/service/data/
 *-report.json
 tmp/
 contracts/bridge/node_modules
+forge-out/
+out/
+cache/
