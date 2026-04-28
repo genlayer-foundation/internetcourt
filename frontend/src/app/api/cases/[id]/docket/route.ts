@@ -43,6 +43,24 @@ async function getLogsChunked(params: {
   return logs;
 }
 
+async function findFirstCodeBlock(address: `0x${string}`, fromBlock: bigint, toBlock: bigint): Promise<bigint> {
+  const hasCode = async (blockNumber: bigint) => {
+    const code = await publicClient.getBytecode({ address, blockNumber }).catch(() => undefined);
+    return !!code && code !== "0x";
+  };
+
+  if (!(await hasCode(toBlock))) return fromBlock;
+
+  let lo = fromBlock;
+  let hi = toBlock;
+  while (lo < hi) {
+    const mid = (lo + hi) / BigInt(2);
+    if (await hasCode(mid)) hi = mid;
+    else lo = mid + BigInt(1);
+  }
+  return lo;
+}
+
 const basescanLink = (txHash: string): DocketLink => ({
   label: "Basescan",
   url: `https://sepolia.basescan.org/tx/${txHash}`,
@@ -101,6 +119,10 @@ const TFX_ABI = parseAbi([
   "event ManualReviewResolved(address indexed arbitrator, bool timeliness, string reason, uint256 timestamp)",
   "event ManualReviewTimedOut(address indexed caller, uint256 timestamp)",
   "event ExceptionFlagged(uint8 reasonCode, bytes32 evidenceRef, address indexed flagger)",
+  "event ShipmentSettledWithPenalty(address indexed exporter, address indexed importer, uint256 exporterAmount, uint256 importerAmount, uint256 penaltyBps)",
+  "event ReturnRequired(uint256 deadline, uint256 timestamp)",
+  "event ReturnProofSubmitted(address indexed importer, string sheetACid, string sheetBCid, uint256 timestamp)",
+  "event ReturnProofTimeout(address indexed caller, uint256 timestamp)",
 ]);
 
 /**
@@ -149,45 +171,9 @@ async function buildTradeFxDocket(
   caseId: number,
   deployBlock: bigint,
 ): Promise<DocketEntry[]> {
-  // Fetch TradeFx-specific events in parallel
-  const fetch = (eventSig: string) =>
-    getLogsChunked({ address: agreementAddress, event: parseAbiItem(eventSig), fromBlock, toBlock: currentBlock }).catch(() => []);
-
-  const [
-    tradeCreatedLogs,
-    rateLockRequestedLogs,
-    rateLockedLogs,
-    rateRolledLogs,
-    fundedLogs,
-    settledLogs,
-    cancelledLogs,
-    shipmentAcceptedLogs,
-    shipmentContestedLogs,
-    shipmentVerdictLogs,
-    settlementCancelledLogs,
-    manualReviewLogs,
-    manualReviewResolvedLogs,
-    manualReviewTimedOutLogs,
-    exceptionFlaggedLogs,
-  ] = await Promise.all([
-    fetch("event TradeCreated(address indexed exporter, address indexed importer, uint256 invoiceAmount, uint256 dueDate, string invoiceRef)"),
-    fetch("event RateLockRequested(address indexed requester, uint256 timestamp)"),
-    fetch("event RateLocked(uint256 rate, bytes32 benchmarkType, bytes32 benchmarkId, uint256 asOfTimestamp, uint256 settlementAmount)"),
-    fetch("event RateRolled(uint256 priorRate, uint256 rolledRate, uint256 rollCost, uint256 oldDueDate, uint256 newDueDate, bytes32 benchmarkId, uint256 asOfTimestamp)"),
-    fetch("event Funded(address indexed funder, uint256 amount, uint256 timestamp)"),
-    fetch("event Settled(address indexed exporter, uint256 amount, uint256 timestamp)"),
-    fetch("event Cancelled(uint8 reasonCode, address indexed by, uint256 refundAmount, address indexed refundTo)"),
-    fetch("event ShipmentAccepted(address indexed by, bool afterDeadline, uint256 timestamp)"),
-    fetch("event ShipmentContested(address indexed contestant, string manifestCid, string statement, uint256 contestDeadline, uint256 timestamp)"),
-    fetch("event ShipmentVerdictReceived(uint8 verdict, string caseId, string reasonSummary, address indexed deliveredBy, bool fromCourtContract, uint256 timestamp)"),
-    fetch("event SettlementCancelledByVerdict(address indexed importer, uint256 refundAmount)"),
-    fetch("event SettlementManualReview(string caseId, uint256 reviewDeadline, uint256 timestamp)"),
-    fetch("event ManualReviewResolved(address indexed arbitrator, bool timeliness, string reason, uint256 timestamp)"),
-    fetch("event ManualReviewTimedOut(address indexed caller, uint256 timestamp)"),
-    fetch("event ExceptionFlagged(uint8 reasonCode, bytes32 evidenceRef, address indexed flagger)"),
-  ]);
-
-  // Factory events for this case (bridge crossings)
+  // Factory events for this case (bridge crossings). Fetch these first so resolved
+  // TradeFx demo cases can bound the per-contract scan to the actual lifecycle
+  // window instead of scanning millions of historical blocks on every request.
   const [disputeRequestedLogs, verdictReceivedLogs] = await Promise.all([
     getLogsChunked({
       address: factoryAddress,
@@ -205,13 +191,67 @@ async function buildTradeFxDocket(
     }).catch(() => []),
   ]);
 
+  const contractFromBlock = await findFirstCodeBlock(agreementAddress, fromBlock, currentBlock).catch(() => fromBlock);
+  const verdictUpperBound = verdictReceivedLogs.length > 0
+    ? verdictReceivedLogs.reduce((max, l) => l.blockNumber > max ? l.blockNumber : max, contractFromBlock) + BigInt(1000)
+    : currentBlock;
+  const contractToBlock = verdictUpperBound < currentBlock ? verdictUpperBound : currentBlock;
+
+  // Fetch TradeFx-specific events in parallel
+  const fetch = (eventSig: string) =>
+    getLogsChunked({ address: agreementAddress, event: parseAbiItem(eventSig), fromBlock: contractFromBlock, toBlock: contractToBlock }).catch(() => []);
+
+  const [
+    tradeCreatedLogs,
+    rateLockRequestedLogs,
+    rateLockedLogs,
+    rateRolledLogs,
+    fundedLogs,
+    settledLogs,
+    cancelledLogs,
+    shipmentAcceptedLogs,
+    shipmentContestedLogs,
+    shipmentVerdictLogs,
+    settlementCancelledLogs,
+    manualReviewLogs,
+    manualReviewResolvedLogs,
+    manualReviewTimedOutLogs,
+    exceptionFlaggedLogs,
+    shipmentSettledWithPenaltyLogs,
+    returnRequiredLogs,
+    returnProofSubmittedLogs,
+    returnProofTimeoutLogs,
+  ] = await Promise.all([
+    fetch("event TradeCreated(address indexed exporter, address indexed importer, uint256 invoiceAmount, uint256 dueDate, string invoiceRef)"),
+    fetch("event RateLockRequested(address indexed requester, uint256 timestamp)"),
+    fetch("event RateLocked(uint256 rate, bytes32 benchmarkType, bytes32 benchmarkId, uint256 asOfTimestamp, uint256 settlementAmount)"),
+    fetch("event RateRolled(uint256 priorRate, uint256 rolledRate, uint256 rollCost, uint256 oldDueDate, uint256 newDueDate, bytes32 benchmarkId, uint256 asOfTimestamp)"),
+    fetch("event Funded(address indexed funder, uint256 amount, uint256 timestamp)"),
+    fetch("event Settled(address indexed exporter, uint256 amount, uint256 timestamp)"),
+    fetch("event Cancelled(uint8 reasonCode, address indexed by, uint256 refundAmount, address indexed refundTo)"),
+    fetch("event ShipmentAccepted(address indexed by, bool afterDeadline, uint256 timestamp)"),
+    fetch("event ShipmentContested(address indexed contestant, string manifestCid, string statement, uint256 contestDeadline, uint256 timestamp)"),
+    fetch("event ShipmentVerdictReceived(uint8 verdict, string caseId, string reasonSummary, address indexed deliveredBy, bool fromCourtContract, uint256 timestamp)"),
+    fetch("event SettlementCancelledByVerdict(address indexed importer, uint256 refundAmount)"),
+    fetch("event SettlementManualReview(string caseId, uint256 reviewDeadline, uint256 timestamp)"),
+    fetch("event ManualReviewResolved(address indexed arbitrator, bool timeliness, string reason, uint256 timestamp)"),
+    fetch("event ManualReviewTimedOut(address indexed caller, uint256 timestamp)"),
+    fetch("event ExceptionFlagged(uint8 reasonCode, bytes32 evidenceRef, address indexed flagger)"),
+    fetch("event ShipmentSettledWithPenalty(address indexed exporter, address indexed importer, uint256 exporterAmount, uint256 importerAmount, uint256 penaltyBps)"),
+    fetch("event ReturnRequired(uint256 deadline, uint256 timestamp)"),
+    fetch("event ReturnProofSubmitted(address indexed importer, string sheetACid, string sheetBCid, uint256 timestamp)"),
+    fetch("event ReturnProofTimeout(address indexed caller, uint256 timestamp)"),
+  ]);
+
   // Collect all unique block numbers for timestamp lookup
   const allLogs = [
     ...tradeCreatedLogs, ...rateLockRequestedLogs, ...rateLockedLogs, ...rateRolledLogs,
     ...fundedLogs, ...settledLogs, ...cancelledLogs, ...shipmentAcceptedLogs,
     ...shipmentContestedLogs, ...shipmentVerdictLogs, ...settlementCancelledLogs,
     ...manualReviewLogs, ...manualReviewResolvedLogs, ...manualReviewTimedOutLogs,
-    ...exceptionFlaggedLogs, ...disputeRequestedLogs, ...verdictReceivedLogs,
+    ...exceptionFlaggedLogs, ...shipmentSettledWithPenaltyLogs, ...returnRequiredLogs,
+    ...returnProofSubmittedLogs, ...returnProofTimeoutLogs,
+    ...disputeRequestedLogs, ...verdictReceivedLogs,
   ];
 
   const uniqueBlocks = [...new Set(allLogs.map((l) => l.blockNumber))];
@@ -407,6 +447,71 @@ async function buildTradeFxDocket(
       links: [basescanLink(txHash), lzLink(txHash)],
     });
   }
+
+  // ReturnRequired — VERY_LATE path requires importer return proof before final payout.
+  returnRequiredLogs.forEach((log) => {
+    const deadline = log.args.deadline ? new Date(Number(log.args.deadline) * 1000).toUTCString() : "—";
+    docket.push({
+      action: "Return proof required",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: null,
+      details: `Importer must submit return proof before ${deadline}.`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ReturnProofSubmitted
+  returnProofSubmittedLogs.forEach((log) => {
+    docket.push({
+      action: "Return proof submitted by importer",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.importer || null,
+      details: `Court sheet A: ${log.args.sheetACid || "—"}\nCourt sheet B: ${log.args.sheetBCid || "—"}`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ReturnProofTimeout
+  returnProofTimeoutLogs.forEach((log) => {
+    docket.push({
+      action: "Return proof window timed out",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.caller || null,
+      details: "Importer did not submit return proof before the deadline; contract proceeds to penalty settlement.",
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
+
+  // ShipmentSettledWithPenalty — graduated penalty payout path.
+  shipmentSettledWithPenaltyLogs.forEach((log) => {
+    const exporterAmount = log.args.exporterAmount ? (Number(log.args.exporterAmount) / 1e18).toLocaleString() : "—";
+    const importerAmount = log.args.importerAmount ? (Number(log.args.importerAmount) / 1e18).toLocaleString() : "—";
+    const penaltyBps = log.args.penaltyBps !== undefined ? Number(log.args.penaltyBps) : null;
+    const penaltyPct = penaltyBps !== null ? (penaltyBps / 100).toFixed(2).replace(/\.00$/, "") : "—";
+    docket.push({
+      action: "Shipment settled with delay penalty",
+      txHash: log.transactionHash!,
+      blockNumber: Number(log.blockNumber),
+      timestamp: t(log),
+      actor: log.args.exporter || null,
+      details: `Exporter payout: ${exporterAmount} MockPEN\nImporter refund: ${importerAmount} MockPEN\nPenalty: ${penaltyPct}%`,
+      evidence: null,
+      source: "Base",
+      links: [basescanLink(log.transactionHash!)],
+    });
+  });
 
   // Settled — funds released to exporter (no dispute path — plain accept → settle)
   settledLogs.forEach((log) => {
