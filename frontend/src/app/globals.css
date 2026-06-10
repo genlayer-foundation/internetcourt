@@ -1,14 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-@font-face {
-  font-family: 'Martina Plantijn';
-  src: url('/fonts/MartinaPlantin.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -17,7 +7,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-dm-mono);
-  --font-serif: 'Martina Plantijn', Georgia, 'Times New Roman', serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -150,20 +139,11 @@
   }
 }
 
-/* Serif heading utility */
+/* Serif heading utility - DM Serif Display Italic for accent phrases */
 .font-heading {
-  font-family: 'Martina Plantijn', Georgia, 'Times New Roman', serif;
-}
-
-/* Subtle grain texture overlay for depth */
-.grain-overlay::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
+  font-family: var(--font-dm-serif), Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
 }
 
 /* Entrance animations */
@@ -178,79 +158,34 @@
   }
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes zoom-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out both;
 }
 
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out both;
+/* Founding-members logo marquee - track holds two identical copies of the
+   sequence, so translating -50% loops seamlessly. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
-.animate-zoom-in {
-  animation: zoom-in 0.5s ease-out both;
+.animate-marquee {
+  animation: marquee 36s linear infinite;
+  will-change: transform;
 }
 
-.animate-slide-in-left {
-  animation: slide-in-left 0.6s ease-out both;
+.marquee:hover .animate-marquee {
+  animation-play-state: paused;
 }
 
-.animate-slide-in-right {
-  animation: slide-in-right 0.6s ease-out both;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }
 
 /* Stagger delays */
@@ -259,6 +194,3 @@
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-.delay-700 { animation-delay: 700ms; }
-.delay-800 { animation-delay: 800ms; }

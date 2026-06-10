@@ -4,6 +4,12 @@
 
 ## In Progress
 
+### New minimal marketing website from one-pager
+- Replace app-style site with a static marketing site based on the Internet Court one-pager
+- Source: `/Users/rasca/Dev/genlayer/Internet Court one pager/Internet Court One Pager with Logos.pdf`
+- Single-page site: video hero + skill.md "coming soon" terminal box, scrolling founding-members marquee, prominent stack table, § 01-03 one-pager copy, closing band with ivan@genlayer.foundation
+- Status: Done, visually verified (desktop & mobile). Cleanup + commit to new branch in progress. Open question for user: footer GitHub URL (github.com/internetcourt vs genlayer-foundation/internetcourt).
+
 ### Fix Verdict Semantics — PARTY_A / PARTY_B instead of TRUE / FALSE
 - Replace TRUE/FALSE verdict labels with PARTY_A/PARTY_B across contracts, frontend, MCP, docs
 - No Solidity redeploy needed — same uint8 values (0, 1, 2), just relabeled
