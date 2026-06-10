@@ -13,42 +13,6 @@ export const STACK_ROWS: StackRow[] = [
   { n: "06", layer: "Verification & disputes", standards: "GenLayer, Kleros, UMA" },
 ];
 
-export type FoundingBenefit = {
-  numeral: string;
-  body: string;
-};
-
-export const FOUNDING_BENEFITS: FoundingBenefit[] = [
-  {
-    numeral: "i",
-    body: "Have your protocol embedded into the Internet Court standard.",
-  },
-  {
-    numeral: "ii",
-    body: "Co-launch alongside Internet Court. Our PR agency drives coordinated coverage across Forbes, TechCrunch, Product Hunt and similar venues. Launch date to be announced.",
-  },
-  {
-    numeral: "iii",
-    body: "Add a new discovery platform for your protocol so agents around the world can start using you as default. Focused on AO (Agentic Optimization).",
-  },
-  {
-    numeral: "iv",
-    body: "A featured spot on the internetcourt.org site and partner showcase.",
-  },
-  {
-    numeral: "v",
-    body: "Recognition as a co-author of the standard, not just a participant.",
-  },
-  {
-    numeral: "vi",
-    body: "First-mover association. Showcase the world that your protocol is supporting research and innovation towards the agentic future.",
-  },
-  {
-    numeral: "vii",
-    body: "Have direct access to the other members of the consortium & builders of the protocol so together we push the cooperation on the vertical.",
-  },
-];
-
 export type Partner = {
   name: string;
   /** Full wordmark logo (light-background variant). */

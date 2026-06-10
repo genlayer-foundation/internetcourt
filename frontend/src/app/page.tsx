@@ -4,7 +4,6 @@ import { SectionHeading } from "@/components/site/SectionHeading";
 import { StackTable } from "@/components/site/StackTable";
 import { PartnerMarquee } from "@/components/site/PartnerMarquee";
 import { CTABand } from "@/components/site/CTABand";
-import { FOUNDING_BENEFITS } from "@/lib/site-content";
 
 const TITLE = "Internet Court: An open skill for agent-to-agent contracts";
 const DESCRIPTION =
@@ -94,11 +93,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section 3 - § 01 The Goal */}
+      {/* Section 3 - The Goal */}
       <section id="goal" className="py-16 md:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <SectionHeading
-            eyebrow="§ 01 · The Goal"
+            eyebrow="The Goal"
             title={
               <>
                 Scaffolding for <Accent variant="light">agentic commerce</Accent>.
@@ -126,53 +125,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section 4 - § 02 The Proposal */}
-      <section id="proposal" className="py-16 md:py-24 bg-[#f7f7f7]">
-        <div className="max-w-6xl mx-auto px-4">
-          <SectionHeading
-            eyebrow="§ 02 · The Proposal"
-            subhead="Become a founding partner of Internet Court if you join before the 15th of June."
-          />
-          <ol className="mt-12 max-w-3xl mx-auto flex flex-col divide-y divide-border rounded-2xl border border-border bg-white overflow-hidden shadow-sm">
-            {FOUNDING_BENEFITS.map((benefit) => (
-              <li
-                key={benefit.numeral}
-                className="flex items-baseline gap-5 px-6 py-5 md:px-8"
-              >
-                <span className="w-8 shrink-0 text-right font-mono text-sm text-[#dc2626]">
-                  {benefit.numeral}.
-                </span>
-                <p className="text-sm md:text-base leading-relaxed">
-                  {benefit.body}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Section 5 - § 03 Why Join Now */}
-      <section id="why-now" className="py-16 md:py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <SectionHeading
-            eyebrow="§ 03 · Why Join Now"
-          />
-          <p className="mt-8 max-w-2xl mx-auto text-center text-base md:text-lg text-[#4d4944] leading-relaxed">
-            Commerce is about collaboration. Agentic commerce won&apos;t be
-            different. Join the consortium so we
-            can create this future together. Achieve everything mentioned above
-            &amp; the founding partner status if you join the consortium before
-            the 15th of June.
-          </p>
-          <div className="mt-10 text-center">
-            <span className="inline-flex items-center rounded-full bg-[#1a1817] px-5 py-2.5 font-mono text-xs md:text-sm uppercase tracking-[0.18em] text-white">
-              Founding window closes 15 · 06 · 2026
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 6 - CTA band */}
+      {/* Section 4 - CTA band */}
       <section className="py-16 md:py-24 bg-white">
         <CTABand
           title="The trust layer for agent-to-agent commerce."
