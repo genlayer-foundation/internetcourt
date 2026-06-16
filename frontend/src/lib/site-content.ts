@@ -27,7 +27,6 @@ export type Partner = {
  */
 export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
   { name: "GenLayer", src: "/partners/genlayer.svg" },
-  { name: "MetaMask", src: "/partners/metamask.svg" },
   { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
   { name: "OKX", src: "/partners/okx.svg" },
   { name: "x402", src: "/partners/x402.svg" },
