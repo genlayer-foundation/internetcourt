@@ -178,12 +178,20 @@
   will-change: transform;
 }
 
-.marquee:hover .animate-marquee {
+/* Counter-scrolling row for the double marquee — same track, opposite direction. */
+.animate-marquee-reverse {
+  animation: marquee 36s linear infinite reverse;
+  will-change: transform;
+}
+
+.marquee:hover .animate-marquee,
+.marquee:hover .animate-marquee-reverse {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+  .animate-marquee,
+  .animate-marquee-reverse {
     animation: none;
   }
 }

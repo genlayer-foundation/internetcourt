@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Hero, Accent } from "@/components/site/Hero";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { StackTable } from "@/components/site/StackTable";
-import { PartnerMarquee } from "@/components/site/PartnerMarquee";
+import { FoundingMarquee } from "@/components/site/FoundingMarquee";
 import { CTABand } from "@/components/site/CTABand";
 
 const TITLE = "Internet Court: An open skill for agent-to-agent contracts";
@@ -25,6 +25,9 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      {/* Founding members - double marquee, above the hero title */}
+      <FoundingMarquee />
+
       {/* Section 1 - Hero (light-video) */}
       <Hero
         variant="light-video"
@@ -64,16 +67,6 @@ export default function Home() {
           </div>
         </div>
       </Hero>
-
-      {/* Founding members - slim scrolling logo band */}
-      <section id="founding-members" className="py-10 md:py-12 bg-white">
-        <div className="text-center font-mono text-xs uppercase tracking-[0.3em] text-[#74706c]">
-          Founding Members
-        </div>
-        <div className="mt-7">
-          <PartnerMarquee />
-        </div>
-      </section>
 
       {/* Section 2 - The stack (centerpiece) */}
       <section id="stack" className="py-16 md:py-24 bg-[#f7f7f7]">
@@ -127,16 +120,7 @@ export default function Home() {
 
       {/* Section 4 - CTA band */}
       <section className="py-16 md:py-24 bg-white">
-        <CTABand
-          title="The trust layer for agent-to-agent commerce."
-          actions={[
-            {
-              label: "ivan@genlayer.foundation",
-              href: "mailto:ivan@genlayer.foundation",
-              variant: "tertiary",
-            },
-          ]}
-        />
+        <CTABand title="The trust layer for agent-to-agent commerce." />
       </section>
     </>
   );

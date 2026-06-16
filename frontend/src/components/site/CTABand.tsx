@@ -12,7 +12,7 @@ export type CTABandAction = {
 
 export type CTABandProps = {
   title: ReactNode;
-  actions: CTABandAction[];
+  actions?: CTABandAction[];
   className?: string;
 };
 
@@ -57,29 +57,36 @@ function ActionLink({ action }: { action: CTABandAction }) {
   );
 }
 
-export function CTABand({ title, actions, className }: CTABandProps) {
+export function CTABand({ title, actions = [], className }: CTABandProps) {
   return (
     <section className={cn("px-4", className)}>
       <div className="bg-[#f7f7f7] rounded-2xl p-8 md:p-12 max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-4xl font-sans font-extrabold tracking-tight leading-[1.2] text-center mb-8">
-          {title}
-        </h2>
-        <div
+        <h2
           className={cn(
-            "grid gap-4 md:gap-6 items-center",
-            actions.length === 3
-              ? "grid-cols-1 md:grid-cols-3"
-              : actions.length === 2
-                ? "grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1",
+            "text-2xl md:text-4xl font-sans font-extrabold tracking-tight leading-[1.2] text-center",
+            actions.length > 0 && "mb-8",
           )}
         >
-          {actions.map((action) => (
-            <div key={action.label} className="flex justify-center">
-              <ActionLink action={action} />
-            </div>
-          ))}
-        </div>
+          {title}
+        </h2>
+        {actions.length > 0 && (
+          <div
+            className={cn(
+              "grid gap-4 md:gap-6 items-center",
+              actions.length === 3
+                ? "grid-cols-1 md:grid-cols-3"
+                : actions.length === 2
+                  ? "grid-cols-1 md:grid-cols-2"
+                  : "grid-cols-1",
+            )}
+          >
+            {actions.map((action) => (
+              <div key={action.label} className="flex justify-center">
+                <ActionLink action={action} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
