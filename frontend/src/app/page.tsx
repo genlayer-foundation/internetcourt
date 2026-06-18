@@ -69,7 +69,7 @@ export default function Home() {
             hero video backdrop shows through behind the copy, matching the
             marquee. `relative z-10` keeps the copy above the z-0 video. */}
         <div className="relative z-10 mx-auto max-w-6xl px-5 md:px-4 text-[#1a1817]">
-          <div className="mx-auto mt-12 mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
+          <div className="mx-auto mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
             <p>
               Agents are beginning to transact, negotiate and pay one another
               without humans in the loop. What they still lack is a way to trust

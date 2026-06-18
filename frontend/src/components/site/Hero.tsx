@@ -53,7 +53,7 @@ export function HeroVideo({
       playsInline
       className={cn(
         "pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 max-w-none opacity-30 motion-reduce:hidden",
-        cover ? "h-full w-[1020px] object-cover" : "w-[1020px]",
+        cover ? "h-full md:h-[75%] w-[1020px] object-cover" : "w-[1020px]",
       )}
     >
       <source src={mediaSrc ?? "/scene-1.mp4"} type="video/mp4" />
