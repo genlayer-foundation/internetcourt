@@ -22,6 +22,12 @@ export type Partner = {
   src?: string;
   /** Icon + HTML text composition, for logos whose wordmark asset is unusable. */
   iconSrc?: string;
+  /**
+   * Per-logo height in the static grid, expressed in Figma's 40px-cell units
+   * (preserves the relative sizing of "Frame 68"). Scaled by a global factor
+   * in PartnerGrid; absent for marquee-only usage.
+   */
+  gridHeight?: number;
 };
 
 /**
@@ -54,8 +60,11 @@ export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
   { name: "OpenServ", src: "/partners/openserv.svg" },
   { name: "UMA", src: "/partners/uma.svg" },
   { name: "Humanode", src: "/partners/humanode.png" },
+  { name: "Privy", src: "/partners/privy.svg" },
+  { name: "AIVM", src: "/partners/aivm.svg" },
   { name: "Chutes", iconSrc: "/partners/chutes.svg" },
   { name: "AntSeed", iconSrc: "/partners/antseed.svg" },
+  { name: "Heurist", iconSrc: "/partners/heurist.png" },
   { name: "Arkhai", src: "/partners/arkhai.svg" },
   { name: "Collective Memory", src: "/partners/collective-memory.png" },
 ];
@@ -65,3 +74,56 @@ export const FOUNDING_MEMBERS: Partner[] = [
   ...FOUNDING_MEMBERS_PRIMARY,
   ...FOUNDING_MEMBERS_SECONDARY,
 ];
+
+/** Lookup of every defined partner by name, for building ordered views. */
+const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
+  FOUNDING_MEMBERS.map((partner) => [partner.name, partner]),
+);
+
+/**
+ * Founding members laid out as the Figma "Frame 68" 6×4 grid. Order is exactly
+ * the Figma reading order (left→right, top→bottom). `gridHeight` is the logo's
+ * height within a 40px-tall Figma cell — PartnerGrid multiplies it by a single
+ * SCALE factor so the relative sizing is preserved. Each entry reuses the
+ * existing Partner object (same src/iconSrc) with its grid height attached.
+ */
+export const FOUNDING_MEMBERS_GRID: Partner[] = (
+  [
+    // Row 1
+    ["GenLayer", 24],
+    ["MetaMask", 22],
+    ["BNB Chain", 15.4],
+    ["OKX", 14],
+    ["x402", 16],
+    ["Nansen", 16],
+    // Row 2
+    ["0G Labs", 18],
+    ["ZKsync", 18.9],
+    ["Privy", 16.9],
+    ["AntSeed", 20],
+    ["Collective Memory", 22],
+    ["UMA", 14],
+    // Row 3
+    ["Arkhai", 21.7],
+    ["Heurist", 16],
+    ["Chutes", 13.75],
+    ["AltLayer", 16],
+    ["ChainGPT", 16],
+    ["Anoma", 17],
+    // Row 4
+    ["AppLayer", 15.3],
+    ["Chainbase", 15.8],
+    ["LI.FI", 22],
+    ["OpenServ", 22],
+    ["Humanode", 13],
+    ["Humanity Protocol", 21.9],
+  ] as const
+).map(([name, gridHeight]) => ({ ...PARTNERS_BY_NAME[name], gridHeight }));
+
+/**
+ * Lookup of each partner's grid height (Figma 40px-cell units) by name, so the
+ * marquee can size its logos to exactly match the static grid (PartnerGrid).
+ */
+export const GRID_HEIGHT_BY_NAME: Record<string, number> = Object.fromEntries(
+  FOUNDING_MEMBERS_GRID.map((partner) => [partner.name, partner.gridHeight ?? 18]),
+);

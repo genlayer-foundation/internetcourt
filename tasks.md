@@ -4,14 +4,29 @@
 
 ## In Progress
 
+### Marquee logo polish — full-color, matched speed, grid height
+- Logos in both marquees render at 100% (full color, full opacity, NO blur/grayscale)
+- Both marquees (FoundingMarquee + PartnerMarquee) scroll at the same speed
+- Logo height matches the PartnerGrid logo height — do NOT fill 100% of marquee height
+- Files: FoundingMarquee.tsx, PartnerMarquee.tsx, site-content.ts (PartnerGrid = height reference only)
+- Status: DONE (uncommitted). Removed grayscale/brightness/opacity-dim/hover-reveal from marquee logos. Equal speed via shared SPEED_PX_PER_SECOND=45 (duration computed from measured content width, replacing fixed 48s/40s). Marquee logos sized to grid units (gridHeight×1.2 mobile / ×1.5 desktop) via GRID_HEIGHT_BY_NAME. Build + tsc clean.
+
+### Brand Guidelines page — professional brand book
+- Build a polished, interactive brand guidelines page at `/brand` in the frontend Next app
+- Sections: cover/positioning, logo (wordmark + icon, clear space, misuse), color system (red #DC2626 + neutrals + semantic, light/dark), typography (DM Sans/Mono/Serif Display + scale), voice & tone + taglines, iconography/favicon, founding-members lockup, imagery/OG, motion, applications, asset index
+- Reuse real design tokens from globals.css and the actual `/logos/tic-logo-red.svg`
+- Source of truth for voice: `docs/COPY_AND_VOICE.md`
+- Built at `frontend/src/app/brand/page.tsx` + `frontend/src/components/brand/{CopyChip,Swatch}.tsx`. Build/lint/typecheck clean, visually verified (Stripe/Linear tier).
+- Status: DONE — uncommitted in working tree. Follow-ups for a designer: reversed all-white wordmark for red/photo bgs, standalone monochrome icon export.
+
 ### Marketing site: Blog + Launch Video + Telegram link
 - Full brief: `plan.md`. Branch `feat/marketing-one-pager`.
 - Telegram footer link (`TELEGRAM_URL` placeholder), Blog footer link
 - MDX blog engine (`/blog`, `[slug]`, 3 seed posts) + 3 index designs behind `/preview/blog`
 - Launch video "Watch" homepage section (click-to-play with sound) + 3 variants behind `/preview/watch`
 - Video copied locally + gitignored; prod hosting is a follow-up
-- Status: DONE — build PASS. User picked **Theater** watch + **Academic** blog index; both wired live. Unused variants (Cinematic/Exhibit, Clean/Gazette, PostCard) + `/preview/*` routes deleted. Nothing committed yet.
-- Follow-ups: real Telegram invite link; real press-release copy; prod video hosting (Vercel Blob + swap src, mp4 is gitignored); maybe a Header Blog link.
+- Status: SHIPPED to staging — commit `fa085f1` on `feat/marketing-one-pager`. Theater watch + Academic blog index wired live; header nav with Blog pill + Telegram/X/GitHub icon links; footer Blog+Telegram. TELEGRAM_URL=t.me/internet_court, X_URL=x.com/courtofinternet, GitHub=github.com/internet-court. Unused variants + /preview/* deleted.
+- Open follow-ups: prod video hosting (mp4 gitignored → upload to Vercel Blob + swap src in TheaterWatch.tsx & launch-video.mdx, else 404 on staging/prod); real press-release copy (press-release.mdx is a public DRAFT).
 
 ### New minimal marketing website from one-pager
 - Replace app-style site with a static marketing site based on the Internet Court one-pager

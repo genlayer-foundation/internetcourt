@@ -3,10 +3,13 @@
 This directory holds the Internet Court launch video — a ~11MB branded MOTION + SFX
 clip (`internet-court-launch.mp4`).
 
-## Why the mp4 is not in git
+## Git tracking
 
-The `.mp4` is **gitignored** (see `frontend/.gitignore`: `/public/video/*.mp4`) because
-the binary is too large to commit. Only this README is tracked.
+By default, `.mp4` binaries in this folder are **gitignored**
+(`frontend/.gitignore`: `/public/video/*.mp4`). The canonical launch clip is the
+exception: `internet-court-launch.mp4` is **committed** via a gitignore negation
+(`!/public/video/internet-court-launch.mp4`), so it ships with the repo and is
+available on prod. Any other `.mp4` dropped in this folder stays ignored.
 
 ## Local development
 
@@ -19,8 +22,9 @@ cp "/Users/rasca/Downloads/VIDEO 1 - INTERNET COURT MOTION + SFX v2.mp4" \
 
 With the file present, `/video/internet-court-launch.mp4` resolves in dev.
 
-## Production (follow-up)
+## Production
 
-Because the mp4 is gitignored, **production will not have it.** The clip must be
-uploaded separately (e.g. Vercel Blob or another public host) and the `src` in the
-Watch section / blog video post swapped to that URL — otherwise it 404s on prod.
+Because `internet-court-launch.mp4` is committed (see "Git tracking" above), it is
+deployed with the app and `/video/internet-court-launch.mp4` resolves on prod — no
+separate hosting needed. If you add other (still-ignored) `.mp4` files, those would
+need to be hosted separately and referenced by URL.

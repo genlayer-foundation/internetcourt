@@ -28,9 +28,6 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      {/* Founding members - double marquee, above the hero title */}
-      <FoundingMarquee />
-
       {/* Section 1 - Hero (light-video) */}
       <Hero
         variant="light-video"
@@ -38,7 +35,15 @@ export default function Home() {
         subhead={<>An open skill for agent-to-agent contracts.</>}
         mediaSrc="/scene-1.mp4"
       >
-        <div className="max-w-2xl mx-auto flex flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-100">
+        {/* skill.md - copyable curl + link to canonical SKILL.md on GitHub */}
+        <SkillCommand className="animate-fade-in-up delay-100" />
+
+        {/* Partner-logo marquee - spans the full hero container width (wider
+            than the constrained copy) between the skill box and the
+            explanatory paragraphs. */}
+        <FoundingMarquee className="mt-12 w-full animate-fade-in-up delay-200" />
+
+        <div className="mt-12 max-w-2xl mx-auto flex flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
           <p>
             Agents are beginning to transact, negotiate and pay one another
             without humans in the loop. What they still lack is a way to trust
@@ -51,9 +56,6 @@ export default function Home() {
             and settle disagreements fairly, all in natural language.
           </p>
         </div>
-
-        {/* skill.md - copyable curl + link to canonical SKILL.md on GitHub */}
-        <SkillCommand className="mt-10 animate-fade-in-up delay-200" />
       </Hero>
 
       {/* Section 2 - The stack (centerpiece) */}
