@@ -27,10 +27,13 @@ export type Partner = {
  */
 export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
   { name: "GenLayer", src: "/partners/genlayer.svg" },
-  { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
-  { name: "OKX", src: "/partners/okx.svg" },
+  { name: "MetaMask", src: "/partners/metamask.svg" },
   { name: "x402", src: "/partners/x402.svg" },
+  { name: "ZKsync", src: "/partners/zksync.svg" },
+  { name: "OKX", src: "/partners/okx.svg" },
+  { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
   { name: "Nansen", src: "/partners/nansen.png" },
+  { name: "0G Labs", src: "/partners/0g-labs.svg" },
 ];
 
 /**
@@ -38,9 +41,7 @@ export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
  * scrolling the opposite direction.
  */
 export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
-  { name: "0G Labs", src: "/partners/0g-labs.svg" },
   { name: "Humanity Protocol", src: "/partners/humanity-protocol.svg" },
-  { name: "ZKsync", src: "/partners/zksync.svg" },
   { name: "AltLayer", src: "/partners/altlayer.svg" },
   { name: "ChainGPT", src: "/partners/chaingpt.svg" },
   { name: "Anoma", src: "/partners/anoma.png" },

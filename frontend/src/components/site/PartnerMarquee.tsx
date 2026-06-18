@@ -116,7 +116,7 @@ type PartnerLogoProps = {
  * Single partner logo with the shared monochrome treatment. Expects an ancestor
  * with the `group` class for the hover reveal.
  */
-function PartnerLogo({
+export function PartnerLogo({
   partner,
   imgClassName = "h-7 md:h-8",
   textClassName = "text-lg md:text-xl",
@@ -132,12 +132,14 @@ function PartnerLogo({
   }
   return (
     <span className="flex items-center gap-2.5">
-      <img
-        src={partner.iconSrc}
-        alt=""
-        aria-hidden="true"
-        className={cn("w-auto object-contain", imgClassName, LOGO_FILTER)}
-      />
+      {partner.iconSrc && (
+        <img
+          src={partner.iconSrc}
+          alt=""
+          aria-hidden="true"
+          className={cn("w-auto object-contain", imgClassName, LOGO_FILTER)}
+        />
+      )}
       <span
         className={cn(
           "font-sans font-medium text-[#1a1817]/60 transition-colors duration-300 group-hover:text-[#1a1817]",
