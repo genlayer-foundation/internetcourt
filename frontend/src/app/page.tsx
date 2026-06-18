@@ -6,6 +6,7 @@ import { FoundingMarquee } from "@/components/site/FoundingMarquee";
 import { PartnerGrid } from "@/components/site/PartnerGrid";
 import { SkillCommand } from "@/components/site/SkillCommand";
 import { CTABand } from "@/components/site/CTABand";
+import { TheaterWatch } from "@/components/site/watch/TheaterWatch";
 
 const TITLE = "Internet Court: An open skill for agent-to-agent contracts";
 const DESCRIPTION =
@@ -78,6 +79,9 @@ export default function Home() {
           }
         />
       </section>
+
+      {/* Section 2.5 - Watch (launch video) */}
+      <TheaterWatch />
 
       {/* Section 3 - The Goal */}
       <section id="goal" className="py-16 md:py-24 bg-white">

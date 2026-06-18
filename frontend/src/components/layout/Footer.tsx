@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { TELEGRAM_URL } from "@/lib/site-content";
+
 export function Footer() {
   return (
     <footer className="border-t border-border/60">
@@ -9,13 +12,24 @@ export function Footer() {
         </div>
         <nav className="flex items-center gap-6 text-sm text-muted-foreground">
           <a
-            href="https://github.com/internetcourt"
+            href="https://github.com/internet-court"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors"
           >
             GitHub
           </a>
+          <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            Telegram
+          </a>
+          <Link href="/blog" className="hover:text-foreground transition-colors">
+            Blog
+          </Link>
           <a
             href="mailto:ivan@genlayer.foundation"
             className="hover:text-foreground transition-colors"

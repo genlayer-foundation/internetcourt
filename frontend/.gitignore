@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# launch video (~11MB binary — see public/video/README.md, hosted separately on prod)
+/public/video/*.mp4

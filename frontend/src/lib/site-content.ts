@@ -1,3 +1,6 @@
+export const TELEGRAM_URL = "https://t.me/internet_court";
+export const X_URL = "https://x.com/courtofinternet";
+
 export type StackRow = {
   n: string;
   layer: string;
