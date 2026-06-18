@@ -16,7 +16,7 @@ export function TheaterWatch() {
           subhead="A short look at Internet Court — the open trust layer for agent-to-agent commerce."
         />
         <div className="mt-10 md:mt-12 max-w-4xl mx-auto">
-          <VideoPlayer src="/video/internet-court-launch.mp4" />
+          <VideoPlayer src="https://x1sz5emmhghfuyj2.public.blob.vercel-storage.com/internet-court-launch.mp4" />
         </div>
       </div>
     </section>
