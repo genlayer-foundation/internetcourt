@@ -11,7 +11,55 @@ export type HeroProps = {
   children?: ReactNode;
   mediaSrc?: string;
   className?: string;
+  /**
+   * When true, the `light-video` background video is NOT rendered inside the
+   * hero section. Use this when a shared, full-bleed video backdrop is rendered
+   * by the parent (see page.tsx) so the video can flow continuously behind both
+   * the hero and the following marquee instead of being clipped to the hero.
+   */
+  externalVideoBackdrop?: boolean;
+  /**
+   * When true, renders a short brand-red accent rule directly beneath the
+   * headline — a small, deliberate pop of brand color above the fold. Opt-in
+   * so other Hero usages stay untouched.
+   */
+  titleAccentRule?: boolean;
 };
+
+/**
+ * The `light-video` background video, sized/positioned to match the original
+ * in-hero treatment. Rendered either inside the hero (default) or, when the
+ * page supplies a shared backdrop, as a full-bleed layer that spans the hero
+ * and the marquee below it so the video is never cut by an opaque band.
+ *
+ * When `cover` is set, the video fills the full height of its (taller) backdrop
+ * container via `h-full object-cover` instead of using its intrinsic height
+ * anchored at the top. Used when the shared backdrop also spans the intro
+ * paragraphs below the marquee, so the video reaches all the way down rather
+ * than leaving the lower region on the plain white body background.
+ */
+export function HeroVideo({
+  mediaSrc,
+  cover = false,
+}: {
+  mediaSrc?: string;
+  cover?: boolean;
+}) {
+  return (
+    <video
+      autoPlay
+      loop
+      muted
+      playsInline
+      className={cn(
+        "pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 max-w-none opacity-30 motion-reduce:hidden",
+        cover ? "h-full w-[1020px] object-cover" : "w-[1020px]",
+      )}
+    >
+      <source src={mediaSrc ?? "/scene-1.mp4"} type="video/mp4" />
+    </video>
+  );
+}
 
 export function Hero({
   variant = "light",
@@ -21,6 +69,8 @@ export function Hero({
   children,
   mediaSrc,
   className,
+  externalVideoBackdrop = false,
+  titleAccentRule = false,
 }: HeroProps) {
   const isDark = variant === "dark";
   const isLightVideo = variant === "light-video";
@@ -46,18 +96,9 @@ export function Hero({
         </div>
 
         <section className="relative py-20 md:py-32 text-center items-center flex flex-col overflow-visible">
-          {/* Background video: absolute within hero, scrolls with page */}
-          {isLightVideo && (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 z-0 w-[1020px] max-w-none opacity-30 motion-reduce:hidden"
-            >
-              <source src={mediaSrc ?? "/scene-1.mp4"} type="video/mp4" />
-            </video>
-          )}
+          {/* Background video: absolute within hero, scrolls with page.
+              Skipped when the parent renders a shared full-bleed backdrop. */}
+          {isLightVideo && !externalVideoBackdrop && <HeroVideo mediaSrc={mediaSrc} />}
           {eyebrow && (
             <div className="relative z-10 font-mono text-xs md:text-sm uppercase tracking-[0.12em] mb-6 text-[#dc2626]">
               {eyebrow}
@@ -67,6 +108,13 @@ export function Hero({
           <h1 className="relative z-10 font-heading text-[40px] md:text-7xl lg:text-[96px] tracking-[-0.02em] leading-[1.2]">
             {title}
           </h1>
+
+          {titleAccentRule && (
+            <span
+              className="relative z-10 mt-5 block h-[3px] w-14 rounded-full bg-[#dc2626] animate-fade-in-up delay-100"
+              aria-hidden="true"
+            />
+          )}
 
           {subhead && (
             <p className="relative z-10 mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center leading-normal">

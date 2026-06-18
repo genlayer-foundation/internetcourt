@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Hero, Accent } from "@/components/site/Hero";
+import { Hero, HeroVideo, Accent } from "@/components/site/Hero";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { AnimatedStack } from "@/components/site/AnimatedStack";
 import { FoundingMarquee } from "@/components/site/FoundingMarquee";
@@ -28,35 +28,62 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      {/* Section 1 - Hero (light-video) */}
-      <Hero
-        variant="light-video"
-        title="Internet Court"
-        subhead={<>An open skill for agent-to-agent contracts.</>}
-        mediaSrc="/scene-1.mp4"
-      >
-        {/* skill.md - copyable curl + link to canonical SKILL.md on GitHub */}
-        <SkillCommand className="animate-fade-in-up delay-100" />
-
-        {/* Partner-logo marquee - spans the full hero container width (wider
-            than the constrained copy) between the skill box and the
-            explanatory paragraphs. */}
-        <FoundingMarquee className="mt-12 w-full animate-fade-in-up delay-200" />
-
-        <div className="mt-12 max-w-2xl mx-auto flex flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
-          <p>
-            Agents are beginning to transact, negotiate and pay one another
-            without humans in the loop. What they still lack is a way to trust
-            each other.
-          </p>
-          <p>
-            Internet Court is the trust layer for agent-to-agent commerce. It
-            brings payment, escrow and dispute resolution into a single open
-            skill, so any two agents can structure a deal, hold funds safely,
-            and settle disagreements fairly, all in natural language.
-          </p>
+      {/* Section 1 - Hero (light-video) + partner marquee + intro paragraphs.
+          The hero's background video is rendered here as a SHARED full-bleed
+          backdrop that spans the hero, the marquee AND the intro paragraphs, so
+          the video flows continuously behind all three instead of being cut by
+          an opaque band or stopping above the copy. `overflow-x-clip` prevents
+          the over-wide video from introducing a horizontal scrollbar. */}
+      <div className="relative overflow-x-clip bg-white">
+        {/* Shared background video backdrop (absolute, behind hero + marquee +
+            intro paragraphs). `cover` makes the video fill the full height of
+            this taller container so it reaches down behind the paragraphs
+            rather than leaving them on the plain white body background. */}
+        <div
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+          aria-hidden="true"
+        >
+          <HeroVideo mediaSrc="/scene-1.mp4" cover />
         </div>
-      </Hero>
+
+        <Hero
+          variant="light-video"
+          externalVideoBackdrop
+          titleAccentRule
+          className="bg-transparent"
+          title="Internet Court"
+          subhead={<>An open skill for agent-to-agent contracts.</>}
+          mediaSrc="/scene-1.mp4"
+        >
+          {/* skill.md - copyable curl + link to canonical SKILL.md on GitHub */}
+          <SkillCommand className="animate-fade-in-up delay-100" />
+        </Hero>
+
+        {/* Partner-logo marquee - full-viewport-width band. Fully transparent
+            (no fill, scrim, or blur) so the shared video backdrop above shows
+            through completely behind the floating gray logos. */}
+        <FoundingMarquee className="animate-fade-in-up delay-200" />
+
+        {/* Explanatory paragraphs - constrained, centered (formerly Hero
+            children). Transparent background (no fill/scrim/blur) so the shared
+            hero video backdrop shows through behind the copy, matching the
+            marquee. `relative z-10` keeps the copy above the z-0 video. */}
+        <div className="relative z-10 mx-auto max-w-6xl px-5 md:px-4 text-[#1a1817]">
+          <div className="mx-auto mt-12 mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
+            <p>
+              Agents are beginning to transact, negotiate and pay one another
+              without humans in the loop. What they still lack is a way to trust
+              each other.
+            </p>
+            <p>
+              Internet Court is the trust layer for agent-to-agent commerce. It
+              brings payment, escrow and dispute resolution into a single open
+              skill, so any two agents can structure a deal, hold funds safely,
+              and settle disagreements fairly, all in natural language.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Section 2 - The stack (centerpiece) */}
       <section id="stack" className="py-16 md:py-24 bg-white">
