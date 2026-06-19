@@ -51,6 +51,7 @@ export default function Home() {
           externalVideoBackdrop
           titleAccentRule
           className="bg-transparent"
+          eyebrow="Internet Court — Consortium"
           title="Internet Court"
           subhead={<>An open skill for agent-to-agent contracts.</>}
           mediaSrc="/scene-1.mp4"
@@ -62,14 +63,14 @@ export default function Home() {
         {/* Partner-logo marquee - full-viewport-width band. Fully transparent
             (no fill, scrim, or blur) so the shared video backdrop above shows
             through completely behind the floating gray logos. */}
-        <FoundingMarquee className="animate-fade-in-up delay-200" />
+        <FoundingMarquee className="!py-6 animate-fade-in-up delay-200" />
 
         {/* Explanatory paragraphs - constrained, centered (formerly Hero
             children). Transparent background (no fill/scrim/blur) so the shared
             hero video backdrop shows through behind the copy, matching the
             marquee. `relative z-10` keeps the copy above the z-0 video. */}
-        <div className="relative z-10 mx-auto max-w-6xl px-5 md:px-4 text-[#1a1817]">
-          <div className="mx-auto mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
+        <div className="relative z-10 mx-auto max-w-6xl px-5 pt-6 md:px-4 text-[#1a1817]">
+          <div className="mx-auto mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-center text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
             <p>
               Agents are beginning to transact, negotiate and pay one another
               without humans in the loop. What they still lack is a way to trust

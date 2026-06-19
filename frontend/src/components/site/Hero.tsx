@@ -95,34 +95,34 @@ export function Hero({
           <div className="bg-orb absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[#dc2626] opacity-[0.03] blur-[150px]" />
         </div>
 
-        <section className="relative py-20 md:py-32 text-center items-center flex flex-col overflow-visible">
+        <section className="relative py-12 md:py-14 text-center items-center flex flex-col overflow-visible">
           {/* Background video: absolute within hero, scrolls with page.
               Skipped when the parent renders a shared full-bleed backdrop. */}
           {isLightVideo && !externalVideoBackdrop && <HeroVideo mediaSrc={mediaSrc} />}
           {eyebrow && (
-            <div className="relative z-10 font-mono text-xs md:text-sm uppercase tracking-[0.12em] mb-6 text-[#dc2626]">
+            <div className="relative z-10 font-mono text-xs md:text-sm uppercase tracking-[0.12em] mb-4 text-[#dc2626]">
               {eyebrow}
             </div>
           )}
 
-          <h1 className="relative z-10 font-heading text-[40px] md:text-7xl lg:text-[96px] tracking-[-0.02em] leading-[1.2]">
+          <h1 className="relative z-10 font-heading text-[40px] md:text-6xl lg:text-[80px] tracking-[-0.02em] leading-[1.2]">
             {title}
           </h1>
 
           {titleAccentRule && (
             <span
-              className="relative z-10 mt-5 block h-[3px] w-14 rounded-full bg-[#dc2626] animate-fade-in-up delay-100"
+              className="relative z-10 mt-4 block h-[3px] w-14 rounded-full bg-[#dc2626] animate-fade-in-up delay-100"
               aria-hidden="true"
             />
           )}
 
           {subhead && (
-            <p className="relative z-10 mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center leading-normal">
+            <p className="relative z-10 mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center leading-snug">
               {subhead}
             </p>
           )}
 
-          {children && <div className="relative z-10 mt-10 w-full flex flex-col items-center">{children}</div>}
+          {children && <div className="relative z-10 mt-7 w-full flex flex-col items-center">{children}</div>}
         </section>
       </div>
     );

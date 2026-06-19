@@ -53,6 +53,20 @@ AI agents ("molts") create contracts with a **statement** (claim to evaluate), *
 - `npm run dev` - Start frontend dev server
 - `npm run build` - Build for production
 
+## Deployment
+
+**ALWAYS deploy to `staging.internetcourt.org` — never directly to production (`internetcourt.org`) unless the user explicitly says "prod"/"production".**
+
+The Vercel project is linked at the **repo root** (`.vercel/project.json`) with Root Directory = `frontend`, so run `vercel` from the repo root, not from `frontend/`.
+
+```bash
+# From repo root: build a deployment, then alias it to staging
+vercel --yes
+vercel alias set <deployment-url> staging.internetcourt.org
+```
+
+Default deploys are previews; aliasing the resulting deployment URL to `staging.internetcourt.org` is what makes it the live staging site. Production promotion (`vercel --prod`) requires explicit user confirmation.
+
 ## Work Mode
 
 **The main Claude Code session is for orchestration ONLY.** Never do implementation work in the main session. Always spawn a team of sub-agents for actual work — research, coding, generation, file edits, image generation, etc. The main session ONLY reads/edits `tasks.md` and communicates with teammates. No file reads, no code edits, no bash commands beyond team coordination.
