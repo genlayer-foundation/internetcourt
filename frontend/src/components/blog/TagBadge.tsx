@@ -3,9 +3,12 @@ import type { BlogTag } from "@/lib/blog";
 
 export function TagBadge({
   tag,
+  label,
   className,
 }: {
   tag: BlogTag;
+  /** Localized label to display; defaults to the raw (English) tag value. */
+  label?: string;
   className?: string;
 }) {
   return (
@@ -15,7 +18,7 @@ export function TagBadge({
         className,
       )}
     >
-      {tag}
+      {label ?? tag}
     </span>
   );
 }

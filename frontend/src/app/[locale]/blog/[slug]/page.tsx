@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { getAllPosts, getPostBySlug, formatDate } from "@/lib/blog";
+import { Link } from "@/i18n/routing";
+import { getPostSlugs, getPostBySlug, formatDate } from "@/lib/blog";
 import { mdxComponents } from "@/components/blog/mdx-components";
 import { TagBadge } from "@/components/blog/TagBadge";
+import { buildAlternates, localizedUrl } from "@/lib/i18n-metadata";
 
-type Params = { slug: string };
+type Params = { locale: string; slug: string };
 
-export function generateStaticParams(): Params[] {
-  return getAllPosts().map((post) => ({ slug: post.slug }));
+export function generateStaticParams(): { slug: string }[] {
+  // Enumerate slugs from the canonical English set. Each locale resolves the
+  // same slug at render time, falling back to the English file when missing.
+  return getPostSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -18,17 +22,21 @@ export async function generateMetadata({
 }: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { locale, slug } = await params;
+  const post = getPostBySlug(slug, locale);
   if (!post) return {};
 
+  const t = await getTranslations({ locale, namespace: "blog.metadata" });
+  const title = t("postTitleTemplate", { title: post.title });
+
   return {
-    title: `${post.title} — Internet Court`,
+    title,
     description: post.excerpt,
+    alternates: buildAlternates(`/blog/${post.slug}`, locale),
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: `/blog/${post.slug}`,
+      url: localizedUrl(`/blog/${post.slug}`, locale),
       type: "article",
       images: [post.cover ?? "/og-image.jpg"],
     },
@@ -45,9 +53,11 @@ export default async function BlogPostPage({
 }: {
   params: Promise<Params>;
 }) {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { locale, slug } = await params;
+  const post = getPostBySlug(slug, locale);
   if (!post) notFound();
+
+  const t = await getTranslations({ locale, namespace: "blog" });
 
   return (
     <article className="mx-auto max-w-3xl px-5 py-16 md:px-4 md:py-24">
@@ -55,14 +65,14 @@ export default async function BlogPostPage({
         href="/blog"
         className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground hover:text-[#dc2626] transition-colors"
       >
-        ← Back to Blog
+        {t("post.backToBlog")}
       </Link>
 
       <header className="mt-8 mb-10 flex flex-col gap-4 border-b border-border pb-10">
         <div className="flex items-center gap-3">
-          {post.tag && <TagBadge tag={post.tag} />}
+          {post.tag && <TagBadge tag={post.tag} label={t(`tags.${post.tag}`)} />}
           <time className="font-mono text-xs text-muted-foreground">
-            {formatDate(post.date)}
+            {formatDate(post.date, locale)}
           </time>
         </div>
         <h1 className="font-heading text-4xl leading-[1.1] md:text-5xl">

@@ -1,0 +1,46 @@
+{
+  "es": {
+    "launch-video": {
+      "srcHash": "0655b018aa247843029c4f4725d7b10bb6d4e8cf70ce006afb983c6c7d307d2c"
+    },
+    "press-release": {
+      "srcHash": "6c5056414dc9ba53c5bd070902a671fceb77bde54ef24dc5b640bd2f600206c4"
+    },
+    "welcome": {
+      "srcHash": "d2eee76adefc58c5c2c49f525747a98b85d3d490d806a99abaf0428e872951ec"
+    }
+  },
+  "ko": {
+    "launch-video": {
+      "srcHash": "0655b018aa247843029c4f4725d7b10bb6d4e8cf70ce006afb983c6c7d307d2c"
+    },
+    "press-release": {
+      "srcHash": "6c5056414dc9ba53c5bd070902a671fceb77bde54ef24dc5b640bd2f600206c4"
+    },
+    "welcome": {
+      "srcHash": "d2eee76adefc58c5c2c49f525747a98b85d3d490d806a99abaf0428e872951ec"
+    }
+  },
+  "zh": {
+    "launch-video": {
+      "srcHash": "0655b018aa247843029c4f4725d7b10bb6d4e8cf70ce006afb983c6c7d307d2c"
+    },
+    "press-release": {
+      "srcHash": "6c5056414dc9ba53c5bd070902a671fceb77bde54ef24dc5b640bd2f600206c4"
+    },
+    "welcome": {
+      "srcHash": "d2eee76adefc58c5c2c49f525747a98b85d3d490d806a99abaf0428e872951ec"
+    }
+  },
+  "ru": {
+    "launch-video": {
+      "srcHash": "0655b018aa247843029c4f4725d7b10bb6d4e8cf70ce006afb983c6c7d307d2c"
+    },
+    "press-release": {
+      "srcHash": "6c5056414dc9ba53c5bd070902a671fceb77bde54ef24dc5b640bd2f600206c4"
+    },
+    "welcome": {
+      "srcHash": "d2eee76adefc58c5c2c49f525747a98b85d3d490d806a99abaf0428e872951ec"
+    }
+  }
+}

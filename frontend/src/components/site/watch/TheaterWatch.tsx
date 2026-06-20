@@ -1,19 +1,20 @@
+import { getTranslations } from "next-intl/server";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Accent } from "@/components/site/Hero";
 import { VideoPlayer } from "@/components/site/VideoPlayer";
 
-export function TheaterWatch() {
+export async function TheaterWatch() {
+  const t = await getTranslations("home.watch");
+
   return (
     <section id="watch" className="py-16 md:py-24 bg-[#f7f7f7]">
       <div className="max-w-6xl mx-auto px-4">
         <SectionHeading
-          eyebrow="Watch"
-          title={
-            <>
-              See the court <Accent variant="light">in motion</Accent>.
-            </>
-          }
-          subhead="A short look at Internet Court — the open trust layer for agent-to-agent commerce."
+          eyebrow={t("eyebrow")}
+          title={t.rich("title", {
+            accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
+          })}
+          subhead={t("subhead")}
         />
         <div className="mt-10 md:mt-12 max-w-4xl mx-auto">
           <VideoPlayer src="https://x1sz5emmhghfuyj2.public.blob.vercel-storage.com/internet-court-launch.mp4" />

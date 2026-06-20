@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,8 @@ export function CopyChip({
   className?: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const t = useTranslations("brand.copyChip");
+  const copyAria = t("copyAria", { value });
 
   const handleCopy = async () => {
     try {
@@ -35,8 +38,8 @@ export function CopyChip({
     <button
       type="button"
       onClick={handleCopy}
-      title={`Copy ${value}`}
-      aria-label={`Copy ${value}`}
+      title={copyAria}
+      aria-label={copyAria}
       className={cn(
         "group/chip inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.08em]",
         "rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors duration-150",

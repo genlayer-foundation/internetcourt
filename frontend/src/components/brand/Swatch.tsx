@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ export type SwatchProps = {
  */
 export function Swatch({ name, value, role, ink, bordered }: SwatchProps) {
   const [copied, setCopied] = useState<"hex" | "rgb" | null>(null);
+  const t = useTranslations("brand.swatch");
   const rgb = value.startsWith("#") ? hexToRgb(value) : null;
 
   // Auto-pick a legible label color for hex fills when not told explicitly.
@@ -61,7 +63,7 @@ export function Swatch({ name, value, role, ink, bordered }: SwatchProps) {
       <button
         type="button"
         onClick={() => copy("hex", value)}
-        aria-label={`Copy ${name} value ${value}`}
+        aria-label={t("copyAria", { name, value })}
         className={cn(
           "relative flex h-28 w-full items-end justify-start overflow-hidden rounded-xl p-3 transition-transform duration-200 active:scale-[0.99]",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
@@ -77,10 +79,10 @@ export function Swatch({ name, value, role, ink, bordered }: SwatchProps) {
         >
           {copied === "hex" ? (
             <span className="inline-flex items-center gap-1">
-              <Check size={11} /> Copied
+              <Check size={11} /> {t("copied")}
             </span>
           ) : (
-            "Click to copy"
+            t("clickToCopy")
           )}
         </span>
       </button>
@@ -97,7 +99,7 @@ export function Swatch({ name, value, role, ink, bordered }: SwatchProps) {
             type="button"
             onClick={() => copy("hex", value)}
             className="font-mono text-[12px] uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-[#dc2626] focus-visible:outline-none focus-visible:text-[#dc2626]"
-            title={`Copy ${value}`}
+            title={t("copyHexAria", { value })}
           >
             {value}
           </button>
@@ -106,9 +108,9 @@ export function Swatch({ name, value, role, ink, bordered }: SwatchProps) {
               type="button"
               onClick={() => copy("rgb", rgb)}
               className="font-mono text-[11px] tracking-[0.02em] text-muted-foreground/70 transition-colors hover:text-[#dc2626] focus-visible:outline-none focus-visible:text-[#dc2626]"
-              title={`Copy ${rgb}`}
+              title={t("copyRgbAria", { value: rgb })}
             >
-              {copied === "rgb" ? "copied" : rgb}
+              {copied === "rgb" ? t("copiedLower") : rgb}
             </button>
           )}
         </div>

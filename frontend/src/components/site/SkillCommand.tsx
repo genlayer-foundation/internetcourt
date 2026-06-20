@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Copy, ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 const SKILL_CURL = "curl -s https://internetcourt.org/skill.md";
@@ -9,6 +10,7 @@ const SKILL_GITHUB =
   "https://github.com/internet-court/internet-court-skill/blob/main/SKILL.md";
 
 function CopyButton({ text }: { text: string }) {
+  const t = useTranslations("skillCommand");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -22,8 +24,8 @@ function CopyButton({ text }: { text: string }) {
       type="button"
       onClick={handleCopy}
       className="ml-auto shrink-0 rounded-md p-1.5 text-white/50 transition-colors hover:text-white"
-      title="Copy command"
-      aria-label="Copy command"
+      title={t("copyTitle")}
+      aria-label={t("copyAriaLabel")}
     >
       {copied ? (
         <Check size={14} className="text-green-400" />
@@ -44,6 +46,7 @@ export type SkillCommandProps = {
  * GitHub. Used in the hero and reused as the closing CTA.
  */
 export function SkillCommand({ className }: SkillCommandProps) {
+  const t = useTranslations("skillCommand");
   return (
     <div
       className={cn(
@@ -53,7 +56,7 @@ export function SkillCommand({ className }: SkillCommandProps) {
     >
       <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-2.5">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
-          skill.md
+          {t("label")}
         </span>
         <a
           href={SKILL_GITHUB}
@@ -61,7 +64,7 @@ export function SkillCommand({ className }: SkillCommandProps) {
           rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center gap-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#ef6a6a] transition-colors hover:text-white"
         >
-          View on GitHub
+          {t("viewOnGithub")}
           <ExternalLink size={11} />
         </a>
       </div>

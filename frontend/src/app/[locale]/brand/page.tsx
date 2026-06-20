@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 import { ArrowUpRight } from "lucide-react";
 import {
   FOUNDING_MEMBERS_PRIMARY,
@@ -10,34 +11,44 @@ import { PartnerLogo } from "@/components/site/PartnerMarquee";
 import { CopyChip } from "@/components/brand/CopyChip";
 import { Swatch } from "@/components/brand/Swatch";
 import { cn } from "@/lib/utils";
+import { buildAlternates } from "@/lib/i18n-metadata";
 
-export const metadata: Metadata = {
-  title: "Brand Guidelines — Internet Court",
-  description:
-    "The brand book for Internet Court: logo, color, typography, voice and applications. Serious court, internet delivery.",
-  openGraph: {
-    title: "Brand Guidelines — Internet Court",
-    description:
-      "Logo, color, typography, voice and applications for Internet Court — the neutral venue for agent disputes.",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "brand.metadata" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: buildAlternates("/brand", locale),
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+    },
+  };
+}
 
 const VERSION = "v1.0";
 const UPDATED = "2026-06-18";
 
-const TOC: { n: string; title: string; id: string }[] = [
-  { n: "01", title: "Brand at a glance", id: "glance" },
-  { n: "02", title: "Logo", id: "logo" },
-  { n: "03", title: "Color", id: "color" },
-  { n: "04", title: "Typography", id: "type" },
-  { n: "05", title: "Voice & tone", id: "voice" },
-  { n: "06", title: "Iconography", id: "icon" },
-  { n: "07", title: "Founding members", id: "members" },
-  { n: "08", title: "Imagery & social", id: "imagery" },
-  { n: "09", title: "Motion", id: "motion" },
-  { n: "10", title: "Applications", id: "applications" },
-  { n: "11", title: "Asset index", id: "assets" },
-];
+// Section ids — the human-readable titles come from messages (brand.toc.items).
+const TOC_IDS = [
+  "glance",
+  "logo",
+  "color",
+  "type",
+  "voice",
+  "icon",
+  "members",
+  "imagery",
+  "motion",
+  "applications",
+  "assets",
+] as const;
 
 /* ----------------------------------------------------------------------------
  * Layout primitives — keep the editorial rhythm consistent across sections.
@@ -114,7 +125,37 @@ function Card({
  * Page
  * -------------------------------------------------------------------------- */
 
-export default function BrandPage() {
+export default async function BrandPage() {
+  const t = await getTranslations("brand");
+
+  const voiceDo = t.raw("voice.do") as string[];
+  const voiceDont = t.raw("voice.dont") as string[];
+  const taglines = t.raw("voice.taglines") as string[];
+  const substitutionRows = t.raw("voice.substitution.rows") as [
+    string,
+    string,
+  ][];
+  const styleNotes = t.raw("imagery.styleNotes") as string[];
+
+  // Misuse demos: structural `kind` (drives the CSS treatment) merged with
+  // localized labels by key.
+  const misuse: { kind: string; label: string }[] = [
+    { kind: "recolor", label: t("logo.misuse.recolor") },
+    { kind: "stretch", label: t("logo.misuse.stretch") },
+    { kind: "effects", label: t("logo.misuse.effects") },
+    { kind: "busy", label: t("logo.misuse.busy") },
+  ];
+
+  // Asset index: paths/formats are content-as-data; only the name is localized.
+  const assetRows: { name: string; fmt: string; path: string }[] = [
+    { name: t("assets.rows.wordmark"), fmt: "SVG · 222×29", path: "/logos/tic-logo-red.svg" },
+    { name: t("assets.rows.favicon"), fmt: "SVG · 24×24", path: "/favicon.svg" },
+    { name: t("assets.rows.appIcon"), fmt: "PNG · 256×256", path: "/apple-icon.png" },
+    { name: t("assets.rows.og"), fmt: "JPG · 1200×630", path: "/og-image.jpg" },
+    { name: t("assets.rows.partners"), fmt: "Directory", path: "/partners/" },
+    { name: t("assets.rows.skill"), fmt: "Markdown", path: "/skill.md" },
+  ];
+
   return (
     <div className="bg-background text-foreground">
       {/* 00 — Cover ---------------------------------------------------------- */}
@@ -135,62 +176,61 @@ export default function BrandPage() {
         <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-20 md:px-8 md:pb-24 md:pt-28">
           <div className="flex flex-col gap-3 animate-fade-in-up">
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#dc2626]">
-              Internet Court — Consortium
+              {t("cover.eyebrow")}
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logos/tic-logo-red.svg"
-              alt="Internet Court"
+              alt={t("cover.logoAlt")}
               className="mt-2 h-9 w-auto self-start md:h-12"
             />
           </div>
 
           <h1 className="mt-10 max-w-3xl font-heading text-5xl leading-[1.05] tracking-[-0.02em] md:text-7xl lg:text-[88px] animate-fade-in-up delay-100">
-            Brand
+            {t("cover.title1")}
             <br />
-            Guidelines
+            {t("cover.title2")}
           </h1>
 
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground animate-fade-in-up delay-200">
-            The visual and verbal system behind the neutral venue for agent
-            disputes. Serious court, internet delivery — applied with precision.
+            {t("cover.lede")}
           </p>
 
           <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-4 font-mono text-[12px] uppercase tracking-[0.1em] text-muted-foreground animate-fade-in-up delay-300">
             <div>
-              <dt className="text-foreground/40">Version</dt>
+              <dt className="text-foreground/40">{t("cover.version")}</dt>
               <dd className="mt-1 text-foreground">{VERSION}</dd>
             </div>
             <div>
-              <dt className="text-foreground/40">Updated</dt>
+              <dt className="text-foreground/40">{t("cover.updated")}</dt>
               <dd className="mt-1 text-foreground">{UPDATED}</dd>
             </div>
             <div>
-              <dt className="text-foreground/40">Domain</dt>
+              <dt className="text-foreground/40">{t("cover.domain")}</dt>
               <dd className="mt-1 text-foreground">internetcourt.org</dd>
             </div>
             <div>
-              <dt className="text-foreground/40">Maintainer</dt>
+              <dt className="text-foreground/40">{t("cover.maintainer")}</dt>
               <dd className="mt-1 text-foreground">GenLayer</dd>
             </div>
           </dl>
 
           {/* Table of contents */}
           <nav
-            aria-label="Contents"
+            aria-label={t("toc.contentsLabel")}
             className="mt-14 grid gap-x-10 gap-y-px border-t border-border pt-8 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up delay-400"
           >
-            {TOC.map((item) => (
+            {TOC_IDS.map((id, i) => (
               <a
-                key={item.id}
-                href={`#${item.id}`}
+                key={id}
+                href={`#${id}`}
                 className="group flex items-baseline gap-4 border-b border-border/60 py-3 transition-colors hover:text-[#dc2626] focus-visible:outline-none focus-visible:text-[#dc2626]"
               >
                 <span className="font-mono text-xs tracking-[0.1em] text-[#dc2626]/70 group-hover:text-[#dc2626]">
-                  {item.n}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="text-[15px] text-foreground transition-colors group-hover:text-[#dc2626]">
-                  {item.title}
+                  {t(`toc.items.${id}`)}
                 </span>
                 <ArrowUpRight
                   size={14}
@@ -206,43 +246,36 @@ export default function BrandPage() {
       <Section
         n="01"
         id="glance"
-        title="Brand at a glance"
-        intro="Internet Court is dispute resolution infrastructure for the agent economy — the trust layer that lets any two agents structure a deal, hold funds in escrow, and settle disagreements fairly."
+        title={t("glance.title")}
+        intro={t("glance.intro")}
       >
         <div className="grid gap-6 lg:grid-cols-3">
           <Card>
-            <Eyebrow>Positioning</Eyebrow>
+            <Eyebrow>{t("glance.positioning.eyebrow")}</Eyebrow>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-              An open skill for agent-to-agent contracts. Statement, guidelines
-              and evidence in, a verdict out — TRUE, FALSE, or UNDETERMINED.
-              Both parties agree, no jury needed; they disagree, the AI jury
-              decides.
+              {t("glance.positioning.body")}
             </p>
           </Card>
           <Card>
-            <Eyebrow>Primary user</Eyebrow>
+            <Eyebrow>{t("glance.primaryUser.eyebrow")}</Eyebrow>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-              Autonomous agents (&ldquo;molts&rdquo;). The platform is
-              agent-native infrastructure — agents transact through the API,
-              while humans use the dashboard to watch their cases.
+              {t("glance.primaryUser.body")}
             </p>
           </Card>
           <Card>
-            <Eyebrow>Personality</Eyebrow>
+            <Eyebrow>{t("glance.personality.eyebrow")}</Eyebrow>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-              Serious court meets internet culture. Confident, not loud. The
-              courtroom is real and the escrow is locked — the delivery is
-              unmistakably internet.
+              {t("glance.personality.body")}
             </p>
           </Card>
         </div>
 
         <figure className="mt-8 rounded-2xl border border-[var(--accent-red-border)] bg-[var(--accent-red-soft)] p-8 md:p-12">
           <blockquote className="font-heading text-2xl leading-snug text-foreground md:text-4xl">
-            &ldquo;The neutral venue for agent disputes.&rdquo;
+            {t("glance.tagline")}
           </blockquote>
           <figcaption className="mt-4 font-mono text-[12px] uppercase tracking-[0.14em] text-[#dc2626]">
-            Primary tagline
+            {t("glance.taglineCaption")}
           </figcaption>
         </figure>
       </Section>
@@ -251,51 +284,51 @@ export default function BrandPage() {
       <Section
         n="02"
         id="logo"
-        title="Logo"
-        intro="The primary wordmark is the red “Internet Court” lockup with its court-mark icon. Use the supplied SVG; never redraw it."
+        title={t("logo.title")}
+        intro={t("logo.intro")}
       >
         <div className="grid gap-6 md:grid-cols-2">
           {/* On light */}
           <Card className="flex flex-col">
-            <Eyebrow>Primary · on light</Eyebrow>
+            <Eyebrow>{t("logo.onLight.eyebrow")}</Eyebrow>
             <div className="mt-6 flex flex-1 items-center justify-center rounded-xl bg-background py-14 ring-1 ring-inset ring-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logos/tic-logo-red.svg"
-                alt="Internet Court wordmark on a light background"
+                alt={t("logo.onLight.imgAlt")}
                 className="h-7 w-auto md:h-8"
               />
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Default. Use on white and light neutral surfaces (
-              <CopyChip value="#FFFFFF" /> / <CopyChip value="#f7f7f7" />
-              ).
+              {t.rich("logo.onLight.note", {
+                white: () => <CopyChip value="#FFFFFF" />,
+                card: () => <CopyChip value="#f7f7f7" />,
+              })}
             </p>
           </Card>
 
           {/* On dark / red */}
           <Card className="flex flex-col">
-            <Eyebrow>On dark &amp; red</Eyebrow>
+            <Eyebrow>{t("logo.onDark.eyebrow")}</Eyebrow>
             <div className="mt-6 grid flex-1 grid-cols-2 gap-3">
               <div className="flex items-center justify-center rounded-xl bg-[#1a1817] px-4 py-12">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logos/tic-logo-red.svg"
-                  alt="Internet Court wordmark on a dark background"
+                  alt={t("logo.onDark.imgAltDark")}
                   className="h-6 w-auto"
                 />
               </div>
               <div className="flex items-center justify-center rounded-xl bg-[#dc2626] px-4 py-12">
                 <span className="font-heading text-lg text-white">
-                  reversed
+                  {t("logo.onDark.reversed")}
                 </span>
               </div>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              The red wordmark holds on dark ink. On red or saturated fills, use
-              an all-white reversed lockup.{" "}
+              {t("logo.onDark.note")}
               <span className="text-foreground/80">
-                A monochrome reversed asset is a designer follow-up.
+                {t("logo.onDark.noteEmphasis")}
               </span>
             </p>
           </Card>
@@ -304,54 +337,65 @@ export default function BrandPage() {
         {/* Clear space + min size */}
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <Card>
-            <Eyebrow>Clear space</Eyebrow>
+            <Eyebrow>{t("logo.clearSpace.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Keep padding equal to the icon&rsquo;s height (
-              <span className="font-mono text-foreground/80">1×</span>) clear on
-              every side. Nothing — type, edges, other logos — enters this zone.
+              {t.rich("logo.clearSpace.note", {
+                oneX: () => (
+                  <span className="font-mono text-foreground/80">
+                    {t("logo.clearSpace.oneX")}
+                  </span>
+                ),
+              })}
             </p>
             <div className="mt-6 rounded-xl bg-background p-4 ring-1 ring-inset ring-border">
               <div className="relative inline-flex p-7 outline-dashed outline-1 outline-[var(--accent-red-border)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logos/tic-logo-red.svg"
-                  alt="Clear-space demonstration"
+                  alt={t("logo.clearSpace.imgAlt")}
                   className="h-7 w-auto"
                 />
               </div>
             </div>
           </Card>
           <Card>
-            <Eyebrow>Minimum size</Eyebrow>
+            <Eyebrow>{t("logo.minSize.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Don&rsquo;t render the wordmark below{" "}
-              <span className="font-mono text-foreground/80">120px</span> wide on
-              screen (≈ <span className="font-mono text-foreground/80">16px</span>{" "}
-              tall). Below that, use the standalone icon.
+              {t.rich("logo.minSize.note", {
+                minWidth: () => (
+                  <span className="font-mono text-foreground/80">
+                    {t("logo.minSize.minWidth")}
+                  </span>
+                ),
+                minHeight: () => (
+                  <span className="font-mono text-foreground/80">
+                    {t("logo.minSize.minHeight")}
+                  </span>
+                ),
+              })}
             </p>
             <div className="mt-6 flex items-end gap-8 rounded-xl bg-background p-6 ring-1 ring-inset ring-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logos/tic-logo-red.svg"
-                alt="Wordmark at minimum width"
+                alt={t("logo.minSize.imgAlt")}
                 className="w-[120px]"
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/favicon.svg" alt="Icon fallback" className="h-6 w-6" />
+              <img
+                src="/favicon.svg"
+                alt={t("logo.minSize.iconAlt")}
+                className="h-6 w-6"
+              />
             </div>
           </Card>
         </div>
 
         {/* Misuse */}
         <div className="mt-6">
-          <Eyebrow>Misuse</Eyebrow>
+          <Eyebrow>{t("logo.misuse.eyebrow")}</Eyebrow>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Don't recolor", kind: "recolor" },
-              { label: "Don't stretch", kind: "stretch" },
-              { label: "Don't add effects", kind: "effects" },
-              { label: "Don't place on busy backgrounds", kind: "busy" },
-            ].map((m) => (
+            {misuse.map((m) => (
               <div
                 key={m.kind}
                 className="overflow-hidden rounded-xl border border-border"
@@ -410,78 +454,118 @@ export default function BrandPage() {
       <Section
         n="03"
         id="color"
-        title="Color"
-        intro="Court Red is the signature — used as a sharp accent, never as a wash. The system rests on warm neutral ink and clean surfaces. Click any swatch to copy."
+        title={t("color.title")}
+        intro={t("color.intro")}
       >
-        <Eyebrow>Court Red &amp; variants</Eyebrow>
+        <Eyebrow>{t("color.courtRedGroup")}</Eyebrow>
         <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
           <Swatch
-            name="Court Red"
+            name={t("color.swatches.courtRed")}
             value="#DC2626"
-            role="Primary accent (light)"
+            role={t("color.swatches.courtRedRole")}
           />
           <Swatch
-            name="Court Red · dark"
+            name={t("color.swatches.courtRedDark")}
             value="#E63946"
-            role="Primary accent (dark mode)"
+            role={t("color.swatches.courtRedDarkRole")}
           />
           <Swatch
-            name="Red · soft"
+            name={t("color.swatches.redSoft")}
             value="rgba(220,38,38,0.08)"
-            role="Tints, hover fills"
+            role={t("color.swatches.redSoftRole")}
             bordered
             ink="dark"
           />
           <Swatch
-            name="Red · border"
+            name={t("color.swatches.redBorder")}
             value="rgba(220,38,38,0.20)"
-            role="Accent borders, focus ring"
+            role={t("color.swatches.redBorderRole")}
             bordered
             ink="dark"
           />
         </div>
 
         <div className="mt-12">
-          <Eyebrow>Neutrals · light</Eyebrow>
+          <Eyebrow>{t("color.neutralsGroup")}</Eyebrow>
           <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
-            <Swatch name="Ink" value="#1a1817" role="Foreground / primary text" />
             <Swatch
-              name="Background"
+              name={t("color.swatches.ink")}
+              value="#1a1817"
+              role={t("color.swatches.inkRole")}
+            />
+            <Swatch
+              name={t("color.swatches.background")}
               value="#FFFFFF"
-              role="Page surface"
+              role={t("color.swatches.backgroundRole")}
               bordered
             />
-            <Swatch name="Card" value="#f7f7f7" role="Cards, header pill" bordered />
             <Swatch
-              name="Secondary"
-              value="#F1F3F5"
-              role="Muted surface"
+              name={t("color.swatches.card")}
+              value="#f7f7f7"
+              role={t("color.swatches.cardRole")}
               bordered
             />
-            <Swatch name="Muted text" value="#4d4944" role="Body, paragraphs" />
-            <Swatch name="Subtle text" value="#74706c" role="Captions, hints" />
-            <Swatch name="Border" value="#e5e7eb" role="Hairlines, inputs" bordered />
+            <Swatch
+              name={t("color.swatches.secondary")}
+              value="#F1F3F5"
+              role={t("color.swatches.secondaryRole")}
+              bordered
+            />
+            <Swatch
+              name={t("color.swatches.mutedText")}
+              value="#4d4944"
+              role={t("color.swatches.mutedTextRole")}
+            />
+            <Swatch
+              name={t("color.swatches.subtleText")}
+              value="#74706c"
+              role={t("color.swatches.subtleTextRole")}
+            />
+            <Swatch
+              name={t("color.swatches.border")}
+              value="#e5e7eb"
+              role={t("color.swatches.borderRole")}
+              bordered
+            />
           </div>
         </div>
 
         <div className="mt-12">
-          <Eyebrow>Semantic</Eyebrow>
+          <Eyebrow>{t("color.semanticGroup")}</Eyebrow>
           <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
-            <Swatch name="Success" value="#059669" role="TRUE · light" />
-            <Swatch name="Success · dark" value="#30E000" role="TRUE · dark" />
-            <Swatch name="Warning" value="#d97706" role="UNDETERMINED · light" />
-            <Swatch name="Warning · dark" value="#FFD641" role="UNDETERMINED · dark" />
-            <Swatch name="Error" value="#dc2626" role="FALSE / destructive" />
+            <Swatch
+              name={t("color.swatches.success")}
+              value="#059669"
+              role={t("color.swatches.successRole")}
+            />
+            <Swatch
+              name={t("color.swatches.successDark")}
+              value="#30E000"
+              role={t("color.swatches.successDarkRole")}
+            />
+            <Swatch
+              name={t("color.swatches.warning")}
+              value="#d97706"
+              role={t("color.swatches.warningRole")}
+            />
+            <Swatch
+              name={t("color.swatches.warningDark")}
+              value="#FFD641"
+              role={t("color.swatches.warningDarkRole")}
+            />
+            <Swatch
+              name={t("color.swatches.error")}
+              value="#dc2626"
+              role={t("color.swatches.errorRole")}
+            />
           </div>
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <Card>
-            <Eyebrow>Usage proportion</Eyebrow>
+            <Eyebrow>{t("color.usage.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Red is an accent, not a background. As a rule, neutrals carry
-              roughly 90% of any surface; red appears in the remaining sliver —
-              the wordmark, a single eyebrow, one verdict state, a focus ring.
+              {t("color.usage.body")}
             </p>
             <div className="mt-5 flex h-3 overflow-hidden rounded-full ring-1 ring-inset ring-border">
               <div className="flex-[86] bg-[#f7f7f7]" />
@@ -489,19 +573,21 @@ export default function BrandPage() {
               <div className="flex-[6] bg-[#dc2626]" />
             </div>
             <div className="mt-2 flex justify-between font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              <span>Neutral surface</span>
-              <span>Ink</span>
-              <span className="text-[#dc2626]">Red</span>
+              <span>{t("color.usage.neutralSurface")}</span>
+              <span>{t("color.usage.ink")}</span>
+              <span className="text-[#dc2626]">{t("color.usage.red")}</span>
             </div>
           </Card>
           <Card className="!bg-[#1a1817]">
             <Eyebrow>
-              <span className="text-white/50">Verdict states</span>
+              <span className="text-white/50">{t("color.verdict.eyebrow")}</span>
             </Eyebrow>
             <div className="mt-4 flex flex-col gap-3 font-mono text-[13px] uppercase tracking-[0.14em]">
-              <span className="text-[#30E000]">● TRUE</span>
-              <span className="text-[#FF494A]">● FALSE</span>
-              <span className="text-[#FFD641]">● UNDETERMINED</span>
+              <span className="text-[#30E000]">{t("color.verdict.true")}</span>
+              <span className="text-[#FF494A]">{t("color.verdict.false")}</span>
+              <span className="text-[#FFD641]">
+                {t("color.verdict.undetermined")}
+              </span>
             </div>
           </Card>
         </div>
@@ -511,98 +597,99 @@ export default function BrandPage() {
       <Section
         n="04"
         id="type"
-        title="Typography"
-        intro="Three DM faces do all the work: DM Sans for body and UI, DM Mono for labels and code, DM Serif Display Italic for accent phrases. Distinctive, warm, and free."
+        title={t("type.title")}
+        intro={t("type.intro")}
       >
         <div className="grid gap-6 lg:grid-cols-3">
           <Card>
-            <Eyebrow>DM Sans</Eyebrow>
+            <Eyebrow>{t("type.sans.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm text-muted-foreground">
-              Body &amp; UI · <span className="font-mono">font-sans</span>
+              {t("type.sans.use")}
+              <span className="font-mono">font-sans</span>
             </p>
             <p className="mt-5 font-sans text-5xl font-extrabold tracking-tight">
               Aa
             </p>
             <p className="mt-4 font-sans text-base leading-relaxed text-foreground">
-              The neutral venue for agent disputes. Statement, guidelines,
-              evidence, verdict.
+              {t("type.sans.specimen")}
             </p>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              Regular · Medium · Extrabold
+              {t("type.sans.weights")}
             </p>
           </Card>
 
           <Card>
-            <Eyebrow>DM Mono</Eyebrow>
+            <Eyebrow>{t("type.mono.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm text-muted-foreground">
-              Labels &amp; code · <span className="font-mono">font-mono</span>
+              {t("type.mono.use")}
+              <span className="font-mono">font-mono</span>
             </p>
             <p className="mt-5 font-mono text-5xl">Aa</p>
             <p className="mt-4 font-mono text-[13px] uppercase tracking-[0.14em] text-[#dc2626]">
-              The Docket / Exhibit A
+              {t("type.mono.label")}
             </p>
             <p className="mt-2 font-mono text-sm text-foreground">
               curl -s internetcourt.org/skill.md
             </p>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              300 · 400 · 500
+              {t("type.mono.weights")}
             </p>
           </Card>
 
           <Card>
-            <Eyebrow>DM Serif Display</Eyebrow>
+            <Eyebrow>{t("type.serif.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm text-muted-foreground">
-              Accent · italic · <span className="font-mono">.font-heading</span>
+              {t("type.serif.use")}
+              <span className="font-mono">.font-heading</span>
             </p>
             <p className="mt-5 font-heading text-5xl">Aa</p>
             <p className="mt-4 font-heading text-2xl leading-snug text-foreground">
-              every layer, one court
+              {t("type.serif.specimen")}
             </p>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              Italic 400 only
+              {t("type.serif.weights")}
             </p>
           </Card>
         </div>
 
         {/* Type scale specimen */}
         <div className="mt-10">
-          <Eyebrow>Type scale</Eyebrow>
+          <Eyebrow>{t("type.scale.eyebrow")}</Eyebrow>
           <div className="mt-5 divide-y divide-border border-y border-border">
             {[
               {
-                label: "Display / H1",
-                meta: "DM Serif Italic · 40→96px · tracking -0.02em",
+                label: t("type.scale.displayLabel"),
+                meta: t("type.scale.displayMeta"),
                 el: (
                   <span className="font-heading text-4xl leading-none tracking-[-0.02em] md:text-6xl">
-                    Internet Court
+                    {t("type.scale.displaySpecimen")}
                   </span>
                 ),
               },
               {
-                label: "Heading / H2",
-                meta: "DM Sans Extrabold · 3xl→5xl",
+                label: t("type.scale.headingLabel"),
+                meta: t("type.scale.headingMeta"),
                 el: (
                   <span className="font-sans text-3xl font-extrabold tracking-tight md:text-4xl">
-                    One court, every layer
+                    {t("type.scale.headingSpecimen")}
                   </span>
                 ),
               },
               {
-                label: "Body",
-                meta: "DM Sans · 16–18px · leading relaxed",
+                label: t("type.scale.bodyLabel"),
+                meta: t("type.scale.bodyMeta"),
                 el: (
                   <span className="text-lg leading-relaxed text-muted-foreground">
-                    Any two agents can structure a deal, hold funds safely, and
-                    settle disagreements fairly.
+                    {t("type.scale.bodySpecimen")}
                   </span>
                 ),
               },
               {
-                label: "Eyebrow",
-                meta: "DM Mono · 12px · uppercase · tracking 0.12em",
+                label: t("type.scale.eyebrowLabel"),
+                meta: t("type.scale.eyebrowMeta"),
                 el: (
                   <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#dc2626]">
-                    The Stack
+                    {t("type.scale.eyebrowSpecimen")}
                   </span>
                 ),
               },
@@ -625,17 +712,14 @@ export default function BrandPage() {
 
         {/* Usage rules */}
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          <UsageNote title="When to use the serif">
-            Sparingly, for accent phrases inside headings and pull-quotes — one
-            italic flourish per heading, never full sentences of body copy.
+          <UsageNote title={t("type.rules.serifTitle")}>
+            {t("type.rules.serifBody")}
           </UsageNote>
-          <UsageNote title="When to use mono">
-            Eyebrows, section numbers, status labels, code, and verdict words
-            (TRUE / FALSE / UNDETERMINED). Always uppercase with wide tracking.
+          <UsageNote title={t("type.rules.monoTitle")}>
+            {t("type.rules.monoBody")}
           </UsageNote>
-          <UsageNote title="Default to sans">
-            Everything else. DM Sans handles all running text and UI. Extrabold
-            for headings, regular for body, medium for emphasis.
+          <UsageNote title={t("type.rules.sansTitle")}>
+            {t("type.rules.sansBody")}
           </UsageNote>
         </div>
       </Section>
@@ -644,8 +728,8 @@ export default function BrandPage() {
       <Section
         n="05"
         id="voice"
-        title="Voice & tone"
-        intro="Judge Judy meets the terminal. Serious enough to trust with escrow, irreverent enough to screenshot. Agents are the protagonists; humans are the audience."
+        title={t("voice.title")}
+        intro={t("voice.intro")}
       >
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Do */}
@@ -655,20 +739,14 @@ export default function BrandPage() {
                 ✓
               </span>
               <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-[var(--success-green)]">
-                Do
+                {t("voice.doLabel")}
               </span>
             </div>
             <ul className="mt-5 flex flex-col gap-3 text-[15px] leading-relaxed text-muted-foreground">
-              {[
-                "Agents first, always — write for an agent's operator.",
-                "Be confident, not loud. No exclamation marks.",
-                "Court metaphor, internet delivery: file a case, the bench, the verdict.",
-                "Short sentences. Clear claims. No fluff.",
-                "Let the verdict be the content.",
-              ].map((t) => (
-                <li key={t} className="flex gap-3">
+              {voiceDo.map((line) => (
+                <li key={line} className="flex gap-3">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--success-green)]" />
-                  {t}
+                  {line}
                 </li>
               ))}
             </ul>
@@ -681,20 +759,14 @@ export default function BrandPage() {
                 ✕
               </span>
               <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-[#dc2626]">
-                Don&rsquo;t
+                {t("voice.dontLabel")}
               </span>
             </div>
             <ul className="mt-5 flex flex-col gap-3 text-[15px] leading-relaxed text-muted-foreground">
-              {[
-                "Corporate fog: “revolutionizing dispute resolution through…”",
-                "Hype caps and exclamation: “AI AGENTS GO TO COURT!!!”",
-                "Buzzword soup: “leverage advanced neural networks to…”",
-                "Grandiose vagueness: “the future of justice is here.”",
-                "Over-explaining for newcomers in primary copy — that's what docs are for.",
-              ].map((t) => (
-                <li key={t} className="flex gap-3">
+              {voiceDont.map((line) => (
+                <li key={line} className="flex gap-3">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#dc2626]" />
-                  {t}
+                  {line}
                 </li>
               ))}
             </ul>
@@ -703,16 +775,9 @@ export default function BrandPage() {
 
         {/* Taglines */}
         <div className="mt-10">
-          <Eyebrow>Approved lines</Eyebrow>
+          <Eyebrow>{t("voice.approvedLinesLabel")}</Eyebrow>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              "The neutral venue for agent disputes.",
-              "Verdicts in minutes. Not meetings.",
-              "Statement. Guidelines. Evidence. Verdict.",
-              "Two agents enter. One verdict leaves.",
-              "No lawyers required. No humans required.",
-              "Accountability is infrastructure.",
-            ].map((line, i) => (
+            {taglines.map((line, i) => (
               <figure
                 key={line}
                 className={cn(
@@ -730,26 +795,21 @@ export default function BrandPage() {
 
         {/* Word substitution table */}
         <div className="mt-10">
-          <Eyebrow>Legal → internet word substitutions</Eyebrow>
+          <Eyebrow>{t("voice.substitution.label")}</Eyebrow>
           <div className="mt-5 overflow-hidden rounded-2xl border border-border">
             <table className="w-full text-left text-[15px]">
               <thead>
                 <tr className="border-b border-border bg-card font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  <th className="px-5 py-3 font-normal">Instead of</th>
-                  <th className="px-5 py-3 font-normal">We say</th>
+                  <th className="px-5 py-3 font-normal">
+                    {t("voice.substitution.insteadOf")}
+                  </th>
+                  <th className="px-5 py-3 font-normal">
+                    {t("voice.substitution.weSay")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {[
-                  ["Dispute resolution", "Verdict"],
-                  ["Create a contract", "File a case"],
-                  ["AI validators", "The jury / the bench"],
-                  ["Resolution output", "Verdict / ruling"],
-                  ["Smart contract", "Court contract"],
-                  ["Initiate dispute", "Take it to court"],
-                  ["Submit", "File / present"],
-                  ["Participants", "Parties / agents"],
-                ].map(([from, to]) => (
+                {substitutionRows.map(([from, to]) => (
                   <tr key={from} className="bg-background">
                     <td className="px-5 py-3 text-muted-foreground line-through decoration-[#dc2626]/40">
                       {from}
@@ -769,42 +829,48 @@ export default function BrandPage() {
       <Section
         n="06"
         id="icon"
-        title="Iconography & favicon"
-        intro="The app icon is a red rounded square holding a white court / globe mark — the wordmark’s icon, standalone. Use it where the full lockup won’t fit."
+        title={t("icon.title")}
+        intro={t("icon.intro")}
       >
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="flex flex-col items-center text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/favicon.svg" alt="Favicon" className="h-16 w-16" />
-            <p className="mt-5 text-sm font-medium text-foreground">Favicon</p>
+            <img src="/favicon.svg" alt={t("icon.faviconAlt")} className="h-16 w-16" />
+            <p className="mt-5 text-sm font-medium text-foreground">
+              {t("icon.faviconName")}
+            </p>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              24 × 24 · SVG
+              {t("icon.faviconMeta")}
             </p>
           </Card>
           <Card className="flex flex-col items-center text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/apple-icon.png"
-              alt="Apple touch icon"
+              alt={t("icon.appIconAlt")}
               className="h-16 w-16 rounded-2xl"
             />
-            <p className="mt-5 text-sm font-medium text-foreground">App icon</p>
+            <p className="mt-5 text-sm font-medium text-foreground">
+              {t("icon.appIconName")}
+            </p>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              256 × 256 · PNG
+              {t("icon.appIconMeta")}
             </p>
           </Card>
           <Card className="flex flex-col items-center justify-center text-center">
             <div className="flex items-end gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/favicon.svg" alt="Icon at 16px" className="h-4 w-4" />
+              <img src="/favicon.svg" alt={t("icon.scaleAlt16")} className="h-4 w-4" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/favicon.svg" alt="Icon at 24px" className="h-6 w-6" />
+              <img src="/favicon.svg" alt={t("icon.scaleAlt24")} className="h-6 w-6" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/favicon.svg" alt="Icon at 40px" className="h-10 w-10" />
+              <img src="/favicon.svg" alt={t("icon.scaleAlt40")} className="h-10 w-10" />
             </div>
-            <p className="mt-5 text-sm font-medium text-foreground">Scales</p>
+            <p className="mt-5 text-sm font-medium text-foreground">
+              {t("icon.scalesName")}
+            </p>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              16 · 24 · 40 px
+              {t("icon.scalesMeta")}
             </p>
           </Card>
           <Card className="flex flex-col items-center text-center">
@@ -812,22 +878,31 @@ export default function BrandPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/favicon.svg"
-                alt="Icon on dark"
+                alt={t("icon.onDarkAlt")}
                 className="h-10 w-10"
               />
             </div>
-            <p className="mt-5 text-sm font-medium text-foreground">On dark</p>
+            <p className="mt-5 text-sm font-medium text-foreground">
+              {t("icon.onDarkName")}
+            </p>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              Red square holds
+              {t("icon.onDarkMeta")}
             </p>
           </Card>
         </div>
         <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Keep the icon&rsquo;s built-in rounded corners and red square intact —
-          don&rsquo;t crop to the mark alone or swap the background. UI glyphs
-          elsewhere use <span className="font-mono text-foreground/80">lucide</span>{" "}
-          at <span className="font-mono text-foreground/80">1.5–1.75</span> stroke
-          to match the wordmark&rsquo;s weight.
+          {t.rich("icon.note", {
+            lucide: () => (
+              <span className="font-mono text-foreground/80">
+                {t("icon.lucide")}
+              </span>
+            ),
+            stroke: () => (
+              <span className="font-mono text-foreground/80">
+                {t("icon.stroke")}
+              </span>
+            ),
+          })}
         </p>
       </Section>
 
@@ -835,18 +910,17 @@ export default function BrandPage() {
       <Section
         n="07"
         id="members"
-        title="Founding members"
-        intro="Partner logos render in a flat monochrome ink at rest and lift to full color on hover. Lay them out on an even grid — the animated marquee is a homepage-only treatment."
+        title={t("members.title")}
+        intro={t("members.intro")}
       >
-        <Eyebrow>Headline members</Eyebrow>
+        <Eyebrow>{t("members.headline")}</Eyebrow>
         <MemberGrid partners={FOUNDING_MEMBERS_PRIMARY} large />
         <div className="mt-12">
-          <Eyebrow>Members</Eyebrow>
+          <Eyebrow>{t("members.members")}</Eyebrow>
           <MemberGrid partners={FOUNDING_MEMBERS_SECONDARY} />
         </div>
         <p className="mt-8 text-sm leading-relaxed text-muted-foreground">
-          Logos sit on a neutral surface, evenly spaced, with consistent optical
-          height per tier — never recolored to red, never boxed.
+          {t("members.note")}
         </p>
       </Section>
 
@@ -854,28 +928,27 @@ export default function BrandPage() {
       <Section
         n="08"
         id="imagery"
-        title="Imagery & social"
-        intro="The social and Open Graph image pairs a plain statement with a halftone scales-of-justice motif — editorial, restrained, high-contrast."
+        title={t("imagery.title")}
+        intro={t("imagery.intro")}
       >
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           <figure className="overflow-hidden rounded-2xl border border-border">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/og-image.jpg"
-              alt="Open Graph card: Dispute resolution for the agent economy, with halftone scales of justice"
+              alt={t("imagery.ogAlt")}
               className="aspect-[1200/630] w-full object-cover"
             />
             <figcaption className="border-t border-border bg-card px-5 py-3 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-              og-image.jpg · 1200 × 630
+              {t("imagery.ogCaption")}
             </figcaption>
           </figure>
           <Card>
-            <Eyebrow>Style notes</Eyebrow>
+            <Eyebrow>{t("imagery.styleNotesLabel")}</Eyebrow>
             <ul className="mt-4 flex flex-col gap-3 text-[15px] leading-relaxed text-muted-foreground">
-              <li>Halftone / dot-screen textures over court iconography.</li>
-              <li>One plain-spoken line of copy, no stacked headlines.</li>
-              <li>High contrast: ink on light, with red reserved for accents.</li>
-              <li>Generous margins — let the motif breathe.</li>
+              {styleNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
             </ul>
           </Card>
         </div>
@@ -885,15 +958,20 @@ export default function BrandPage() {
       <Section
         n="09"
         id="motion"
-        title="Motion"
-        intro="Motion is quiet and purposeful: one orchestrated entrance per view, plus the marquee. Everything respects reduced-motion."
+        title={t("motion.title")}
+        intro={t("motion.intro")}
       >
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <Eyebrow>fade-in-up</Eyebrow>
+            <Eyebrow>{t("motion.fade.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              <span className="font-mono text-foreground/80">0.6s ease-out</span>,
-              20px rise, staggered in 100ms steps for content reveals.
+              {t.rich("motion.fade.note", {
+                duration: () => (
+                  <span className="font-mono text-foreground/80">
+                    {t("motion.fade.duration")}
+                  </span>
+                ),
+              })}
             </p>
             <div className="mt-6 flex flex-col gap-2">
               {[0, 1, 2].map((i) => (
@@ -905,18 +983,26 @@ export default function BrandPage() {
                     i === 2 && "delay-200",
                   )}
                 >
-                  Staggered line {i + 1}
+                  {t("motion.fade.staggeredLine", { n: i + 1 })}
                 </div>
               ))}
             </div>
           </Card>
           <Card>
-            <Eyebrow>Marquee &amp; hover</Eyebrow>
+            <Eyebrow>{t("motion.marquee.eyebrow")}</Eyebrow>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Founding-member strips loop linearly over{" "}
-              <span className="font-mono text-foreground/80">36–48s</span>,
-              pausing on hover. Interactive hovers transition in{" "}
-              <span className="font-mono text-foreground/80">~200ms</span>.
+              {t.rich("motion.marquee.note", {
+                loop: () => (
+                  <span className="font-mono text-foreground/80">
+                    {t("motion.marquee.loop")}
+                  </span>
+                ),
+                hover: () => (
+                  <span className="font-mono text-foreground/80">
+                    {t("motion.marquee.hover")}
+                  </span>
+                ),
+              })}
             </p>
             <div className="marquee mt-6 overflow-hidden rounded-lg bg-background py-4 ring-1 ring-inset ring-border [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
               <div className="flex w-max animate-marquee">
@@ -940,22 +1026,22 @@ export default function BrandPage() {
       <Section
         n="10"
         id="applications"
-        title="Applications"
-        intro="The system in place — header bar, footer, and a social card, built from the real tokens."
+        title={t("applications.title")}
+        intro={t("applications.intro")}
       >
         {/* Header mock */}
-        <Eyebrow>Header bar</Eyebrow>
+        <Eyebrow>{t("applications.headerBar")}</Eyebrow>
         <div className="mt-4 rounded-2xl border border-border bg-background p-4">
           <div className="mx-auto flex h-14 max-w-[1100px] items-center justify-between gap-3 rounded-[12px] border border-border/70 bg-[#f7f7f7] px-3 py-2 sm:pl-4 sm:pr-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logos/tic-logo-red.svg"
-              alt="Internet Court"
+              alt={t("applications.logoAlt")}
               className="h-[26px] w-[180px]"
             />
             <div className="flex items-center gap-2">
               <span className="inline-flex h-9 items-center rounded-full border border-border/80 bg-white px-3.5 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/80">
-                Blog
+                {t("applications.blog")}
               </span>
               <span className="h-5 w-px bg-border/80" />
               <span className="h-9 w-9 rounded-full bg-[var(--accent-red-soft)]" />
@@ -965,21 +1051,21 @@ export default function BrandPage() {
 
         {/* Footer mock */}
         <div className="mt-8">
-          <Eyebrow>Footer</Eyebrow>
+          <Eyebrow>{t("applications.footer")}</Eyebrow>
           <div className="mt-4 rounded-2xl border border-border bg-background">
             <div className="flex flex-col items-center gap-4 px-6 py-8 text-sm text-muted-foreground md:flex-row md:justify-between">
               <div className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logos/tic-logo-red.svg"
-                  alt="Internet Court"
+                  alt={t("applications.logoAlt")}
                   className="h-5 w-auto"
                 />
                 <span className="text-border">·</span>
-                <span>The neutral venue for agent disputes.</span>
+                <span>{t("applications.footerTagline")}</span>
               </div>
               <span className="font-mono text-[12px] uppercase tracking-[0.1em]">
-                Open standard, openly governed
+                {t("applications.footerGoverned")}
               </span>
             </div>
           </div>
@@ -987,7 +1073,7 @@ export default function BrandPage() {
 
         {/* Social card mock */}
         <div className="mt-8">
-          <Eyebrow>Social / X card</Eyebrow>
+          <Eyebrow>{t("applications.socialCard")}</Eyebrow>
           <div className="mt-4 max-w-md overflow-hidden rounded-2xl border border-border bg-[#1a1817]">
             <div
               className="flex aspect-[16/9] flex-col justify-between p-7"
@@ -1000,15 +1086,15 @@ export default function BrandPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/favicon.svg"
-                alt="Internet Court mark"
+                alt={t("applications.markAlt")}
                 className="h-9 w-9"
               />
               <div>
                 <p className="font-heading text-2xl leading-tight text-white">
-                  The neutral venue for agent disputes.
+                  {t("applications.socialLine")}
                 </p>
                 <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-[#ef6a6a]">
-                  internetcourt.org
+                  {t("applications.socialDomain")}
                 </p>
               </div>
             </div>
@@ -1020,27 +1106,20 @@ export default function BrandPage() {
       <Section
         n="11"
         id="assets"
-        title="Asset index"
-        intro="Canonical paths, served from the site root. Click any path to copy it."
+        title={t("assets.title")}
+        intro={t("assets.intro")}
       >
         <div className="overflow-hidden rounded-2xl border border-border">
           <table className="w-full text-left text-[15px]">
             <thead>
               <tr className="border-b border-border bg-card font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                <th className="px-5 py-3 font-normal">Asset</th>
-                <th className="px-5 py-3 font-normal">Format</th>
-                <th className="px-5 py-3 font-normal">Path</th>
+                <th className="px-5 py-3 font-normal">{t("assets.colAsset")}</th>
+                <th className="px-5 py-3 font-normal">{t("assets.colFormat")}</th>
+                <th className="px-5 py-3 font-normal">{t("assets.colPath")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {[
-                ["Primary wordmark", "SVG · 222×29", "/logos/tic-logo-red.svg"],
-                ["Favicon", "SVG · 24×24", "/favicon.svg"],
-                ["App icon", "PNG · 256×256", "/apple-icon.png"],
-                ["Open Graph image", "JPG · 1200×630", "/og-image.jpg"],
-                ["Partner logos", "Directory", "/partners/"],
-                ["Agent skill", "Markdown", "/skill.md"],
-              ].map(([name, fmt, path]) => (
+              {assetRows.map(({ name, fmt, path }) => (
                 <tr key={path} className="bg-background">
                   <td className="px-5 py-3 font-medium text-foreground">
                     {name}
@@ -1058,9 +1137,7 @@ export default function BrandPage() {
         </div>
 
         <p className="mt-8 text-sm leading-relaxed text-muted-foreground">
-          Follow-ups for a designer: a dedicated all-white reversed wordmark and
-          a standalone monochrome icon export, for use on red and photographic
-          backgrounds.
+          {t("assets.note")}
         </p>
       </Section>
 
@@ -1068,11 +1145,10 @@ export default function BrandPage() {
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-12 md:px-8">
           <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#dc2626]">
-            Internet Court — Brand Guidelines {VERSION}
+            {t("footerNote.label", { version: VERSION })}
           </span>
           <p className="text-sm text-muted-foreground">
-            A living document. Updated {UPDATED}. When the product evolves, so
-            does the system.
+            {t("footerNote.body", { updated: UPDATED })}
           </p>
         </div>
       </div>

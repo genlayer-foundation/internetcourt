@@ -1,7 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Github, Send } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import { TELEGRAM_URL, X_URL } from "@/lib/site-content";
 import { cn } from "@/lib/utils";
+import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 
 const GITHUB_URL = "https://github.com/internet-court";
 
@@ -24,35 +26,37 @@ const socialLinkClasses =
 
 const socials = [
   {
-    label: "Telegram",
+    key: "telegram",
     href: TELEGRAM_URL,
     icon: <Send size={17} strokeWidth={1.75} className="transition-transform duration-200 group-hover:-translate-y-px" />,
   },
   {
-    label: "X (formerly Twitter)",
+    key: "x",
     href: X_URL,
     icon: <XMark className="h-[15px] w-[15px]" />,
   },
   {
-    label: "GitHub",
+    key: "github",
     href: GITHUB_URL,
     icon: <Github size={17} strokeWidth={1.75} />,
   },
-];
+] as const;
 
-export function Header() {
+export async function Header() {
+  const t = await getTranslations();
+
   return (
     <header className="relative z-50 px-4 pt-4">
       <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 rounded-[12px] border border-border/70 bg-[#f7f7f7] px-3 py-2 sm:pl-4 sm:pr-3">
         <Link
           href="/"
-          aria-label="Internet Court — home"
+          aria-label={t("nav.homeAriaLabel")}
           className="flex min-w-0 shrink items-center gap-2 rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logos/tic-logo-red.svg"
-            alt="InternetCourt"
+            alt={t("nav.logoAlt")}
             className="h-[29px] w-[160px] md:w-[220px]"
           />
         </Link>
@@ -68,8 +72,11 @@ export function Header() {
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]",
             )}
           >
-            Blog
+            {t("nav.blog")}
           </Link>
+
+          {/* Language switcher — compact globe pill, native to the header. */}
+          <LocaleSwitcher />
 
           {/* Hairline divider between primary nav and the social cluster. */}
           <span
@@ -80,11 +87,11 @@ export function Header() {
           <div className="flex items-center gap-0.5">
             {socials.map((social) => (
               <a
-                key={social.label}
+                key={social.key}
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={social.label}
+                aria-label={t(`social.${social.key}`)}
                 className={socialLinkClasses}
               >
                 {social.icon}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export type VideoPlayerProps = {
@@ -17,6 +18,7 @@ export function VideoPlayer({
   className,
   caption,
 }: VideoPlayerProps) {
+  const t = useTranslations("videoPlayer");
   const [playing, setPlaying] = useState(false);
 
   return (
@@ -41,7 +43,7 @@ export function VideoPlayer({
             />
             <button
               type="button"
-              aria-label="Play video"
+              aria-label={t("playAriaLabel")}
               onClick={() => setPlaying(true)}
               className="group absolute inset-0 flex items-center justify-center bg-black/10 transition-colors hover:bg-black/20"
             >

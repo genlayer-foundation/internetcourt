@@ -1,0 +1,43 @@
+{
+  "_comment": "Glossary injected into the translation system prompt by scripts/translate.mjs. Keep DO-NOT-TRANSLATE terms verbatim in every locale. ICU placeholders ({name}) and rich-text tags (<accent>...</accent>) are preserved exactly by the script's validator — never translate the contents inside braces or tag names.",
+  "doNotTranslate": [
+    "Internet Court",
+    "Internet Court Consortium",
+    "GenLayer",
+    "molt",
+    "molts",
+    "skill.md",
+    "Vercel",
+    "Base",
+    "LayerZero",
+    "Telegram",
+    "X",
+    "GitHub",
+    "MCP",
+    "API",
+    "SDK",
+    "curl",
+    "ERC-7857",
+    "ERC-8004",
+    "A2A",
+    "x402",
+    "DM Sans",
+    "DM Mono"
+  ],
+  "rules": [
+    "Keep every term in the do-not-translate list EXACTLY as written, in English, even when surrounded by translated text. These are proper nouns, protocol names, or technical identifiers.",
+    "Keep any standards code matching the pattern ERC-#### verbatim (e.g. ERC-7857, ERC-8004).",
+    "Keep verdict / enum labels verbatim and uppercase: TRUE, FALSE, UNDETERMINED, PARTY_A, PARTY_B.",
+    "Keep all hex color codes (e.g. #DC2626), URLs, email addresses, file paths, and dimension/format strings (e.g. '1200 × 630', '24 × 24 · SVG') unchanged.",
+    "Preserve ICU placeholders written as {name} EXACTLY — do not translate, rename, reorder the braces, or add spaces inside them. The text inside the braces is a variable name, not content.",
+    "Preserve rich-text tags such as <accent>...</accent> EXACTLY — keep the tag names in English and the angle brackets intact. Translate only the human-readable text between the tags.",
+    "Produce natural, professional marketing/brand copy for a technical audience. Preserve sentence meaning and tone; do not pad or add explanations. Keep it concise.",
+    "Match the source register: confident, clear, no exclamation marks unless present in the source."
+  ],
+  "localeNotes": {
+    "es": "Neutral, international Spanish (not region-specific). Professional brand register.",
+    "ko": "Natural Korean suitable for a technical/professional audience. Use appropriate formal-but-modern tone.",
+    "zh": "Simplified Chinese (zh-CN). Natural, professional brand register.",
+    "ru": "Natural Russian for a technical/professional audience. Professional brand register."
+  }
+}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Hero, HeroVideo, Accent } from "@/components/site/Hero";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { AnimatedStack } from "@/components/site/AnimatedStack";
@@ -7,25 +8,37 @@ import { PartnerGrid } from "@/components/site/PartnerGrid";
 import { SkillCommand } from "@/components/site/SkillCommand";
 import { CTABand } from "@/components/site/CTABand";
 import { TheaterWatch } from "@/components/site/watch/TheaterWatch";
+import { buildAlternates } from "@/lib/i18n-metadata";
 
-const TITLE = "Internet Court: An open skill for agent-to-agent contracts";
-const DESCRIPTION =
-  "Internet Court is the trust layer for agent-to-agent commerce. Payment, escrow and dispute resolution in a single open skill, so any two agents can structure a deal, hold funds safely, and settle disagreements fairly.";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "home.metadata" });
 
-export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-  twitter: {
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-};
+  const title = t("title");
+  const description = t("description");
 
-export default function Home() {
+  return {
+    title,
+    description,
+    alternates: buildAlternates("/", locale),
+    openGraph: {
+      title,
+      description,
+    },
+    twitter: {
+      title,
+      description,
+    },
+  };
+}
+
+export default async function Home() {
+  const t = await getTranslations("home");
+
   return (
     <>
       {/* Section 1 - Hero (light-video) + partner marquee + intro paragraphs.
@@ -51,9 +64,9 @@ export default function Home() {
           externalVideoBackdrop
           titleAccentRule
           className="bg-transparent"
-          eyebrow="Internet Court — Consortium"
-          title="Internet Court"
-          subhead={<>An open skill for agent-to-agent contracts.</>}
+          eyebrow={t("hero.eyebrow")}
+          title={t("hero.title")}
+          subhead={t("hero.subhead")}
           mediaSrc="/scene-1.mp4"
         >
           {/* skill.md - copyable curl + link to canonical SKILL.md on GitHub */}
@@ -71,17 +84,8 @@ export default function Home() {
             marquee. `relative z-10` keeps the copy above the z-0 video. */}
         <div className="relative z-10 mx-auto max-w-6xl px-5 pt-6 md:px-4 text-[#1a1817]">
           <div className="mx-auto mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-center text-base md:text-lg text-[#4d4944] leading-relaxed animate-fade-in-up delay-300">
-            <p>
-              Agents are beginning to transact, negotiate and pay one another
-              without humans in the loop. What they still lack is a way to trust
-              each other.
-            </p>
-            <p>
-              Internet Court is the trust layer for agent-to-agent commerce. It
-              brings payment, escrow and dispute resolution into a single open
-              skill, so any two agents can structure a deal, hold funds safely,
-              and settle disagreements fairly, all in natural language.
-            </p>
+            <p>{t("intro.p1")}</p>
+            <p>{t("intro.p2")}</p>
           </div>
         </div>
       </div>
@@ -92,19 +96,16 @@ export default function Home() {
           pinned
           header={
             <SectionHeading
-              eyebrow="The Stack"
-              title={
-                <>
-                  One court, <Accent variant="light">every layer</Accent>.
-                </>
-              }
-              subhead="From discovery to disputes, agentic commerce runs through six layers. Internet Court is the open skill that connects them."
+              eyebrow={t("stack.eyebrow")}
+              title={t.rich("stack.title", {
+                accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
+              })}
+              subhead={t("stack.subhead")}
             />
           }
           footer={
             <p className="mt-8 px-4 text-center text-sm italic text-muted-foreground">
-              The agentic commerce stack, where Internet Court sits across the
-              layers.
+              {t("stack.footer")}
             </p>
           }
         />
@@ -117,30 +118,15 @@ export default function Home() {
       <section id="goal" className="py-16 md:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <SectionHeading
-            eyebrow="The Goal"
-            title={
-              <>
-                Scaffolding for <Accent variant="light">agentic commerce</Accent>.
-              </>
-            }
+            eyebrow={t("goal.eyebrow")}
+            title={t.rich("goal.title", {
+              accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
+            })}
           />
           <div className="mt-10 max-w-2xl mx-auto flex flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed">
-            <p>
-              The goal is to create the scaffolding needed for agentic
-              commerce: not just payments, but the full path from negotiation
-              to contracts, escrow, execution and dispute resolution.
-            </p>
-            <p>
-              Internet Court should become the open skill that agents use to
-              transact with each other safely, in natural language, through a
-              shared set of interfaces that connects the different protocols in
-              the stack.
-            </p>
-            <p>
-              The goal is not to replace every layer, but to make them work
-              together, so agents can structure deals, hold funds safely,
-              verify what happened and settle disagreements at internet speed.
-            </p>
+            <p>{t("goal.p1")}</p>
+            <p>{t("goal.p2")}</p>
+            <p>{t("goal.p3")}</p>
           </div>
         </div>
       </section>
@@ -149,13 +135,11 @@ export default function Home() {
       <section id="founding-partners" className="py-16 md:py-24 bg-[#f7f7f7]">
         <div className="max-w-6xl mx-auto px-4">
           <SectionHeading
-            eyebrow="Founding Partners"
-            title={
-              <>
-                Building the <Accent variant="light">trust layer</Accent> together.
-              </>
-            }
-            subhead="The protocols, platforms and standards bringing agentic commerce into a single open skill."
+            eyebrow={t("partners.eyebrow")}
+            title={t.rich("partners.title", {
+              accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
+            })}
+            subhead={t("partners.subhead")}
           />
           <div className="mt-12 md:mt-16">
             <PartnerGrid />
@@ -165,7 +149,7 @@ export default function Home() {
 
       {/* Section 5 - CTA band */}
       <section className="py-16 md:py-24 bg-white">
-        <CTABand title="The trust layer for agent-to-agent commerce.">
+        <CTABand title={t("cta.title")}>
           <SkillCommand />
         </CTABand>
       </section>

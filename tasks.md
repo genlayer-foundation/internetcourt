@@ -4,6 +4,29 @@
 
 ## In Progress
 
+### Homepage curated blog section — explicit ordered slug list
+- Add a "selected writing" blog section to the homepage. Curated, NOT date-sorted/random — author hand-picks which posts show and in what order.
+- Curation: `HOMEPAGE_POSTS` ordered slug array + `getPostsBySlugs()` helper in `frontend/src/lib/blog.ts` (preserves array order).
+- 3 design variants behind `/preview/home-blog/*` for the user to compare and pick (following the `/preview/blog` convention from the marketing-site task). Variants: (1) Editorial Index (numbered law-review list), (2) Card Grid, (3) Featured Split (one lead + secondaries).
+- Status: VARIANTS READY FOR REVIEW (uncommitted). Data layer in `lib/blog.ts` (`HOMEPAGE_POSTS` + `getHomepagePosts()`). 3 preview routes live & typecheck-clean: `/preview/home-blog/{editorial,cards,featured}`. Next: user picks one → wire it into `app/page.tsx` and delete the unused variants + preview routes.
+
+### caniagent — interactive readiness heatmap (Can I Use × Internet Court)
+- "Can I Agent?" — interactive heatmap of the 6-layer agentic-commerce stack (from the homepage Stack animation). Each layer + each standard + each integration *between* layers colored green→red on a 5-step readiness scale; hover any cell to read why.
+- Two parallel threads, one shared data contract: **Thread A (build)** = 5 interactive page variants + index under `frontend/src/app/[locale]/caniagent/`; **Thread B (research, separate session)** = grade every entry and write `frontend/src/data/caniagent/readiness.json`.
+- 5 variants: Classic Grid (caniuse style), Living Stack (IC style, evolves AnimatedStack), Constellation graph, Adjacency matrix, Maturity roadmap. All preview/`noindex` until user picks one.
+- Full brief + data schema + research-agent prompt: `caniagent-plan.md` (repo root).
+- Status: THREAD A BUILT (uncommitted). Plan in `caniagent-plan.md`. Data layer (`frontend/src/data/caniagent/`: taxonomy.ts 28 entries, readiness.sample.json, load.ts) + shared components (`components/caniagent/`: scale.ts, Legend, ReasonCard) + all 5 variants + index hub under `app/[locale]/caniagent/{,grid,stack,graph,matrix,roadmap}`. `npm run build` + tsc clean; all routes prerender across 5 locales; all noindex previews. Next: (1) user picks a variant → promote to public `/caniagent`, drop noindex, wire i18n messages (currently inline English); (2) Thread B runs §7.2 prompt to produce real `readiness.json` (sample data is placeholder).
+
+### Multilingual site — build-time LLM translation (en + es/ko/zh/ru)
+- Make `frontend/` multilingual via `next-intl`; default `en` at `/`, others at `/es /ko /zh /ru` (localePrefix "as-needed")
+- Build step (`scripts/translate.mjs`) translates EVERYTHING with Claude, incremental + cached by source-hash, results committed; wired into prebuild, falls back to committed files w/o API key
+- Glossary protects: Internet Court, molt(s), GenLayer, ERC-xxxx, skill.md, verdict labels, ICU placeholders
+- Phases: (1) next-intl foundation + [locale] migration, (2) extract all copy → messages/en.json, (3) translate build step + glossary + cache, (4) blog MDX per-locale, (5) language switcher + SEO (hreflang/metadata/sitemap), (6) verify build/tsc/lint + visual all 5 locales
+- Status: DONE (uncommitted). next-intl 4.13.0; en at `/`, es/ko/zh/ru prefixed (localePrefix as-needed). 320 message keys/locale, full parity. `scripts/translate.mjs` (JSON) + `scripts/translate-blog.mjs` (MDX) cached by source-hash, wired into prebuild, keyless fallback to committed files; `@anthropic-ai/sdk` dep, model TRANSLATE_MODEL default claude-haiku-4-5. Blog UI + 3 posts × 4 langs in content/blog/<locale>/ with en fallback. LocaleSwitcher in Header (native labels). SEO: hreflang+x-default on all pages, sitemap (30 urls), robots. Runtime-verified all 5 locales 200 + correct <html lang>. Fixed latent brand-page 500 ({name}→<accent>-style tag placeholders across all locale files). Build/tsc clean; lint only pre-existing StackTable/img issues.
+- Post-ship fixes: (a) dev-mode "Missing <html>/<body> in root layout" → deleted pass-through `src/app/layout.tsx`; `[locale]/layout.tsx` is the root layout (owns html/body) per next-intl i18n-routing pattern. (b) middleware never ran because with a `src/` dir it must live at `src/middleware.ts`, not repo-root `middleware.ts` → moved it (unprefixed `/` and `/blog` would 404 on cold hits without it). Both verified green in dev AND prod.
+- Gotchas for next time: prebuild rewrites every messages/*.json, so NEVER run two builds concurrently (file-race clobbers translations); messages/ is untracked-new (NOT gitignored) so it WILL commit fine; next-intl rich text needs `<tag></tag>` syntax, not `{name}`, when passing element callbacks; with a `src/` dir middleware MUST be `src/middleware.ts`; verify dev mode too (Turbopack dev enforces root-layout tags that prod build tolerates).
+- Follow-ups: homepage `/[locale]` renders dynamic (ƒ) — confirm intentional; preview/hero-previews/caniagent routes ship in prod — decide if they should; caniagent variants currently inline English (not yet wired to i18n messages).
+
 ### Marquee logo polish — full-color, matched speed, grid height
 - Logos in both marquees render at 100% (full color, full opacity, NO blur/grayscale)
 - Both marquees (FoundingMarquee + PartnerMarquee) scroll at the same speed

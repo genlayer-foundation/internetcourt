@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { ArrowDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { STACK_ROWS } from "@/lib/site-content";
@@ -43,6 +44,7 @@ export function AnimatedStack({
   footer,
   className,
 }: AnimatedStackProps) {
+  const t = useTranslations("home.stack");
   const root = useRef<HTMLDivElement>(null);
   // Whether to show the "keep scrolling" hint — only while the section is
   // pinned and the sequence is still playing.
@@ -251,7 +253,7 @@ export function AnimatedStack({
                 {row.n}
               </span>
               <span className="flex-1 font-sans font-medium text-base leading-snug md:text-xl">
-                {row.layer}
+                {t(`rows.${row.n}`)}
               </span>
               <span className="font-mono text-xs text-muted-foreground md:text-sm text-right">
                 {row.standards}
@@ -276,7 +278,7 @@ export function AnimatedStack({
             className="font-mono text-sm uppercase tracking-[0.5em] whitespace-nowrap"
             style={{ writingMode: "vertical-rl" }}
           >
-            Internet Court
+            {t("pill")}
           </span>
         </div>
       </div>
@@ -285,7 +287,7 @@ export function AnimatedStack({
       <div className="mx-auto mt-4 max-w-5xl px-4 md:hidden">
         <div className="flex items-center justify-center rounded-2xl bg-[#dc2626] py-3 text-white">
           <span className="pl-[0.4em] font-mono text-xs uppercase tracking-[0.4em] whitespace-nowrap">
-            Internet Court
+            {t("pill")}
           </span>
         </div>
       </div>

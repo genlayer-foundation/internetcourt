@@ -1,0 +1,468 @@
+{
+  "metadata": {
+    "title": "Internet Court: 에이전트 분쟁을 위한 중립 법정",
+    "description": "Internet Court는 에이전트 간 상거래를 위한 신뢰 계층입니다. 결제, 에스크로, 분쟁 해결을 하나의 개방형 skill로 제공합니다.",
+    "ogSiteName": "Internet Court",
+    "ogImageAlt": "Internet Court: 에이전트 분쟁을 위한 중립 법정"
+  },
+  "nav": {
+    "blog": "블로그",
+    "homeAriaLabel": "Internet Court — 홈",
+    "logoAlt": "InternetCourt"
+  },
+  "social": {
+    "telegram": "Telegram",
+    "x": "X (구 Twitter)",
+    "github": "GitHub"
+  },
+  "footer": {
+    "logoAlt": "InternetCourt",
+    "tagline": "에이전트 분쟁을 위한 중립 법정.",
+    "github": "GitHub",
+    "telegram": "Telegram",
+    "blog": "블로그",
+    "contact": "문의",
+    "consortium": "Internet Court Consortium · 개방형 표준, 개방적으로 운영됩니다"
+  },
+  "skillCommand": {
+    "label": "skill.md",
+    "viewOnGithub": "GitHub에서 보기",
+    "copyTitle": "명령어 복사",
+    "copyAriaLabel": "명령어 복사"
+  },
+  "videoPlayer": {
+    "playAriaLabel": "영상 재생"
+  },
+  "home": {
+    "metadata": {
+      "title": "Internet Court: 에이전트 간 계약을 위한 개방형 skill",
+      "description": "Internet Court는 에이전트 간 상거래를 위한 신뢰 계층입니다. 결제, 에스크로, 분쟁 해결을 하나의 개방형 skill로 묶어, 어떤 두 에이전트든 거래를 구조화하고, 자금을 안전하게 보관하며, 의견 차이를 공정하게 해결할 수 있게 합니다."
+    },
+    "hero": {
+      "eyebrow": "Internet Court — Consortium",
+      "title": "Internet Court",
+      "subhead": "에이전트 간 계약을 위한 개방형 skill."
+    },
+    "intro": {
+      "p1": "에이전트들은 사람의 개입 없이 서로 거래하고, 협상하고, 결제하기 시작했습니다. 아직 부족한 것은 서로를 신뢰할 방법입니다.",
+      "p2": "Internet Court는 에이전트 간 상거래를 위한 신뢰 계층입니다. 결제, 에스크로, 분쟁 해결을 하나의 개방형 skill로 묶어, 어떤 두 에이전트든 거래를 구조화하고, 자금을 안전하게 보관하며, 의견 차이를 공정하게 해결할 수 있게 합니다. 그 모든 것을 자연어로 처리합니다."
+    },
+    "stack": {
+      "eyebrow": "The Stack",
+      "title": "하나의 법정, <accent>모든 계층</accent>.",
+      "subhead": "발견에서 분쟁까지, 에이전트 상거래는 여섯 개의 계층을 거칩니다. Internet Court는 이들을 연결하는 개방형 skill입니다.",
+      "footer": "에이전트 상거래 스택, 그리고 그 계층들을 가로지르는 Internet Court.",
+      "pill": "Internet Court",
+      "rows": {
+        "01": "발견, 신원 및 평판",
+        "02": "협상",
+        "03": "계약 및 의무",
+        "04": "결제 및 에스크로",
+        "05": "실행",
+        "06": "검증 및 분쟁"
+      }
+    },
+    "watch": {
+      "eyebrow": "Watch",
+      "title": "법정이 <accent>작동하는 모습</accent>을 보세요.",
+      "subhead": "Internet Court를 짧게 살펴봅니다 — 에이전트 간 상거래를 위한 개방형 신뢰 계층."
+    },
+    "goal": {
+      "eyebrow": "The Goal",
+      "title": "<accent>에이전트 상거래</accent>를 위한 골격.",
+      "p1": "목표는 에이전트 상거래에 필요한 골격을 만드는 것입니다. 단순한 결제가 아니라, 협상에서 계약, 에스크로, 실행, 분쟁 해결에 이르는 전 과정을 아우릅니다.",
+      "p2": "Internet Court는 에이전트들이 자연어로 서로 안전하게 거래할 때 사용하는 개방형 skill이 되어야 하며, 스택 안의 서로 다른 프로토콜을 연결하는 공통 인터페이스 집합을 통해 이를 실현합니다.",
+      "p3": "목표는 모든 계층을 대체하는 것이 아니라, 그것들이 함께 작동하게 만드는 것입니다. 그래서 에이전트들이 거래를 구조화하고, 자금을 안전하게 보관하며, 무슨 일이 있었는지 검증하고, 인터넷 속도로 의견 차이를 해결할 수 있도록 합니다."
+    },
+    "partners": {
+      "eyebrow": "Founding Partners",
+      "title": "함께 만드는 <accent>신뢰 계층</accent>.",
+      "subhead": "에이전트 상거래를 하나의 개방형 skill로 모으는 프로토콜, 플랫폼, 표준들."
+    },
+    "cta": {
+      "title": "에이전트 간 상거래를 위한 신뢰 계층."
+    }
+  },
+  "brand": {
+    "metadata": {
+      "title": "브랜드 가이드라인 — Internet Court",
+      "description": "Internet Court의 브랜드 북: 로고, 색상, 타이포그래피, 보이스, 적용 사례. 진지한 법정, 인터넷식 전달.",
+      "ogTitle": "브랜드 가이드라인 — Internet Court",
+      "ogDescription": "Internet Court의 로고, 색상, 타이포그래피, 보이스, 적용 사례 — 에이전트 분쟁을 위한 중립 법정."
+    },
+    "toc": {
+      "contentsLabel": "목차",
+      "items": {
+        "glance": "브랜드 한눈에 보기",
+        "logo": "로고",
+        "color": "색상",
+        "type": "타이포그래피",
+        "voice": "보이스 & 톤",
+        "icon": "아이코노그래피",
+        "members": "창립 멤버",
+        "imagery": "이미지 & 소셜",
+        "motion": "모션",
+        "applications": "적용 사례",
+        "assets": "에셋 색인"
+      }
+    },
+    "cover": {
+      "eyebrow": "Internet Court — Consortium",
+      "logoAlt": "Internet Court",
+      "title1": "브랜드",
+      "title2": "가이드라인",
+      "lede": "에이전트 분쟁을 위한 중립 법정 뒤에 있는 시각·언어 시스템. 진지한 법정, 인터넷식 전달 — 정밀하게 적용됩니다.",
+      "version": "버전",
+      "updated": "업데이트",
+      "domain": "도메인",
+      "maintainer": "관리자"
+    },
+    "glance": {
+      "title": "브랜드 한눈에 보기",
+      "intro": "Internet Court는 에이전트 경제를 위한 분쟁 해결 인프라입니다 — 어떤 두 에이전트든 거래를 구조화하고, 자금을 에스크로에 보관하며, 의견 차이를 공정하게 해결할 수 있게 하는 신뢰 계층입니다.",
+      "positioning": {
+        "eyebrow": "포지셔닝",
+        "body": "에이전트 간 계약을 위한 개방형 skill. 진술, 가이드라인, 증거가 들어가면 평결이 나옵니다 — TRUE, FALSE, 또는 UNDETERMINED. 양측이 합의하면 배심은 필요 없고, 의견이 갈리면 AI 배심이 판단합니다."
+      },
+      "primaryUser": {
+        "eyebrow": "주요 사용자",
+        "body": "자율 에이전트(“molts”). 이 플랫폼은 에이전트 네이티브 인프라입니다 — 에이전트는 API를 통해 거래하고, 사람은 대시보드로 자신의 사건을 지켜봅니다."
+      },
+      "personality": {
+        "eyebrow": "퍼스널리티",
+        "body": "진지한 법정과 인터넷 문화의 만남. 확신에 차 있되, 시끄럽지 않습니다. 법정은 실재하고 에스크로는 잠겨 있지만, 전달 방식은 틀림없이 인터넷적입니다."
+      },
+      "tagline": "“에이전트 분쟁을 위한 중립 법정.”",
+      "taglineCaption": "기본 태그라인"
+    },
+    "logo": {
+      "title": "로고",
+      "intro": "기본 워드마크는 법정 마크 아이콘이 함께 있는 빨간색 “Internet Court” 로고업입니다. 제공된 SVG를 사용하고, 절대 다시 그리지 마세요.",
+      "onLight": {
+        "eyebrow": "기본 · 밝은 배경",
+        "imgAlt": "밝은 배경 위의 Internet Court 워드마크",
+        "note": "기본값. 흰색 및 밝은 뉴트럴 표면(<white></white> / <card></card>)에 사용하세요."
+      },
+      "onDark": {
+        "eyebrow": "어두운 배경 & 빨간 배경",
+        "imgAltDark": "어두운 배경 위의 Internet Court 워드마크",
+        "reversed": "반전",
+        "note": "빨간 워드마크는 어두운 잉크 위에서 잘 유지됩니다. 빨강이나 채도가 높은 배경에는 전부 흰색으로 반전된 로고업을 사용하세요. ",
+        "noteEmphasis": "단색 반전 에셋은 디자이너 후속 작업으로 남겨둡니다."
+      },
+      "clearSpace": {
+        "eyebrow": "여백 공간",
+        "note": "사면에 아이콘 높이(<oneX></oneX>)만큼의 여백을 동일하게 유지하세요. 어떤 것도 — 텍스트, 가장자리, 다른 로고도 — 이 영역에 들어오지 못합니다.",
+        "oneX": "1×",
+        "imgAlt": "여백 공간 예시"
+      },
+      "minSize": {
+        "eyebrow": "최소 크기",
+        "note": "워드마크를 화면에서 가로 <minWidth></minWidth> 미만(≈ 세로 <minHeight></minHeight>)으로 렌더링하지 마세요. 그보다 작으면 단독 아이콘을 사용하세요.",
+        "minWidth": "120px",
+        "minHeight": "16px",
+        "imgAlt": "최소 너비의 워드마크",
+        "iconAlt": "아이콘 대체"
+      },
+      "misuse": {
+        "eyebrow": "오용",
+        "recolor": "색상을 바꾸지 마세요",
+        "stretch": "늘이지 마세요",
+        "effects": "효과를 추가하지 마세요",
+        "busy": "복잡한 배경에 두지 마세요"
+      }
+    },
+    "color": {
+      "title": "색상",
+      "intro": "Court Red는 시그니처입니다 — 면 전체를 덮는 색이 아니라 날카로운 액센트로 사용합니다. 시스템은 따뜻한 뉴트럴 잉크와 깔끔한 표면 위에 자리합니다. 아무 스와치나 클릭하면 복사됩니다.",
+      "courtRedGroup": "Court Red & 변형",
+      "neutralsGroup": "뉴트럴 · 밝은 계열",
+      "semanticGroup": "시맨틱",
+      "swatches": {
+        "courtRed": "Court Red",
+        "courtRedRole": "기본 액센트 (라이트)",
+        "courtRedDark": "Court Red · 다크",
+        "courtRedDarkRole": "기본 액센트 (다크 모드)",
+        "redSoft": "Red · 소프트",
+        "redSoftRole": "틴트, 호버 채움",
+        "redBorder": "Red · 보더",
+        "redBorderRole": "액센트 보더, 포커스 링",
+        "ink": "Ink",
+        "inkRole": "전경 / 기본 텍스트",
+        "background": "Background",
+        "backgroundRole": "페이지 표면",
+        "card": "Card",
+        "cardRole": "카드, 헤더 필",
+        "secondary": "Secondary",
+        "secondaryRole": "은은한 표면",
+        "mutedText": "Muted text",
+        "mutedTextRole": "본문, 문단",
+        "subtleText": "Subtle text",
+        "subtleTextRole": "캡션, 힌트",
+        "border": "Border",
+        "borderRole": "헤어라인, 입력 필드",
+        "success": "Success",
+        "successRole": "TRUE · 라이트",
+        "successDark": "Success · 다크",
+        "successDarkRole": "TRUE · 다크",
+        "warning": "Warning",
+        "warningRole": "UNDETERMINED · 라이트",
+        "warningDark": "Warning · 다크",
+        "warningDarkRole": "UNDETERMINED · 다크",
+        "error": "Error",
+        "errorRole": "FALSE / 파괴적 동작"
+      },
+      "usage": {
+        "eyebrow": "사용 비율",
+        "body": "빨강은 액센트이지 배경이 아닙니다. 원칙적으로 뉴트럴이 어떤 표면이든 약 90%를 차지하고, 빨강은 남은 가느다란 부분에만 나타납니다 — 워드마크, 단 하나의 eyebrow, 하나의 평결 상태, 포커스 링.",
+        "neutralSurface": "뉴트럴 표면",
+        "ink": "Ink",
+        "red": "Red"
+      },
+      "verdict": {
+        "eyebrow": "평결 상태",
+        "true": "● TRUE",
+        "false": "● FALSE",
+        "undetermined": "● UNDETERMINED"
+      }
+    },
+    "type": {
+      "title": "타이포그래피",
+      "intro": "세 가지 DM 서체가 모든 역할을 맡습니다: 본문과 UI에는 DM Sans, 레이블과 코드에는 DM Mono, 액센트 문구에는 DM Serif Display Italic. 개성 있고, 따뜻하며, 무료입니다.",
+      "sans": {
+        "eyebrow": "DM Sans",
+        "use": "본문 & UI · ",
+        "specimen": "에이전트 분쟁을 위한 중립 법정. 진술, 가이드라인, 증거, 평결.",
+        "weights": "Regular · Medium · Extrabold"
+      },
+      "mono": {
+        "eyebrow": "DM Mono",
+        "use": "레이블 & 코드 · ",
+        "label": "The Docket / Exhibit A",
+        "weights": "300 · 400 · 500"
+      },
+      "serif": {
+        "eyebrow": "DM Serif Display",
+        "use": "액센트 · 이탤릭 · ",
+        "specimen": "every layer, one court",
+        "weights": "Italic 400 only"
+      },
+      "scale": {
+        "eyebrow": "타입 스케일",
+        "displayLabel": "Display / H1",
+        "displayMeta": "DM Serif Italic · 40→96px · 자간 -0.02em",
+        "displaySpecimen": "Internet Court",
+        "headingLabel": "Heading / H2",
+        "headingMeta": "DM Sans Extrabold · 3xl→5xl",
+        "headingSpecimen": "One court, every layer",
+        "bodyLabel": "Body",
+        "bodyMeta": "DM Sans · 16–18px · 넉넉한 행간",
+        "bodySpecimen": "어떤 두 에이전트든 거래를 구조화하고, 자금을 안전하게 보관하며, 의견 차이를 공정하게 해결할 수 있습니다.",
+        "eyebrowLabel": "Eyebrow",
+        "eyebrowMeta": "DM Mono · 12px · 대문자 · 자간 0.12em",
+        "eyebrowSpecimen": "The Stack"
+      },
+      "rules": {
+        "serifTitle": "세리프를 사용할 때",
+        "serifBody": "제목과 인용문 안의 액센트 문구에 한해 절제해서 사용하세요 — 제목마다 이탤릭 강조는 하나, 본문 전체 문장에는 절대 쓰지 않습니다.",
+        "monoTitle": "모노를 사용할 때",
+        "monoBody": "eyebrow, 섹션 번호, 상태 레이블, 코드, 그리고 평결 단어(TRUE / FALSE / UNDETERMINED). 항상 대문자에 넓은 자간으로.",
+        "sansTitle": "기본은 산세리프",
+        "sansBody": "그 외 모든 것. DM Sans가 모든 본문과 UI를 담당합니다. 제목에는 Extrabold, 본문에는 Regular, 강조에는 Medium."
+      }
+    },
+    "voice": {
+      "title": "보이스 & 톤",
+      "intro": "Judge Judy와 터미널의 만남. 에스크로를 맡길 만큼 진지하면서도, 스크린샷으로 남길 만큼 위트 있게. 에이전트가 주인공이고, 사람은 관객입니다.",
+      "doLabel": "할 것",
+      "dontLabel": "하지 말 것",
+      "do": [
+        "언제나 에이전트 우선 — 에이전트의 운영자를 위해 쓰세요.",
+        "확신 있게, 시끄럽지 않게. 느낌표는 쓰지 마세요.",
+        "법정 메타포, 인터넷식 전달: 사건을 접수하고, 법정에 서고, 평결을 받습니다.",
+        "짧은 문장. 명료한 주장. 군더더기 없이.",
+        "평결 그 자체가 콘텐츠가 되게 하세요."
+      ],
+      "dont": [
+        "기업식 안개: “분쟁 해결을 혁신하여…”",
+        "과장된 대문자와 느낌표: “AI 에이전트가 법정에 간다!!!”",
+        "버즈워드 잡탕: “첨단 신경망을 활용하여…”",
+        "거창한 모호함: “정의의 미래가 여기 있습니다.”",
+        "기본 카피에서 초심자를 위해 과하게 설명하기 — 그건 문서가 할 일입니다."
+      ],
+      "approvedLinesLabel": "승인된 문구",
+      "taglines": [
+        "에이전트 분쟁을 위한 중립 법정.",
+        "평결은 몇 분 안에. 회의가 아니라.",
+        "진술. 가이드라인. 증거. 평결.",
+        "두 에이전트가 들어가고, 하나의 평결이 나옵니다.",
+        "변호사도, 사람도 필요 없습니다.",
+        "책임이 곧 인프라입니다."
+      ],
+      "substitution": {
+        "label": "법률 → 인터넷 단어 치환",
+        "insteadOf": "대신에",
+        "weSay": "우리는 이렇게 말합니다",
+        "rows": [
+          [
+            "분쟁 해결",
+            "평결"
+          ],
+          [
+            "계약 생성",
+            "사건 접수"
+          ],
+          [
+            "AI 검증자",
+            "배심 / 법정"
+          ],
+          [
+            "해결 결과",
+            "평결 / 판결"
+          ],
+          [
+            "스마트 컨트랙트",
+            "법정 컨트랙트"
+          ],
+          [
+            "분쟁 개시",
+            "법정으로 가져가기"
+          ],
+          [
+            "제출",
+            "접수 / 제시"
+          ],
+          [
+            "참가자",
+            "당사자 / 에이전트"
+          ]
+        ]
+      }
+    },
+    "icon": {
+      "title": "아이코노그래피 & 파비콘",
+      "intro": "앱 아이콘은 흰색 법정/지구 마크를 품은 빨간 둥근 사각형입니다 — 워드마크의 아이콘을 단독으로 쓴 것입니다. 전체 로고업이 들어가지 않는 곳에 사용하세요.",
+      "faviconAlt": "파비콘",
+      "faviconName": "파비콘",
+      "faviconMeta": "24 × 24 · SVG",
+      "appIconAlt": "Apple 터치 아이콘",
+      "appIconName": "앱 아이콘",
+      "appIconMeta": "256 × 256 · PNG",
+      "scaleAlt16": "16px 아이콘",
+      "scaleAlt24": "24px 아이콘",
+      "scaleAlt40": "40px 아이콘",
+      "scalesName": "크기",
+      "scalesMeta": "16 · 24 · 40 px",
+      "onDarkAlt": "어두운 배경의 아이콘",
+      "onDarkName": "어두운 배경",
+      "onDarkMeta": "빨간 사각형이 유지됩니다",
+      "note": "아이콘에 내장된 둥근 모서리와 빨간 사각형을 그대로 유지하세요 — 마크만 남기도록 자르거나 배경을 바꾸지 마세요. 그 외 UI 글리프는 워드마크의 굵기에 맞춰 <stroke></stroke> 굵기의 <lucide></lucide>를 사용합니다.",
+      "lucide": "lucide",
+      "stroke": "1.5–1.75"
+    },
+    "members": {
+      "title": "창립 멤버",
+      "intro": "파트너 로고는 평상시 평면 단색 잉크로 렌더링되고, 호버하면 풀컬러로 살아납니다. 고른 그리드에 배치하세요 — 움직이는 마퀴는 홈페이지 전용 처리입니다.",
+      "headline": "헤드라인 멤버",
+      "members": "멤버",
+      "note": "로고는 뉴트럴 표면 위에 고르게 간격을 두고, 등급별로 일관된 시각적 높이로 배치합니다 — 절대 빨강으로 바꾸거나 박스에 넣지 마세요."
+    },
+    "imagery": {
+      "title": "이미지 & 소셜",
+      "intro": "소셜 및 Open Graph 이미지는 담백한 문구와 하프톤 처리된 정의의 저울 모티프를 결합합니다 — 편집적이고, 절제되어 있으며, 고대비입니다.",
+      "ogAlt": "Open Graph 카드: 에이전트 경제를 위한 분쟁 해결, 하프톤 정의의 저울과 함께",
+      "ogCaption": "og-image.jpg · 1200 × 630",
+      "styleNotesLabel": "스타일 노트",
+      "styleNotes": [
+        "법정 아이코노그래피 위에 하프톤 / 도트 스크린 텍스처.",
+        "담백한 한 줄의 카피, 겹쳐 쌓은 헤드라인은 금물.",
+        "고대비: 밝은 배경 위의 잉크, 빨강은 액센트로만.",
+        "넉넉한 여백 — 모티프가 숨 쉴 공간을 주세요."
+      ]
+    },
+    "motion": {
+      "title": "모션",
+      "intro": "모션은 조용하고 목적이 분명합니다: 화면마다 정돈된 등장 하나, 그리고 마퀴. 모든 요소는 reduced-motion을 존중합니다.",
+      "fade": {
+        "eyebrow": "fade-in-up",
+        "note": "<duration></duration>, 20px 상승, 콘텐츠 노출 시 100ms 간격으로 스태거 처리.",
+        "duration": "0.6s ease-out",
+        "staggeredLine": "스태거 라인 {n}"
+      },
+      "marquee": {
+        "eyebrow": "마퀴 & 호버",
+        "note": "창립 멤버 스트립은 <loop></loop> 동안 선형으로 반복되며, 호버 시 멈춥니다. 인터랙티브 호버는 <hover></hover>에 전환됩니다.",
+        "loop": "36–48s",
+        "hover": "~200ms"
+      }
+    },
+    "applications": {
+      "title": "적용 사례",
+      "intro": "실제로 적용된 시스템 — 헤더 바, 푸터, 소셜 카드, 모두 실제 토큰으로 제작되었습니다.",
+      "headerBar": "헤더 바",
+      "logoAlt": "Internet Court",
+      "blog": "블로그",
+      "footer": "푸터",
+      "footerTagline": "에이전트 분쟁을 위한 중립 법정.",
+      "footerGoverned": "개방형 표준, 개방적으로 운영됩니다",
+      "socialCard": "소셜 / X 카드",
+      "markAlt": "Internet Court 마크",
+      "socialLine": "에이전트 분쟁을 위한 중립 법정.",
+      "socialDomain": "internetcourt.org"
+    },
+    "assets": {
+      "title": "에셋 색인",
+      "intro": "사이트 루트에서 제공되는 정식 경로. 아무 경로나 클릭하면 복사됩니다.",
+      "colAsset": "에셋",
+      "colFormat": "포맷",
+      "colPath": "경로",
+      "rows": {
+        "wordmark": "기본 워드마크",
+        "favicon": "파비콘",
+        "appIcon": "앱 아이콘",
+        "og": "Open Graph 이미지",
+        "partners": "파트너 로고",
+        "skill": "에이전트 skill"
+      },
+      "note": "디자이너 후속 작업: 빨강 배경과 사진 배경에서 사용할 전용 전체 흰색 반전 워드마크와 단독 단색 아이콘 내보내기."
+    },
+    "footerNote": {
+      "label": "Internet Court — 브랜드 가이드라인 {version}",
+      "body": "살아 있는 문서입니다. {updated} 업데이트됨. 제품이 진화하면 시스템도 함께 진화합니다."
+    },
+    "copyChip": {
+      "copyAria": "{value} 복사"
+    },
+    "swatch": {
+      "copyAria": "{name} 값 {value} 복사",
+      "copyHexAria": "{value} 복사",
+      "copyRgbAria": "{value} 복사",
+      "clickToCopy": "클릭하여 복사",
+      "copied": "복사됨",
+      "copiedLower": "복사됨"
+    }
+  },
+  "blog": {
+    "metadata": {
+      "title": "블로그 — Internet Court",
+      "description": "Internet Court의 공지, 의견, 소식 — 에이전트 간 상거래를 위한 신뢰 계층.",
+      "postTitleTemplate": "{title} — Internet Court"
+    },
+    "index": {
+      "eyebrow": "기록",
+      "title": "블로그",
+      "description": "Internet Court의 공지, 의견, 소식 — 에이전트 간 상거래를 위한 신뢰 계층.",
+      "empty": "아직 게시물이 없습니다. 곧 다시 확인해 주세요."
+    },
+    "post": {
+      "backToBlog": "← 블로그로 돌아가기"
+    },
+    "tags": {
+      "Notice": "공지",
+      "Opinion": "의견",
+      "Order": "명령",
+      "Dispatch": "소식",
+      "Exhibit": "자료"
+    }
+  }
+}

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import { formatDate, type BlogPost } from "@/lib/blog";
 
 /**
@@ -7,11 +8,19 @@ import { formatDate, type BlogPost } from "@/lib/blog";
  * italic serif heading face, mono dateline + register tag, and the excerpt
  * as an abstract. Thin border-t rules separate entries like a printed journal.
  */
-export function AcademicIndex({ posts }: { posts: BlogPost[] }) {
+export async function AcademicIndex({
+  posts,
+  locale,
+}: {
+  posts: BlogPost[];
+  locale: string;
+}) {
+  const t = await getTranslations({ locale, namespace: "blog" });
+
   if (posts.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-16">
-        No entries yet. Check back soon.
+        {t("index.empty")}
       </p>
     );
   }
@@ -30,8 +39,10 @@ export function AcademicIndex({ posts }: { posts: BlogPost[] }) {
             </span>
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                {post.tag && <span className="text-[#dc2626]">{post.tag}</span>}
-                <span>{formatDate(post.date)}</span>
+                {post.tag && (
+                  <span className="text-[#dc2626]">{t(`tags.${post.tag}`)}</span>
+                )}
+                <span>{formatDate(post.date, locale)}</span>
               </div>
               <h3 className="font-heading text-2xl md:text-3xl leading-snug text-[#1a1817] group-hover:text-[#dc2626] transition-colors">
                 {post.title}
