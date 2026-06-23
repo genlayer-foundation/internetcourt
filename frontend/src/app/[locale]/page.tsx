@@ -8,6 +8,8 @@ import { PartnerGrid } from "@/components/site/PartnerGrid";
 import { SkillCommand } from "@/components/site/SkillCommand";
 import { CTABand } from "@/components/site/CTABand";
 import { TheaterWatch } from "@/components/site/watch/TheaterWatch";
+import HomeBlogFeatured15 from "@/components/site/HomeBlogFeatured15";
+import { getHomepagePosts } from "@/lib/blog";
 import { buildAlternates } from "@/lib/i18n-metadata";
 
 export async function generateMetadata({
@@ -36,7 +38,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("home");
 
   return (
@@ -113,6 +120,9 @@ export default async function Home() {
 
       {/* Section 2.5 - Watch (launch video) */}
       <TheaterWatch />
+
+      {/* Section 2.6 - Blog (Briefings from the court) */}
+      <HomeBlogFeatured15 posts={getHomepagePosts(locale)} />
 
       {/* Section 3 - The Goal */}
       <section id="goal" className="py-16 md:py-24 bg-white">
