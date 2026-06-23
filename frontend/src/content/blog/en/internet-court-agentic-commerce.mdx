@@ -1,0 +1,148 @@
+---
+title: "Internet Court: From Fragmented Protocols to End-to-End Agentic Commerce"
+date: "2026-06-23"
+excerpt: "Agentic commerce is beginning to look less like a metaphor and more like a reality. The pieces already exist — what's missing is the path that connects them."
+tag: "Dispatch"
+---
+
+For most of the web's history, a person sat at the center of every transaction, clicking, comparing, and confirming each step. That assumption is starting to break. Software is no longer just a tool we operate; it now acts on its own, and it is beginning to transact on our behalf.
+
+> The pieces of agentic commerce already exist. The path that connects them does not.
+
+Agents can discover products, compare providers, call APIs, negotiate tasks, trigger wallets, and authorize payments. Much of this still happens with a human watching the screen, but the direction is clear: commerce is moving from human-operated software toward agent-operated commerce. AI agents will mediate $3–5 trillion in consumer commerce globally by 2030.[^1]
+
+That growth will require infrastructure that can handle not only volume and speed, but ambiguity. Agents will trade across platforms and jurisdictions, work with counterparties they have never met, operate inside businesses, marketplaces, wallets, APIs, supply chains, and portfolios, and disagree at the same speed they transact.
+
+The first primitives are already here: internet-native payments, programmable wallets, identity and reputation registries, agent interoperability, execution systems, escrow mechanisms, and adjudication systems. These are serious building blocks, built by serious teams. But primitives are not enough. A real commercial transaction has to move across them.
+
+That is the problem Internet Court is designed to solve.
+
+### The stack is being built in fragmented layers
+
+Agentic commerce is not one protocol winning the whole market. It is many protocols and systems working together from layer to layer, through a unified transaction path.
+
+A complete agentic transaction has to move across six connected layers:
+
+1. **Discovery, identity and reputation.** Agents need to find counterparties, understand who or what they are dealing with, and carry reputation signals into the transaction.
+2. **Negotiation.** Agents need to agree on scope, price, timing, standards, responsibilities, evidence, and acceptable remedies.
+3. **Contracts and obligations.** Negotiated terms need to become obligations that can be inspected, verified, and enforced later.
+4. **Payment and escrow.** Funds need to move or be held in ways that remain connected to the agreement.
+5. **Execution.** The promised work, service, API call, delivery, or action has to happen.
+6. **Verification and disputes.** The result needs to be verified, contested commitments need adjudication, and a judgment needs consequences attached to it.
+
+Trust begins with discovery, identity, and reputation, but it does not have to rest on blind faith in a counterparty. With adjudication in place, much of that trust shifts onto the system itself: the agreement, the evidence, the process, and the consequences tied to a judgment. Agents do not need to trust each other perfectly if they can trust the path that handles performance and disagreement.
+
+Different parts of this path are now being covered by different standards, each designed for a specific need, with placeholders where the other layers are meant to plug in. x402 is advancing internet-native payments, but defines no formal dispute mechanism. ERC-8004, the Trustless Agents standard, is advancing agent discovery, identity, and reputation, and leaves adjudication to separate validation protocols. A2A is advancing agent interoperability, but not dispute resolution. Around these standards, partner layers are forming across wallets, smart accounts, contract frameworks, analytics, execution, verification, escrow, and adjudication.
+
+That is not a flaw in those standards. It is the shape of a stack being built in public, where each layer focuses on its own job and passes the rest down the line. A payment layer does not want to define every obligation. An identity registry does not want to decide every outcome. An interoperability protocol does not want to become a court. But the layers still depend on each other: a verifier cannot release funds unless it is connected to payment and contract state, and an adjudication decision means nothing unless it can trigger consequences.
+
+The missing work is integration. Agents need to learn how to use these primitives together: which layer to call, what evidence to preserve, how a contract clause becomes a verification target, when a dispute should be opened, where adjudication happens, and how the result changes payment, escrow, reputation, or future negotiation.
+
+Most of that path is the happy path, where work is delivered, verified, and paid for without incident. But commerce is defined as much by what happens when something goes wrong: a missed deadline, a disputed deliverable, a clause read two different ways. Each layer has handed that problem down the line to the next, and by the last layer there is nowhere left to pass it. That is where today's stack runs out of road.
+
+> Internet Court teaches an agent that whole path, end to end: how to complete a deal when it goes right, and how to hold it together when it does not.
+
+### A real dispute scenario
+
+Consider a buyer agent hiring a provider agent to create a tailor-made logo.
+
+The contract is not just "make a logo." It says the logo must be original, must not contain copyrighted material, must follow a set of brand guidelines, must be delivered in three file formats, and must arrive before a deadline. Funds are placed in escrow. The provider agent delivers the files. At first glance the work looks complete.
+
+Then the buyer detects that part of the logo appears to contain copyrighted material.
+
+In a normal online workflow, this can become a slow mess. The buyer emails the provider. The provider denies the claim or offers a vague revision. The platform may or may not have a policy. Payment may already be released. Evidence may be scattered across messages, files, timestamps, prompts, invoices, and external references. If the amount is small, the buyer may give up. If the amount is large, the dispute may move into a process designed for human institutions, human addresses, and human waiting times.
+
+In an agentic-commerce workflow, that delay breaks the premise of the system.
+
+The buyer agent should be able to dispute the transaction automatically by pointing to the clause that required originality and prohibited copyrighted material. The dispute package should include the agreement, the relevant clause, the delivered files, timestamps, brand guidelines, payment and escrow state, messages between the agents, and evidence supporting the copyright claim. An adjudication mechanism should be able to evaluate what the contract required, inspect what was delivered, weigh the evidence, and attach the appropriate consequence.
+
+That consequence might be a revision period, a partial refund, a full refund, an escrow hold, a payment-release denial, a reputation update, or another outcome defined by the agreement.
+
+The important point is not that every dispute becomes a theatrical courtroom. The important point is that the transaction path does not collapse the moment a commitment is contested. The system has somewhere to send the disagreement.
+
+Every other layer has somewhere to put its part of the transaction. The disagreement does not. When a commitment is contested, the stack reaches for a function it has never made explicit.
+
+That function is adjudication.
+
+Not adjudication in the narrow sense of replacing courts or the law. It is a credible mechanism for evaluating contested commitments in agentic commerce: gathering evidence, interpreting the agreement, reaching a judgment, and connecting that judgment to the transaction.
+
+> Handling a contested deal is not a minor edge case. It is the difference between a payment network and an economy.
+
+Payments, identity, reputation, and workflow infrastructure can move activity forward. They do not resolve contested commitments by themselves. They assume alignment. Real economies do not.
+
+### How Internet Court works: a skill of skills
+
+Internet Court is the open standard and skill that makes the agentic-commerce stack usable as a single path, from first contact to final settlement, including when a deal is contested.
+
+A single protocol cannot own the whole stack. A single agent prompt cannot reliably hold the whole stack in context. But a skill-of-skills can tell an agent which capability to call, in what order, with what evidence, and how to recover when the happy path fails.
+
+For an agent, Internet Court should feel like installing or invoking one commercial capability: how to do business with other agents. Under the surface, that capability can connect many smaller skills: discovery skills, negotiation skills, wallet skills, contract skills, evidence skills, adjudication skills, and protocol-specific skills.
+
+The hard part is not any single layer. It is the handoffs between them: each step has to carry its context into the next. The evidence produced during execution, for instance, has to reach verification intact, or the result cannot be checked against what was promised. Leave those connections to improvisation, and every agent ends up rebuilding the same fragile workflow.
+
+Internet Court turns the path into a shared pattern:
+
+- define the agreement in terms agents can inspect later;
+- connect payment and escrow to the agreement, not to a blind transfer;
+- preserve the evidence needed to prove or contest performance;
+- verify the result against the obligation;
+- route ambiguous or contested claims to adjudication;
+- attach the decision to payment, escrow, reputation, or another outcome.
+
+> Fragmented primitives don't make an economy. Connecting them does, and Internet Court packages that connection into one skill.
+
+### Why a consortium matters
+
+The strongest signal in this moment is not only that one project has an idea. It is that many layers of the agentic-commerce stack are beginning to recognize the same need.
+
+The founding ecosystem spans payment rails, wallets, identity and reputation, execution, verification, analytics, blockchain infrastructure, and dispute systems: MetaMask, x402 Foundation, OKX, 0G Labs, zkSync, Starknet, BNB Chain, Nansen, Humanity Protocol, AltLayer, ChainGPT, Anoma, AppLayer, OpenServ, UMA, Chutes, io.net, MEMO, Chainbase, LI.FI, AntSeed, and Arkhai. Each covers a different layer, and they share one conviction: no layer reaches a real economy on its own. That is why they have come together, around a single vision of every protocol and solution working as one toward the same goal, end-to-end agentic commerce.
+
+> The future of agentic commerce will not be owned. It will be shared.
+
+Internet Court gives these layers a shared place to meet. It does not force every participant into one vendor, one chain, one model, one court, or one workflow. It defines the commercial path that lets different protocols participate in the same transaction.
+
+### The new primitive: machine-speed adjudication
+
+Internet Court adds the step the rest of the stack has deferred. But it cannot simply borrow the old way of resolving disputes.
+
+The existing legal system was built for parties with bodies, addresses, jurisdictions, paperwork, and a finite tolerance for waiting.
+
+Agents have none of those by default.
+
+They can transact globally without meeting. They can sign commitments faster than humans can read them. They can create many small disputes where the cost of traditional resolution is larger than the value at stake. They can also create large disputes at a speed and complexity that human-only processes cannot absorb.
+
+By 2030, if agents are mediating trillions of dollars of commerce, the bottleneck will not only be whether they can pay. It will be whether they can keep trust when payment, performance, and interpretation diverge.
+
+> Machine-speed money needs machine-speed adjudication.
+
+Again, this does not mean every disagreement is solved by an AI judge. Some conditions are deterministic. Some refunds can be automatic. Some disputes should escalate to humans, institutions, platforms, arbitrators, or legal systems. Internet Court does not need to replace those paths. It needs to make the path explicit enough that agents can use the right one.
+
+The key is that disagreement becomes part of the protocol surface instead of an external accident.
+
+### What Internet Court makes possible
+
+With Internet Court, an agentic-commerce transaction can be designed from the beginning to survive disagreement.
+
+Before work begins, the agents can define the obligations, evidence requirements, payment conditions, escrow rules, and dispute forum. During execution, the system can preserve messages, files, logs, receipts, timestamps, and performance evidence. At delivery, verification can compare the outcome against the agreement. If the result is accepted, payment is released and reputation is updated. If the result is disputed, the case can be routed to the right adjudication mechanism, with the relevant evidence already attached.
+
+That is the difference between a payment and a commercial system.
+
+A payment says: money moved.
+
+A commercial system says: money moved because a commitment was made, performed, verified, and accepted, or because a dispute was resolved and a remedy followed.
+
+Internet Court is the connection that lets agents operate at that level.
+
+It lets builders add new skills, connectors, tests, and dispute scenarios without forcing every layer into a single monolith. And it gives agents a practical way to do business with other agents when the world is ambiguous, evidence is incomplete, and money depends on interpretation.
+
+The first era of agentic commerce is about making agents capable of acting.
+
+> In the agentic economy, trust stops being a leap of faith and becomes infrastructure.
+
+Internet Court is the open coordination layer for that era: a shared path for discovery, negotiation, contracts, payment, escrow, execution, verification, adjudication, and disputes.
+
+Not just for the moment when everything goes right.
+
+For the moment when something goes wrong.
+
+[^1]: Deepa Mahajan, Hannah Mayer, Katharina Schumacher, and Roger Roberts, "The automation curve in agentic commerce," McKinsey (QuantumBlack, AI by McKinsey), January 28, 2026. McKinsey finds that even under moderate scenarios, AI agents could mediate $3 trillion to $5 trillion of global consumer commerce by 2030. https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-automation-curve-in-agentic-commerce

@@ -79,6 +79,7 @@ export function getPostBySlug(
 
 // Curated, hand-ordered list of posts to feature on the homepage. Order here = display order.
 export const HOMEPAGE_POSTS: string[] = [
+  "internet-court-agentic-commerce",
   "press-release",
   "launch-video",
   "welcome",
