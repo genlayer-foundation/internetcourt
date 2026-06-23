@@ -28,7 +28,10 @@
     "label": "skill.md",
     "viewOnGithub": "GitHub에서 보기",
     "copyTitle": "명령어 복사",
-    "copyAriaLabel": "명령어 복사"
+    "copyAriaLabel": "명령어 복사",
+    "forYourAgent": "에이전트용",
+    "noAgent": "에이전트가 없나요? 여기서 시작",
+    "talkToBot": "Internet Court 봇과 대화하기"
   },
   "videoPlayer": {
     "playAriaLabel": "영상 재생"

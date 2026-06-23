@@ -28,7 +28,10 @@
     "label": "skill.md",
     "viewOnGithub": "Открыть на GitHub",
     "copyTitle": "Скопировать команду",
-    "copyAriaLabel": "Скопировать команду"
+    "copyAriaLabel": "Скопировать команду",
+    "forYourAgent": "для вашего агента",
+    "noAgent": "нет агента? начните здесь",
+    "talkToBot": "Написать боту Internet Court"
   },
   "videoPlayer": {
     "playAriaLabel": "Воспроизвести видео"

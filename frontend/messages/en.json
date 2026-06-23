@@ -28,7 +28,10 @@
     "label": "skill.md",
     "viewOnGithub": "View on GitHub",
     "copyTitle": "Copy command",
-    "copyAriaLabel": "Copy command"
+    "copyAriaLabel": "Copy command",
+    "forYourAgent": "for your agent",
+    "noAgent": "no agent? start here",
+    "talkToBot": "Talk to the Court bot"
   },
   "videoPlayer": {
     "playAriaLabel": "Play video"

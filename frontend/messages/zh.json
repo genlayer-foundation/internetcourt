@@ -28,7 +28,10 @@
     "label": "skill.md",
     "viewOnGithub": "在 GitHub 上查看",
     "copyTitle": "复制命令",
-    "copyAriaLabel": "复制命令"
+    "copyAriaLabel": "复制命令",
+    "forYourAgent": "供你的 agent",
+    "noAgent": "没有 agent？从这里开始",
+    "talkToBot": "与 Internet Court 机器人对话"
   },
   "videoPlayer": {
     "playAriaLabel": "播放视频"

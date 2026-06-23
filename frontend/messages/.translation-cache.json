@@ -84,6 +84,18 @@
       "srcHash": "9a01feecae675f2fb94baefe9b95c9b6f2970d7b4ccaf64e774335626cba785a",
       "value": "Copiar comando"
     },
+    "skillCommand.forYourAgent": {
+      "srcHash": "0e9b0d68b9e348cc4130f0fd047704ad6f9160aadecf57c930ce6d87334fdca9",
+      "value": "para tu agente"
+    },
+    "skillCommand.noAgent": {
+      "srcHash": "820b620ca5971a531b6c56a49c4a61bf1307baf3bfb1a63b4960c9b760ccf746",
+      "value": "¿sin agente? empieza aquí"
+    },
+    "skillCommand.talkToBot": {
+      "srcHash": "36ec8921186776e852d084e801de2baa8841e1bffb45e01abb8360eb797f9a8e",
+      "value": "Habla con el bot de Internet Court"
+    },
     "videoPlayer.playAriaLabel": {
       "srcHash": "43e3c3b1379bb83849740b5441a47de0e64cfee9986bfdd2940c2b7bed9ee567",
       "value": "Reproducir video"
@@ -1365,6 +1377,18 @@
     "skillCommand.copyAriaLabel": {
       "srcHash": "9a01feecae675f2fb94baefe9b95c9b6f2970d7b4ccaf64e774335626cba785a",
       "value": "명령어 복사"
+    },
+    "skillCommand.forYourAgent": {
+      "srcHash": "0e9b0d68b9e348cc4130f0fd047704ad6f9160aadecf57c930ce6d87334fdca9",
+      "value": "에이전트용"
+    },
+    "skillCommand.noAgent": {
+      "srcHash": "820b620ca5971a531b6c56a49c4a61bf1307baf3bfb1a63b4960c9b760ccf746",
+      "value": "에이전트가 없나요? 여기서 시작"
+    },
+    "skillCommand.talkToBot": {
+      "srcHash": "36ec8921186776e852d084e801de2baa8841e1bffb45e01abb8360eb797f9a8e",
+      "value": "Internet Court 봇과 대화하기"
     },
     "videoPlayer.playAriaLabel": {
       "srcHash": "43e3c3b1379bb83849740b5441a47de0e64cfee9986bfdd2940c2b7bed9ee567",
@@ -2648,6 +2672,18 @@
       "srcHash": "9a01feecae675f2fb94baefe9b95c9b6f2970d7b4ccaf64e774335626cba785a",
       "value": "复制命令"
     },
+    "skillCommand.forYourAgent": {
+      "srcHash": "0e9b0d68b9e348cc4130f0fd047704ad6f9160aadecf57c930ce6d87334fdca9",
+      "value": "供你的 agent"
+    },
+    "skillCommand.noAgent": {
+      "srcHash": "820b620ca5971a531b6c56a49c4a61bf1307baf3bfb1a63b4960c9b760ccf746",
+      "value": "没有 agent？从这里开始"
+    },
+    "skillCommand.talkToBot": {
+      "srcHash": "36ec8921186776e852d084e801de2baa8841e1bffb45e01abb8360eb797f9a8e",
+      "value": "与 Internet Court 机器人对话"
+    },
     "videoPlayer.playAriaLabel": {
       "srcHash": "43e3c3b1379bb83849740b5441a47de0e64cfee9986bfdd2940c2b7bed9ee567",
       "value": "播放视频"
@@ -3929,6 +3965,18 @@
     "skillCommand.copyAriaLabel": {
       "srcHash": "9a01feecae675f2fb94baefe9b95c9b6f2970d7b4ccaf64e774335626cba785a",
       "value": "Скопировать команду"
+    },
+    "skillCommand.forYourAgent": {
+      "srcHash": "0e9b0d68b9e348cc4130f0fd047704ad6f9160aadecf57c930ce6d87334fdca9",
+      "value": "для вашего агента"
+    },
+    "skillCommand.noAgent": {
+      "srcHash": "820b620ca5971a531b6c56a49c4a61bf1307baf3bfb1a63b4960c9b760ccf746",
+      "value": "нет агента? начните здесь"
+    },
+    "skillCommand.talkToBot": {
+      "srcHash": "36ec8921186776e852d084e801de2baa8841e1bffb45e01abb8360eb797f9a8e",
+      "value": "Написать боту Internet Court"
     },
     "videoPlayer.playAriaLabel": {
       "srcHash": "43e3c3b1379bb83849740b5441a47de0e64cfee9986bfdd2940c2b7bed9ee567",
