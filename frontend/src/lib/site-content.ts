@@ -67,6 +67,9 @@ export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
   { name: "Heurist", iconSrc: "/partners/heurist.png" },
   { name: "Arkhai", src: "/partners/arkhai.svg" },
   { name: "Collective Memory", src: "/partners/collective-memory.png" },
+  { name: "io.net", src: "/partners/io-net.svg" },
+  { name: "NEAR", src: "/partners/near.svg" },
+  { name: "Starknet", src: "/partners/starknet.svg" },
 ];
 
 /** Combined list (all founding members). */
@@ -92,8 +95,8 @@ export const FOUNDING_MEMBERS_GRID: Partner[] = (
     // Row 1
     ["GenLayer", 24],
     ["MetaMask", 22],
-    ["BNB Chain", 15.4],
     ["OKX", 14],
+    ["BNB Chain", 15.4],
     ["x402", 16],
     ["Nansen", 16],
     // Row 2
@@ -117,6 +120,9 @@ export const FOUNDING_MEMBERS_GRID: Partner[] = (
     ["OpenServ", 22],
     ["Humanode", 13],
     ["Humanity Protocol", 21.9],
+    ["io.net", 14],
+    ["NEAR", 16],
+    ["Starknet", 16],
   ] as const
 ).map(([name, gridHeight]) => ({ ...PARTNERS_BY_NAME[name], gridHeight }));
 
