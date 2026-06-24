@@ -51,6 +51,7 @@ export function HeroVideo({
       loop
       muted
       playsInline
+      preload="metadata"
       className={cn(
         "pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 max-w-none opacity-30 motion-reduce:hidden",
         cover ? "h-full md:h-[75%] w-[1020px] object-cover" : "w-[1020px]",
