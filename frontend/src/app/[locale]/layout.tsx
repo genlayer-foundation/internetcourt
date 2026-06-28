@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, DM_Mono, DM_Serif_Display } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -6,12 +6,18 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import "../globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { routing } from "@/i18n/routing";
 import {
   buildAlternates,
   buildOpenGraphLocale,
   localizedUrl,
 } from "@/lib/i18n-metadata";
+import {
+  organizationSchema,
+  websiteSchema,
+  softwareApplicationSchema,
+} from "@/lib/structured-data";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -76,7 +82,15 @@ export async function generateMetadata({
       icon: "/favicon.svg",
       apple: "/apple-icon.png",
     },
+    other: {
+      robots:
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    },
   };
+}
+
+export function generateViewport(): Viewport {
+  return { themeColor: "#1a1817" };
 }
 
 export function generateStaticParams() {
@@ -98,11 +112,20 @@ export default async function LocaleLayout({
   // Enable static rendering for this locale.
   setRequestLocale(locale);
 
+  const t = await getTranslations({ locale, namespace: "metadata" });
+
   return (
     <html lang={locale}>
       <body
         className={`${dmSans.variable} ${dmMono.variable} ${dmSerif.variable} font-sans antialiased`}
       >
+        <JsonLd
+          data={[
+            organizationSchema(),
+            websiteSchema(locale),
+            softwareApplicationSchema(locale, { description: t("description") }),
+          ]}
+        />
         <NextIntlClientProvider>
           <div className="flex min-h-screen flex-col">
             <Header />

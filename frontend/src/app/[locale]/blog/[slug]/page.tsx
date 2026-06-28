@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { Link } from "@/i18n/routing";
 import { getPostSlugs, getPostBySlug, formatDate } from "@/lib/blog";
 import { mdxComponents } from "@/components/blog/mdx-components";
 import { TagBadge } from "@/components/blog/TagBadge";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { buildAlternates, localizedUrl } from "@/lib/i18n-metadata";
+import { articleSchema, breadcrumbListSchema } from "@/lib/structured-data";
 
 type Params = { locale: string; slug: string };
 
@@ -38,12 +40,15 @@ export async function generateMetadata({
       description: post.excerpt,
       url: localizedUrl(`/blog/${post.slug}`, locale),
       type: "article",
-      images: [post.cover ?? "/og-image.jpg"],
+      // Image intentionally omitted so the file-based `opengraph-image.tsx`
+      // in this route auto-wires og:image (and twitter:image) and wins.
     },
     twitter: {
+      card: "summary_large_image",
       title: post.title,
       description: post.excerpt,
-      images: [post.cover ?? "/og-image.jpg"],
+      // Image intentionally omitted — the file-based opengraph-image provides
+      // the twitter:image automatically; we don't fight it here.
     },
   };
 }
@@ -54,6 +59,7 @@ export default async function BlogPostPage({
   params: Promise<Params>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const post = getPostBySlug(slug, locale);
   if (!post) notFound();
 
@@ -61,6 +67,19 @@ export default async function BlogPostPage({
 
   return (
     <article className="mx-auto max-w-3xl px-5 py-16 md:px-4 md:py-24">
+      <JsonLd
+        data={[
+          articleSchema(post, locale),
+          breadcrumbListSchema(
+            [
+              { name: "Home", path: "/" },
+              { name: "Blog", path: "/blog" },
+              { name: post.title, path: `/blog/${post.slug}` },
+            ],
+            locale,
+          ),
+        ]}
+      />
       <Link
         href="/blog"
         className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground hover:text-[#dc2626] transition-colors"

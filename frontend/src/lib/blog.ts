@@ -11,6 +11,8 @@ export type BlogPost = {
   excerpt: string;
   cover?: string;
   tag?: BlogTag;
+  updated?: string;
+  author?: string;
   content: string;
 };
 
@@ -73,6 +75,8 @@ export function getPostBySlug(
     excerpt: typeof data.excerpt === "string" ? data.excerpt : "",
     cover: typeof data.cover === "string" ? data.cover : undefined,
     tag: data.tag as BlogTag | undefined,
+    updated: typeof data.updated === "string" ? data.updated : undefined,
+    author: typeof data.author === "string" ? data.author : undefined,
     content,
   };
 }

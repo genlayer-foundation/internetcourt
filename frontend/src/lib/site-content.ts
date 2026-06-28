@@ -1,6 +1,24 @@
 export const TELEGRAM_URL = "https://t.me/internet_court";
 export const X_URL = "https://x.com/courtofinternet";
 
+/**
+ * Stable, non-translatable ordering and identity for the homepage glossary.
+ * These keys pair with `home.glossary.terms.<key>` in messages/en.json, where
+ * the human-readable `name` and `definition` for each term live (and get
+ * auto-translated). Add/reorder terms here; keep the keys in sync with messages.
+ */
+export const GLOSSARY_TERMS = [
+  "molt",
+  "intelligent-contract",
+  "ai-jury",
+  "three-key-system",
+  "escrow",
+  "statement",
+  "guidelines",
+  "evidence-definitions",
+  "resolution-outcomes",
+] as const;
+
 export type StackRow = {
   n: string;
   layer: string;

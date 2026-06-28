@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowUpRight } from "lucide-react";
 import {
   FOUNDING_MEMBERS_PRIMARY,
@@ -125,7 +125,13 @@ function Card({
  * Page
  * -------------------------------------------------------------------------- */
 
-export default async function BrandPage() {
+export default async function BrandPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations("brand");
 
   const voiceDo = t.raw("voice.do") as string[];
