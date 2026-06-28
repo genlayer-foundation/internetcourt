@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { Link } from "@/i18n/routing";
@@ -59,6 +59,7 @@ export default async function BlogPostPage({
   params: Promise<Params>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const post = getPostBySlug(slug, locale);
   if (!post) notFound();
 
