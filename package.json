@@ -23,5 +23,8 @@
   "homepage": "https://github.com/rasca/internetcourt#readme",
   "dependencies": {
     "genlayer-js": "^0.18.10"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.0"
   }
 }

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "prebuild": "node scripts/translate.mjs && node scripts/translate-blog.mjs",
     "build": "next build",
     "start": "next start",
