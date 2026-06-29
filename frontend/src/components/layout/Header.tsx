@@ -75,6 +75,19 @@ export async function Header() {
             {t("nav.blog")}
           </Link>
 
+          {/* FAQ — secondary destination, matches the Blog pill treatment. */}
+          <Link
+            href="/faq"
+            className={cn(
+              "inline-flex h-9 items-center rounded-full border border-border/80 bg-white px-3.5",
+              "font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/80",
+              "transition-colors duration-200 hover:border-[var(--accent-red-border)] hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]",
+            )}
+          >
+            {t("nav.faq")}
+          </Link>
+
           {/* Language switcher — compact globe pill, native to the header. */}
           <LocaleSwitcher />
 

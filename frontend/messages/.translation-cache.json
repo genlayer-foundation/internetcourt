@@ -1293,6 +1293,7 @@
       "value": "Prueba"
     },
     "\u0000fallback": [
+      "nav.faq",
       "footer.faq",
       "faq.metadata.title",
       "faq.metadata.description",
@@ -2628,6 +2629,7 @@
       "value": "자료"
     },
     "\u0000fallback": [
+      "nav.faq",
       "footer.faq",
       "faq.metadata.title",
       "faq.metadata.description",
@@ -3963,6 +3965,7 @@
       "value": "证据"
     },
     "\u0000fallback": [
+      "nav.faq",
       "footer.faq",
       "faq.metadata.title",
       "faq.metadata.description",
@@ -5298,6 +5301,7 @@
       "value": "Материал"
     },
     "\u0000fallback": [
+      "nav.faq",
       "footer.faq",
       "faq.metadata.title",
       "faq.metadata.description",
