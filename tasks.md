@@ -4,6 +4,13 @@
 
 ## In Progress
 
+### Header redesign — 10 variants under /header-previews
+- User dislikes the current header's BLOG/FAQ nav pills + the i18n language dropdown. Wants 10 distinct header designs to compare under a sub-URL.
+- Pattern: mirror /hero-previews. Index at `app/[locale]/header-previews/page.tsx`; variant components in `components/site/headers/`; each routed sub-page renders the bar over a faux-homepage backdrop + BackToIndex. Noindex, inline English (no i18n).
+- 10 variants (each re-thinks nav + language): bare, quiet-links, single-cta, command-bar, menu, masthead, docs-bar, dot-nav, floating-pill, two-tier.
+- Status: SHIPPED INTO HEADER (uncommitted). User picked `masthead`. Rewrote `components/layout/Header.tsx` to the centered masthead (mono Blog/FAQ nav left w/ underline, centered wordmark, socials right, top hairline + doubled bottom rule, mobile reflow), productionized with real i18n/routing. Boxed globe dropdown replaced by new subtle `components/layout/MastheadLangToggle.tsx` (corner EN ⌄, 5 locales); deleted now-unused `LocaleSwitcher.tsx`. tsc clean.
+- CLEANUP PENDING: the `/header-previews` gallery (`app/[locale]/header-previews/` + `components/site/headers/`, 10 variants + scaffold) still in tree — delete once user is happy with the live header.
+
 ### Homepage curated blog section — explicit ordered slug list
 - Add a "selected writing" blog section to the homepage. Curated, NOT date-sorted/random — author hand-picks which posts show and in what order.
 - Curation: `HOMEPAGE_POSTS` ordered slug array + `getPostsBySlugs()` helper in `frontend/src/lib/blog.ts` (preserves array order).

@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
-import { Globe, Check, ChevronDown } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { ChevronDown, Check } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { routing } from "@/i18n/routing";
@@ -21,12 +21,18 @@ const LOCALE_LABELS: Record<(typeof routing.locales)[number], string> = {
 };
 
 /**
- * Language switcher. A compact globe/▾ pill that opens a listbox of every
- * supported locale. Selecting one navigates to the SAME route in the chosen
- * locale via next-intl's locale-aware `Link` + `usePathname` (which strips the
- * current prefix and adds the target one, respecting `localePrefix: as-needed`).
+ * MastheadLangToggle — the masthead's tiny language control.
+ *
+ * Visually it reads as a quiet two-letter mono mark (e.g. `EN ▾`) that sits
+ * inline in the right-side social cluster, on the same baseline/height as the
+ * social icon buttons. Functionally it is a real listbox of every supported
+ * locale: selecting one navigates to the SAME route in the chosen locale via
+ * next-intl's locale-aware `Link` + `usePathname` (which strips the current
+ * prefix and adds the target one, respecting `localePrefix: as-needed`).
+ *
+ * Click-outside and Escape close the menu; the active locale is marked.
  */
-export function LocaleSwitcher() {
+export function MastheadLangToggle() {
   const activeLocale = useLocale();
   // Locale-agnostic pathname (no locale prefix), e.g. `/brand`, `/blog/welcome`.
   const pathname = usePathname();
@@ -36,21 +42,28 @@ export function LocaleSwitcher() {
   const listboxId = useId();
 
   // Close on outside click / Escape — lightweight, no extra deps.
-  function handleBlur(event: React.FocusEvent<HTMLDivElement>) {
-    if (!containerRef.current?.contains(event.relatedTarget as Node)) {
-      setOpen(false);
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
     }
-  }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative"
-      onBlur={handleBlur}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") setOpen(false);
-      }}
-    >
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         aria-label="Change language"
@@ -59,21 +72,18 @@ export function LocaleSwitcher() {
         aria-controls={listboxId}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "inline-flex h-9 items-center gap-1.5 rounded-full border border-border/80 bg-white px-3",
-          "font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/80",
-          "transition-colors duration-200 hover:border-[var(--accent-red-border)] hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626]",
+          "inline-flex h-8 items-center gap-0.5 rounded-full px-1.5",
+          "font-mono text-[10px] uppercase tracking-[0.22em] text-[#4d4944]",
+          "transition-colors duration-200 hover:text-[#dc2626]",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]",
+          open && "text-[#dc2626]",
         )}
       >
-        <Globe size={15} strokeWidth={1.75} />
         <span aria-hidden="true">{activeLocale}</span>
         <ChevronDown
-          size={13}
+          size={11}
           strokeWidth={2}
-          className={cn(
-            "transition-transform duration-200",
-            open && "rotate-180",
-          )}
+          className={cn("transition-transform duration-200", open && "rotate-180")}
         />
       </button>
 
@@ -83,7 +93,7 @@ export function LocaleSwitcher() {
           role="listbox"
           aria-label="Change language"
           className={cn(
-            "absolute right-0 z-50 mt-2 min-w-[10rem] overflow-hidden rounded-[12px]",
+            "absolute right-0 z-50 mt-2 min-w-[9.5rem] overflow-hidden rounded-[10px]",
             "border border-border/70 bg-[#f7f7f7] p-1 shadow-lg shadow-black/5",
             "animate-fade-in-up",
           )}
@@ -101,7 +111,7 @@ export function LocaleSwitcher() {
                   hrefLang={locale}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center justify-between gap-3 rounded-lg px-3 py-2",
+                    "flex items-center justify-between gap-3 rounded-md px-3 py-1.5",
                     "text-sm transition-colors duration-150",
                     "focus-visible:outline-none focus-visible:bg-[var(--accent-red-soft)] focus-visible:text-[#dc2626]",
                     isActive
@@ -111,7 +121,7 @@ export function LocaleSwitcher() {
                 >
                   <span>{LOCALE_LABELS[locale]}</span>
                   {isActive && (
-                    <Check size={15} strokeWidth={2.25} className="text-[#dc2626]" />
+                    <Check size={14} strokeWidth={2.25} className="text-[#dc2626]" />
                   )}
                 </Link>
               </li>

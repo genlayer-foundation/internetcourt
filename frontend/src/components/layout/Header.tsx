@@ -3,7 +3,7 @@ import { Github, Send } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { TELEGRAM_URL, X_URL } from "@/lib/site-content";
 import { cn } from "@/lib/utils";
-import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
+import { MastheadLangToggle } from "@/components/layout/MastheadLangToggle";
 
 const GITHUB_URL = "https://github.com/internet-court";
 
@@ -21,83 +21,86 @@ function XMark({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Quiet uppercase-mono nav link with an animated red underline that wipes in
+ * from the left on hover/focus. Shared by the desktop (left column) and the
+ * mobile (reflowed below) navigation.
+ */
+const navLinkClasses =
+  "relative font-mono text-[11px] uppercase tracking-[0.2em] text-[#4d4944] transition-colors duration-200 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#dc2626] after:transition-transform after:duration-200 hover:text-[#dc2626] hover:after:scale-x-100 focus-visible:outline-none focus-visible:text-[#dc2626] focus-visible:after:scale-x-100";
+
 const socialLinkClasses =
-  "group inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-[color,background-color,transform] duration-200 hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]";
+  "group inline-flex h-8 w-8 items-center justify-center rounded-full text-[#4d4944] transition-colors duration-200 hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]";
 
 const socials = [
   {
     key: "telegram",
     href: TELEGRAM_URL,
-    icon: <Send size={17} strokeWidth={1.75} className="transition-transform duration-200 group-hover:-translate-y-px" />,
+    icon: <Send size={15} strokeWidth={1.7} />,
   },
   {
     key: "x",
     href: X_URL,
-    icon: <XMark className="h-[15px] w-[15px]" />,
+    icon: <XMark className="h-[13px] w-[13px]" />,
   },
   {
     key: "github",
     href: GITHUB_URL,
-    icon: <Github size={17} strokeWidth={1.75} />,
+    icon: <Github size={15} strokeWidth={1.7} />,
   },
 ] as const;
 
+const nav = [
+  { key: "blog" as const, href: "/blog" as const },
+  { key: "faq" as const, href: "/faq" as const },
+];
+
+/**
+ * Header — "Centered masthead".
+ *
+ * A law-review / journal masthead: the wordmark is centered between two
+ * balanced columns (quiet nav links left, social marks right), framed by a thin
+ * hairline above and a doubled rule below. Language is a tiny, unobtrusive
+ * corner toggle hung in the top rule. On small screens the nav reflows centered
+ * beneath the masthead.
+ */
 export async function Header() {
   const t = await getTranslations();
 
   return (
-    <header className="relative z-50 px-4 pt-4">
-      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 rounded-[12px] border border-border/70 bg-[#f7f7f7] px-3 py-2 sm:pl-4 sm:pr-3">
-        <Link
-          href="/"
-          aria-label={t("nav.homeAriaLabel")}
-          className="flex min-w-0 shrink items-center gap-2 rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logos/tic-logo-red.svg"
-            alt={t("nav.logoAlt")}
-            className="h-[29px] w-[160px] md:w-[220px]"
-          />
-        </Link>
+    <header className="relative z-50 px-4 pt-5">
+      <div className="mx-auto max-w-[1200px] px-1">
+        {/* top hairline */}
+        <div className="h-px bg-[#1a1817]/15" />
 
-        <nav className="flex shrink-0 items-center gap-1 sm:gap-2">
-          {/* Blog — primary destination, mono uppercase pill that lights up red on hover. */}
+        {/* three-column masthead: nav · wordmark · socials */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3">
+          {/* left — quiet nav */}
+          <nav className="hidden items-center gap-7 sm:flex">
+            {nav.map((item) => (
+              <Link key={item.key} href={item.href} className={navLinkClasses}>
+                {t(`nav.${item.key}`)}
+              </Link>
+            ))}
+          </nav>
+          <span aria-hidden="true" className="sm:hidden" />
+
+          {/* center — wordmark */}
           <Link
-            href="/blog"
-            className={cn(
-              "inline-flex h-9 items-center rounded-full border border-border/80 bg-white px-3.5",
-              "font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/80",
-              "transition-colors duration-200 hover:border-[var(--accent-red-border)] hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]",
-            )}
+            href="/"
+            aria-label={t("nav.homeAriaLabel")}
+            className="mx-auto flex items-center justify-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7f7f7]"
           >
-            {t("nav.blog")}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/tic-logo-red.svg"
+              alt={t("nav.logoAlt")}
+              className="h-[29px] w-[160px] md:w-[220px]"
+            />
           </Link>
 
-          {/* FAQ — secondary destination, matches the Blog pill treatment. */}
-          <Link
-            href="/faq"
-            className={cn(
-              "inline-flex h-9 items-center rounded-full border border-border/80 bg-white px-3.5",
-              "font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/80",
-              "transition-colors duration-200 hover:border-[var(--accent-red-border)] hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]",
-            )}
-          >
-            {t("nav.faq")}
-          </Link>
-
-          {/* Language switcher — compact globe pill, native to the header. */}
-          <LocaleSwitcher />
-
-          {/* Hairline divider between primary nav and the social cluster. */}
-          <span
-            aria-hidden="true"
-            className="mx-1 hidden h-5 w-px bg-border/80 sm:block"
-          />
-
-          <div className="flex items-center gap-0.5">
+          {/* right — socials + language */}
+          <div className="flex items-center justify-end gap-1">
             {socials.map((social) => (
               <a
                 key={social.key}
@@ -110,7 +113,28 @@ export async function Header() {
                 {social.icon}
               </a>
             ))}
+            {/* thin hairline divider, then the language toggle, inline with socials */}
+            <span
+              aria-hidden="true"
+              className="mx-1.5 h-4 w-px bg-[#1a1817]/15"
+            />
+            <MastheadLangToggle />
           </div>
+        </div>
+
+        {/* bottom hairline — doubled rule for a printed-journal feel */}
+        <div className="space-y-[3px]">
+          <div className="h-px bg-[#1a1817]/15" />
+          <div className="h-px bg-[#1a1817]/10" />
+        </div>
+
+        {/* small-screen nav slips below the masthead, centered */}
+        <nav className="flex items-center justify-center gap-6 pt-2.5 sm:hidden">
+          {nav.map((item) => (
+            <Link key={item.key} href={item.href} className={navLinkClasses}>
+              {t(`nav.${item.key}`)}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>
