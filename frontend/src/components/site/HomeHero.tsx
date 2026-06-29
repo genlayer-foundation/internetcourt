@@ -27,7 +27,7 @@ export async function HomeHero() {
   const [titleBefore, titleAfter] = t("hero.title").split("Court");
 
   return (
-    <section className="relative isolate h-[calc(100dvh-4.625rem)] overflow-hidden bg-white text-[#1a1817]">
+    <section className="relative isolate min-h-[calc(100dvh-4.625rem)] bg-white text-[#1a1817] lg:h-[calc(100dvh-4.625rem)] lg:overflow-hidden">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 opacity-[0.4]"
@@ -40,20 +40,15 @@ export async function HomeHero() {
 
       <div className="mx-auto flex h-full max-w-6xl flex-col px-5 py-5 md:px-4 md:py-7">
         <div className="relative flex min-h-0 w-full flex-1 items-center">
-          <div className="relative w-full">
-            {/* Tallest video: width derived from the stage height so the
-                16:9 picture fills the fold's height. Capped to the viewport
-                width so it never overflows horizontally. The live-colored
-                left extension stays. */}
-            <HeroVideoPanel
-              className="mx-auto w-full max-w-[min(100%,calc((58dvh-2rem)*16/9))] pl-2 sm:pl-4 lg:ml-[28rem] lg:w-[calc(100%-28rem+7rem)] lg:max-w-[calc(100vw-max(1rem,50vw-36rem)-30rem)] lg:pl-24"
-            />
-
-            {/* overlapping text card — unchanged from split-5. The blur lives
+          <div className="relative flex w-full flex-col lg:block">
+            {/* Text card — on mobile it renders FIRST (above the video) in
+                normal flow with a gap below it; on lg it is `lg:absolute` and
+                overlays the left of the video panel (DOM order is irrelevant to
+                the desktop look because it's taken out of flow). The blur lives
                 on a dedicated inset glass layer (NOT on the content box) so
                 Chrome composites it reliably and Firefox applies it at first
                 paint instead of after load. CSS-only; no JS. */}
-            <div className="relative z-10 -mt-8 lg:absolute lg:inset-y-0 lg:left-0 lg:my-auto lg:h-fit lg:w-[34rem]">
+            <div className="relative z-10 mb-6 lg:absolute lg:inset-y-0 lg:left-0 lg:mb-0 lg:my-auto lg:h-fit lg:w-[34rem]">
               <div className="relative overflow-hidden rounded-2xl border border-black/[0.06] p-5 shadow-[0_30px_70px_-30px_rgba(26,24,23,0.35)] md:p-7">
                 {/* Glass layer: a clean, NON-transformed inset element that
                     carries the translucent fill + backdrop blur. Because no
@@ -96,6 +91,16 @@ export async function HomeHero() {
                 </div>
               </div>
             </div>
+
+            {/* Tallest video: width derived from the stage height so the
+                16:9 picture fills the fold's height. Capped to the viewport
+                width so it never overflows horizontally. On mobile the video
+                fills the panel (no left extension, fully rounded) and sits
+                BELOW the card; the live-colored left extension + flush seam
+                return at lg. */}
+            <HeroVideoPanel
+              className="mx-auto w-full max-w-[min(100%,calc((58dvh-2rem)*16/9))] pl-0 lg:ml-[28rem] lg:w-[calc(100%-28rem+7rem)] lg:max-w-[calc(100vw-max(1rem,50vw-36rem)-30rem)] lg:pl-24"
+            />
           </div>
         </div>
 

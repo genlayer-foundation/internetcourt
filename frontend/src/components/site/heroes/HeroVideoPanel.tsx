@@ -243,7 +243,7 @@ export function HeroVideoPanel({
       <HeroVideoPlayer
         videoRef={videoRef}
         crossOrigin="anonymous"
-        className="relative z-20 aspect-[16/9] w-full rounded-r-2xl"
+        className="relative z-20 aspect-[16/9] w-full rounded-2xl lg:rounded-l-none"
       />
     </div>
   );
