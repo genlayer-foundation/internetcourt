@@ -33,6 +33,9 @@ export async function Footer() {
           <Link href="/blog" className="hover:text-foreground transition-colors">
             {t("blog")}
           </Link>
+          <Link href="/faq" className="hover:text-foreground transition-colors">
+            {t("faq")}
+          </Link>
           <a
             href="mailto:ivan@genlayer.foundation"
             className="hover:text-foreground transition-colors"

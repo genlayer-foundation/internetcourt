@@ -9,13 +9,8 @@ import { SkillCommand } from "@/components/site/SkillCommand";
 import { CTABand } from "@/components/site/CTABand";
 import { TheaterWatch } from "@/components/site/watch/TheaterWatch";
 import HomeBlogFeatured15 from "@/components/site/HomeBlogFeatured15";
-import { FaqSection } from "@/components/site/FaqSection";
-import { GlossarySection } from "@/components/site/GlossarySection";
-import { JsonLd } from "@/components/seo/JsonLd";
 import { getHomepagePosts } from "@/lib/blog";
 import { buildAlternates } from "@/lib/i18n-metadata";
-import { faqPageSchema, definedTermSetSchema } from "@/lib/structured-data";
-import { GLOSSARY_TERMS } from "@/lib/site-content";
 
 export async function generateMetadata({
   params,
@@ -52,21 +47,8 @@ export default async function Home({
   setRequestLocale(locale);
   const t = await getTranslations("home");
 
-  const faqItems = t.raw("faq.items") as { q: string; a: string }[];
-  const glossaryTerms = GLOSSARY_TERMS.map((id) => ({
-    id,
-    name: t(`glossary.terms.${id}.name`),
-    definition: t(`glossary.terms.${id}.definition`),
-  }));
-
   return (
     <>
-      <JsonLd
-        data={[
-          faqPageSchema(faqItems, locale),
-          definedTermSetSchema(glossaryTerms, locale),
-        ]}
-      />
       {/* Section 1 - Hero (light-video) + partner marquee + intro paragraphs.
           The hero's background video is rendered here as a SHARED full-bleed
           backdrop that spans the hero, the marquee AND the intro paragraphs, so
@@ -159,12 +141,6 @@ export default async function Home({
           </div>
         </div>
       </section>
-
-      {/* Section 3.5 - FAQ (semantic Q&A for generative-engine optimization) */}
-      <FaqSection />
-
-      {/* Section 3.6 - Glossary (key terms, semantic <dl>) */}
-      <GlossarySection />
 
       {/* Section 4 - Founding partners (logo wall) */}
       <section id="founding-partners" className="py-16 md:py-24 bg-[#f7f7f7]">

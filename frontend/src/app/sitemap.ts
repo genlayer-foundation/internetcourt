@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/", lastModified: buildTime },
     { path: "/brand", lastModified: buildTime },
     { path: "/blog", lastModified: buildTime },
+    { path: "/faq", lastModified: buildTime },
     ...getAllPosts().map((post) => ({
       path: `/blog/${post.slug}`,
       lastModified: new Date(post.updated ?? post.date),

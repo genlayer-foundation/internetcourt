@@ -21,8 +21,15 @@
     "github": "GitHub",
     "telegram": "Telegram",
     "blog": "博客",
+    "faq": "FAQ",
     "contact": "联系我们",
     "consortium": "Internet Court Consortium · 开放标准，公开治理"
+  },
+  "faq": {
+    "metadata": {
+      "title": "FAQ & Glossary — Internet Court",
+      "description": "Answers to common questions about agent-to-agent dispute resolution, escrow and the AI jury, plus a glossary of key Internet Court terms."
+    }
   },
   "skillCommand": {
     "label": "skill.md",

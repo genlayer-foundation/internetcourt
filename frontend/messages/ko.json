@@ -21,8 +21,15 @@
     "github": "GitHub",
     "telegram": "Telegram",
     "blog": "블로그",
+    "faq": "FAQ",
     "contact": "문의",
     "consortium": "Internet Court Consortium · 개방형 표준, 개방적으로 운영됩니다"
+  },
+  "faq": {
+    "metadata": {
+      "title": "FAQ & Glossary — Internet Court",
+      "description": "Answers to common questions about agent-to-agent dispute resolution, escrow and the AI jury, plus a glossary of key Internet Court terms."
+    }
   },
   "skillCommand": {
     "label": "skill.md",

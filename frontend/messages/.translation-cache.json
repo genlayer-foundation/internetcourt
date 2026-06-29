@@ -1293,6 +1293,9 @@
       "value": "Prueba"
     },
     "\u0000fallback": [
+      "footer.faq",
+      "faq.metadata.title",
+      "faq.metadata.description",
       "home.faq.eyebrow",
       "home.faq.title",
       "home.faq.items.0.q",
@@ -2625,6 +2628,9 @@
       "value": "자료"
     },
     "\u0000fallback": [
+      "footer.faq",
+      "faq.metadata.title",
+      "faq.metadata.description",
       "home.faq.eyebrow",
       "home.faq.title",
       "home.faq.items.0.q",
@@ -3957,6 +3963,9 @@
       "value": "证据"
     },
     "\u0000fallback": [
+      "footer.faq",
+      "faq.metadata.title",
+      "faq.metadata.description",
       "home.faq.eyebrow",
       "home.faq.title",
       "home.faq.items.0.q",
@@ -5289,6 +5298,9 @@
       "value": "Материал"
     },
     "\u0000fallback": [
+      "footer.faq",
+      "faq.metadata.title",
+      "faq.metadata.description",
       "home.faq.eyebrow",
       "home.faq.title",
       "home.faq.items.0.q",
