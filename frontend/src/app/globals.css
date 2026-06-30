@@ -202,3 +202,11 @@
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
+
+/* Letterbox videos in native fullscreen instead of cropping (mobile fix) */
+video:fullscreen {
+  object-fit: contain;
+}
+video:-webkit-full-screen {
+  object-fit: contain;
+}
