@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!--
+  Generator for /media/blog/agentic-stack.png
+  Embedded in: frontend/src/content/blog/en/internet-court-agentic-commerce.mdx
+
+  Recreates the homepage AnimatedStack visual: six numbered layer rows with
+  standards on the right and a red "INTERNET COURT" vertical pill connected by
+  red lines to each row.
+
+  Source of truth for the rows: frontend/src/lib/site-content.ts (STACK_ROWS)
+  and frontend/src/data/caniagent/taxonomy.ts. If those change, update the rows
+  below and re-render.
+
+  Render command (macOS system headless Chrome, 2x device scale):
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1200,722 --screenshot="/Users/rasca/Dev/moltcourt2/frontend/public/media/blog/agentic-stack.png" "file:///Users/rasca/Dev/moltcourt2/frontend/tools/blog-images/agentic-stack.html"
+
+  Output: 1200x722 CSS layout rendered at 2x, so the PNG is 2400x1444.
+  The window height (722) was measured to fit the content tightly. If rows
+  change, re-measure the rendered content height and update --window-size.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: #FFFFFF;
+}
+
+.canvas {
+  width: 1200px;
+  background: #FFFFFF;
+  padding: 56px 56px 56px 56px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.layout {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  background: #f3f3f2;
+  border-radius: 12px;
+  padding: 22px 26px;
+}
+
+.badge {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1.5px solid #dc2626;
+  color: #dc2626;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.name {
+  flex: 1 1 auto;
+  color: #1a1817;
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.2px;
+}
+
+.stds {
+  flex: 0 0 auto;
+  color: #4d4944;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  text-align: right;
+  letter-spacing: 0.2px;
+}
+
+/* connector lines container */
+.connectors {
+  position: relative;
+  width: 44px;
+  flex: 0 0 auto;
+}
+
+.pill {
+  flex: 0 0 auto;
+  width: 66px;
+  background: #dc2626;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pill span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+/* connector lines: absolutely positioned red segments linking each row to pill */
+.connector {
+  position: absolute;
+  height: 2px;
+  background: #dc2626;
+  right: 0;
+  width: 44px;
+}
+</style>
+</head>
+<body>
+<div class="canvas" id="canvas">
+  <div class="layout">
+    <div class="rows" id="rows">
+      <div class="row">
+        <div class="badge">01</div>
+        <div class="name">Discovery, identity &amp; reputation</div>
+        <div class="stds">ERC-7857, ERC-8004</div>
+      </div>
+      <div class="row">
+        <div class="badge">02</div>
+        <div class="name">Negotiation</div>
+        <div class="stds">A2A</div>
+      </div>
+      <div class="row">
+        <div class="badge">03</div>
+        <div class="name">Contracts &amp; obligations</div>
+        <div class="stds">ERC-7710, ERC-8183, Arkhai</div>
+      </div>
+      <div class="row">
+        <div class="badge">04</div>
+        <div class="name">Payment &amp; escrow</div>
+        <div class="stds">x402, MPP, APP</div>
+      </div>
+      <div class="row">
+        <div class="badge">05</div>
+        <div class="name">Execution</div>
+        <div class="stds">OpenClaw, Hermes</div>
+      </div>
+      <div class="row">
+        <div class="badge">06</div>
+        <div class="name">Verification &amp; disputes</div>
+        <div class="stds">GenLayer, Kleros, UMA</div>
+      </div>
+    </div>
+    <div class="connectors" id="connectors"></div>
+    <div class="pill"><span>Internet Court</span></div>
+  </div>
+</div>
+
+<script>
+// Draw a connector line centered vertically on each row.
+window.addEventListener('load', function() {
+  var rowsEl = document.getElementById('rows');
+  var conn = document.getElementById('connectors');
+  var rows = rowsEl.querySelectorAll('.row');
+  var connBox = conn.getBoundingClientRect();
+  rows.forEach(function(r) {
+    var rb = r.getBoundingClientRect();
+    var centerY = rb.top + rb.height/2 - connBox.top;
+    var line = document.createElement('div');
+    line.className = 'connector';
+    line.style.top = (centerY - 1) + 'px';
+    conn.appendChild(line);
+  });
+});
+</script>
+</body>
+</html>

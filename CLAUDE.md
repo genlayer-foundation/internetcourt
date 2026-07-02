@@ -92,3 +92,9 @@ Always create and run tests for every contract function before deploying. Run `g
 - docs/USE_CASES.md - Use cases and product narrative
 - PROJECT.md - High-level requirements
 - ARCHITECTURE.md - System design
+
+## Writing Style
+
+Never use em dashes (the long dash character "—", U+2014) anywhere. This applies to articles, marketing copy, blog posts, code comments, commit messages, PR descriptions, and docs. This is a hard rule with no exceptions. Rewrite sentences to use commas, colons, parentheses, or two separate sentences instead.
+
+Avoid en dashes ("–") in prose as well; use them only inside numeric ranges. When editing existing content, replace any em dash you encounter with appropriate punctuation.

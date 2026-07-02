@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!--
+  Generator for /media/blog/founding-members-by-layer.png
+  Embedded in: frontend/src/content/blog/en/internet-court-agentic-commerce.mdx
+
+  Founding members grouped by layer, six rows, each member once. Each member's
+  real logo is pulled from frontend/public/partners/ and rendered as a
+  monochrome silhouette via CSS filter: grayscale(1) brightness(0); opacity: 0.72.
+
+  SIZING RULE (matches the homepage partner grid):
+  Every logo's height is its `gridHeight` from FOUNDING_MEMBERS_GRID in
+  frontend/src/lib/site-content.ts, multiplied by the homepage desktop
+  multiplier (SCALE = 1.5 in frontend/src/components/site/PartnerGrid.tsx),
+  then by a single uniform infographic scale factor of 1.35 applied to every
+  logo (so the image reads crisply at 2x without changing any ratios). The net
+  per-logo multiplier is therefore 1.5 * 1.35 = 2.025, and the RELATIVE heights
+  of logos here equal the ratios of their gridHeight values exactly, just as on
+  the homepage. Heights are set inline (px); width follows via object-fit:
+  contain, so wordmarks stay wider. Do NOT hand-tune individual logos: if a
+  gridHeight changes in site-content.ts, recompute its px height (gridHeight *
+  2.025) and re-render.
+
+  Kleros is NOT in FOUNDING_MEMBERS_GRID (it is a dispute standard, not a
+  founding member). It is assigned a manual gridHeight of 14, equal to UMA's
+  value, so it sits proportionally next to its neighbor. px = 14 * 2.025 = 28.35.
+
+  Logo source path: frontend/public/partners/ (referenced below relative to this
+  file as ../../public/partners/...). The grouping here is the source of truth
+  for this image; if the roster or grouping changes, update the rows below and
+  the article text, then re-render.
+
+  IMPORTANT: headless Chrome will not load file:// image sources unless you pass
+  --allow-file-access-from-files (included in the command below). Alternatively,
+  copy the partners/ folder next to this HTML and change the src paths to
+  partners/... .
+
+  Render command (macOS system headless Chrome, 2x device scale):
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --allow-file-access-from-files --window-size=1280,788 --screenshot="/Users/rasca/Dev/moltcourt2/frontend/public/media/blog/founding-members-by-layer.png" "file:///Users/rasca/Dev/moltcourt2/frontend/tools/blog-images/founding-members-by-layer.html"
+
+  Output: 1280x788 CSS layout rendered at 2x, so the PNG is 2560x1576.
+  The window height (788) was measured to fit the content tightly. If members
+  or their gridHeights change, re-measure the rendered content height and update
+  --window-size.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #FFFFFF; }
+  #stage {
+    width: 1280px;
+    background: #FFFFFF;
+    padding: 40px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .rows { display: flex; flex-direction: column; gap: 16px; }
+  .row {
+    display: flex;
+    align-items: center;
+    background: #f3f3f2;
+    border-radius: 12px;
+    padding: 20px 26px;
+    gap: 24px;
+  }
+  .label {
+    width: 250px;
+    flex: 0 0 250px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .badge {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+  }
+  .label-text {
+    color: #1a1817;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  /* Logos wrap and are vertically centered on a common center line within the
+     row, so varied logo heights still read tidily. */
+  .logos {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 30px 40px;
+    row-gap: 26px;
+  }
+  /* Height is set per-logo inline (gridHeight * 2.025 px); the shared rules
+     below carry the monochrome treatment and let width follow the height. */
+  .logos img {
+    width: auto;
+    max-width: 200px;
+    object-fit: contain;
+    filter: grayscale(1) brightness(0);
+    opacity: 0.72;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="rows">
+
+    <div class="row">
+      <div class="label"><div class="badge">01</div><div class="label-text">Payments</div></div>
+      <div class="logos">
+        <img src="../../public/partners/x402.svg" style="height:32.4px">
+        <img src="../../public/partners/okx.svg" style="height:28.35px">
+        <img src="../../public/partners/antseed.svg" style="height:40.5px">
+        <img src="../../public/partners/metamask.svg" style="height:44.55px">
+        <img src="../../public/partners/privy.svg" style="height:34.222px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">02</div><div class="label-text">Identity &amp; reputation</div></div>
+      <div class="logos">
+        <img src="../../public/partners/humanity-protocol.svg" style="height:44.347px">
+        <img src="../../public/partners/humanode.png" style="height:26.325px">
+        <img src="../../public/partners/0g-labs.svg" style="height:36.45px">
+        <img src="../../public/partners/altlayer.svg" style="height:32.4px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">03</div><div class="label-text">Contracts, escrow &amp; settlement</div></div>
+      <div class="logos">
+        <img src="../../public/partners/arkhai.svg" style="height:43.943px">
+        <img src="../../public/partners/zksync.svg" style="height:38.273px">
+        <img src="../../public/partners/starknet.svg" style="height:32.4px">
+        <img src="../../public/partners/bnb-chain.svg" style="height:31.185px">
+        <img src="../../public/partners/near.svg" style="height:32.4px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">04</div><div class="label-text">Execution &amp; value movement</div></div>
+      <div class="logos">
+        <img src="../../public/partners/heurist.svg" style="height:32.4px">
+        <img src="../../public/partners/io-net.svg" style="height:28.35px">
+        <img src="../../public/partners/chutes.svg" style="height:27.844px">
+        <img src="../../public/partners/applayer.svg" style="height:30.983px">
+        <img src="../../public/partners/chaingpt.svg" style="height:32.4px">
+        <img src="../../public/partners/openserv.svg" style="height:44.55px">
+        <img src="../../public/partners/anoma.png" style="height:34.425px">
+        <img src="../../public/partners/lifi.svg" style="height:44.55px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">05</div><div class="label-text">Analytics &amp; evidence</div></div>
+      <div class="logos">
+        <img src="../../public/partners/nansen.png" style="height:32.4px">
+        <img src="../../public/partners/chainbase.svg" style="height:31.995px">
+        <img src="../../public/partners/collective-memory.png" style="height:44.55px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">06</div><div class="label-text">Verification &amp; disputes</div></div>
+      <div class="logos">
+        <img src="../../public/partners/genlayer.svg" style="height:48.6px">
+        <!-- Kleros is not in FOUNDING_MEMBERS_GRID; manual gridHeight 14 (= UMA), px = 14 * 2.025 -->
+        <img src="../../public/partners/kleros.svg" style="height:28.35px">
+        <img src="../../public/partners/uma.svg" style="height:28.35px">
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
