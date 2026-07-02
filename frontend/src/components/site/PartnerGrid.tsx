@@ -11,9 +11,9 @@ export type PartnerGridProps = {
  * ~33–36px on desktop, which sits comfortably in the fixed-height cells while
  * preserving the relative sizing of the Figma "Frame 68" layout exactly.
  */
-const SCALE = 1.5;
+const SCALE = 1.75;
 /** Slightly smaller on phones, where the 3-column grid is narrower. */
-const SCALE_MOBILE = 1.2;
+const SCALE_MOBILE = 1.3;
 
 // Uniform monochrome at rest (logos arrive as mixed colored/white/PNG assets,
 // so we flatten them all to dark ink), lifting to full opacity on hover.
@@ -21,17 +21,19 @@ const LOGO_FILTER =
   "[filter:grayscale(1)_brightness(0)] opacity-60 transition-opacity duration-300 group-hover:opacity-100";
 
 /**
- * Static founding-members showcase rendered as the Figma "Frame 68" grid:
- * 6 columns on desktop (3 on mobile), source order preserved. Every cell is a
- * fixed-height flex box; each logo's height is the Figma cell-height × SCALE,
- * applied inline (px) so the relative sizing matches Figma precisely. Logos use
- * the shared monochrome treatment that lifts to full opacity on hover.
+ * Static founding-members showcase: 6 columns on desktop (3 on mobile), source
+ * order preserved. Uses flex-wrap with justify-center so any trailing partial
+ * row sits centered, while the full rows above fill the width. Every cell is a
+ * fixed-height flex box sized to hold 6 (or 3) logos per row; each logo's height
+ * is the cell-height unit x SCALE, applied inline (px) so the relative sizing is
+ * preserved. Logos use the shared monochrome treatment that lifts to full
+ * opacity on hover.
  */
 export function PartnerGrid({ className }: PartnerGridProps) {
   return (
     <ul
       className={cn(
-        "mx-auto grid max-w-5xl grid-cols-3 gap-x-6 gap-y-10 md:grid-cols-6 md:gap-x-10 md:gap-y-12",
+        "mx-auto flex max-w-5xl flex-wrap justify-center gap-x-6 gap-y-10 md:gap-y-12",
         className,
       )}
     >
@@ -39,7 +41,7 @@ export function PartnerGrid({ className }: PartnerGridProps) {
         <li
           key={partner.name}
           title={partner.name}
-          className="group flex h-12 items-center justify-center md:h-14"
+          className="group flex h-12 basis-[calc(33.333%-1rem)] items-center justify-center md:h-16 md:basis-[calc(16.666%-1.25rem)]"
         >
           <GridLogo partner={partner} />
         </li>

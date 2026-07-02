@@ -88,6 +88,7 @@ export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
   { name: "io.net", src: "/partners/io-net.svg" },
   { name: "NEAR", src: "/partners/near.svg" },
   { name: "Starknet", src: "/partners/starknet.svg" },
+  { name: "Kleros", src: "/partners/kleros.svg" },
 ];
 
 /** Combined list (all founding members). */
@@ -102,45 +103,45 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
 );
 
 /**
- * Founding members laid out as the Figma "Frame 68" 6×4 grid. Order is exactly
- * the Figma reading order (left→right, top→bottom). `gridHeight` is the logo's
+ * Founding members laid out as a 10-column grid (10 / 10 / 8) in reading order
+ * (left to right, top to bottom). `gridHeight` is the logo's
  * height within a 40px-tall Figma cell — PartnerGrid multiplies it by a single
  * SCALE factor so the relative sizing is preserved. Each entry reuses the
  * existing Partner object (same src/iconSrc) with its grid height attached.
  */
 export const FOUNDING_MEMBERS_GRID: Partner[] = (
   [
-    // Row 1
+    // Row 1 (10)
     ["GenLayer", 24],
     ["MetaMask", 22],
     ["OKX", 14],
-    ["BNB Chain", 15.4],
+    ["NEAR", 16],
+    ["Starknet", 16],
     ["x402", 16],
-    ["Nansen", 16],
-    // Row 2
     ["0G Labs", 18],
     ["ZKsync", 18.9],
+    ["Nansen", 16],
+    ["Kleros", 16],
+    // Row 2 (10)
     ["Privy", 16.9],
     ["AntSeed", 20],
     ["Collective Memory", 22],
     ["UMA", 14],
-    // Row 3
     ["Arkhai", 21.7],
+    ["AltLayer", 16],
+    ["Anoma", 17],
+    ["AppLayer", 15.3],
+    ["BNB Chain", 15.4],
+    ["LI.FI", 22],
+    // Row 3 (8, centered)
+    ["Chainbase", 15.8],
+    ["io.net", 14],
     ["Heurist", 16],
     ["Chutes", 13.75],
-    ["AltLayer", 16],
     ["ChainGPT", 16],
-    ["Anoma", 17],
-    // Row 4
-    ["AppLayer", 15.3],
-    ["Chainbase", 15.8],
-    ["LI.FI", 22],
     ["OpenServ", 22],
     ["Humanode", 13],
     ["Humanity Protocol", 21.9],
-    ["io.net", 14],
-    ["NEAR", 16],
-    ["Starknet", 16],
   ] as const
 ).map(([name, gridHeight]) => ({ ...PARTNERS_BY_NAME[name], gridHeight }));
 
