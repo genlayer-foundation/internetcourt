@@ -1,7 +1,7 @@
 ---
 title: "Internet Court: From Fragmented Protocols to End-to-End Agentic Commerce"
 date: "2026-06-23"
-excerpt: "Agentic commerce is beginning to look less like a metaphor and more like a reality. The pieces already exist — what's missing is the path that connects them."
+excerpt: "Agentic commerce is beginning to look less like a metaphor and more like a reality. The pieces already exist, and what is missing is the path that connects them."
 tag: "Dispatch"
 ---
 
@@ -30,9 +30,18 @@ A complete agentic transaction has to move across six connected layers:
 5. **Execution.** The promised work, service, API call, delivery, or action has to happen.
 6. **Verification and disputes.** The result needs to be verified, contested commitments need adjudication, and a judgment needs consequences attached to it.
 
+![The agentic-commerce stack: six layers, with Internet Court connecting verification and disputes](/media/blog/agentic-stack.png)
+
 Trust begins with discovery, identity, and reputation, but it does not have to rest on blind faith in a counterparty. With adjudication in place, much of that trust shifts onto the system itself: the agreement, the evidence, the process, and the consequences tied to a judgment. Agents do not need to trust each other perfectly if they can trust the path that handles performance and disagreement.
 
-A handful of open standards are paving the path to agentic commerce, and each is engineered for a single need: **x402** for payments, **ERC-8004** for agent identity and reputation, **A2A** for agent-to-agent negotiation. The substance, though, is in the ecosystem now building across every layer. On **payments**, x402 rails carry HTTP-native settlement, with OKX's unified agent-payment dispatch routing across x402, MPP and AP2, and MetaMask's ERC-7710/7715 delegated permissions granting agents bounded, revocable spending authority that never surrenders custody. The **identity and reputation** layer — the work ERC-8004 frames — is being built out by our members: 0G Labs (ERC-7857 intelligent NFTs for verifiable agent ownership), AltLayer (the 8004scan registry and explorer), BNB Chain (on-chain registration and storage), Starknet (ERC-8004 on a ZK-rollup), OpenServ (multi-agent identity), and Humanity Protocol and Humanode for proof-of-human. **Negotiation and interoperability** — the surface A2A describes — runs on Anoma's intent matching and OpenServ orchestration, while **escrow and obligations** are held by Arkhai's Alkahest conditional escrow and bounded by MetaMask delegation. **Execution and evidence** draw on 0G Labs, Heurist, io.net, Chutes and AntSeed for inference and compute, LI.FI for cross-chain movement, and Nansen, Chainbase and Collective Memory for analytics and time-stamped records. One layer is conspicuously absent from every standard: **verification and dispute.** Each leaves adjudication out by design. That is precisely where **Internet Court** plugs in — GenLayer's AI-validator jury for qualitative, natural-language judgment, with Intelligent Oracle for web-evidence factual questions and UMA's optimistic oracle as complementary verification tools, and connectors that turn a verdict into on-chain enforcement through ERC-7710 revocation.
+A handful of open standards are paving the path to agentic commerce, and each is engineered for a single need: **x402** for payments, **ERC-8004** for agent identity and reputation, **A2A** for agent-to-agent negotiation. The substance, though, is in the ecosystem now building across every layer:
+
+- **Payments.** x402 rails carry HTTP-native settlement, with **OKX**'s unified agent-payment dispatch routing across x402, MPP and AP2. **MetaMask** and **Privy** hold the wallets, and MetaMask's ERC-7710/7715 delegated permissions grant agents bounded, revocable spending authority without surrendering custody.
+- **Identity and reputation.** The work **ERC-8004** frames is being built out by our members: **0G Labs** (ERC-7857 intelligent NFTs for verifiable agent ownership), **AltLayer** (the 8004scan registry and explorer), and **Humanity Protocol** and **Humanode** for proof-of-human.
+- **Contracts, escrow and settlement.** **Arkhai**'s Alkahest conditional escrow, settling on **ZKsync**, **Starknet**, **BNB Chain**, **NEAR** and OKX's **X Layer**.
+- **Execution and value movement.** **AntSeed**, **0G Labs**, **Heurist**, **io.net** and **Chutes** for inference and compute, **AppLayer**, **ChainGPT**, **OpenServ** and **Anoma** for orchestration and interoperability, and **LI.FI** for cross-chain movement.
+- **Analytics and evidence.** **Nansen**, **Chainbase** and **Collective Memory** for on-chain intelligence and time-stamped records.
+- **Verification and dispute.** This layer is completely absent from every standard. Each one leaves adjudication out by design. That is precisely where **Internet Court** plugs in: **GenLayer**'s AI-validator jury for qualitative, natural-language judgment, **Kleros** for decentralized, juror-based arbitration, and **UMA**'s optimistic oracle for factual assertions.
 
 That is not a flaw in those standards. It is the shape of a stack being built in public, where each layer focuses on its own job and passes the rest down the line. A payment layer does not want to define every obligation. An identity registry does not want to decide every outcome. An interoperability protocol does not want to become a court. But the layers still depend on each other: a verifier cannot release funds unless it is connected to payment and contract state, and an adjudication decision means nothing unless it can trigger consequences.
 
@@ -95,7 +104,18 @@ Internet Court turns the path into a shared pattern:
 
 The strongest signal in this moment is not only that one project has an idea. It is that many layers of the agentic-commerce stack are beginning to recognize the same need.
 
-One conviction binds the founding ecosystem: **no layer reaches a real economy on its own.** So the partners came together, each owning a layer of the stack. **Payments** — x402 (Coinbase, x402 Foundation), OKX, AntSeed. **Wallets** — MetaMask, Privy. **Identity and reputation** — Humanity Protocol, Humanode, 0G Labs, AltLayer. **Contracts, escrow and settlement** — ZKsync, Starknet, BNB Chain, NEAR, Arkhai. **Execution and value movement** — Heurist, io.net, Chutes, AppLayer, ChainGPT, OpenServ, Anoma, LI.FI. **Analytics and evidence** — Nansen, Chainbase, Collective Memory. **Verification and disputes** — GenLayer's AI-validator jury, with UMA's optimistic oracle as a complementary primitive. The full roster — 25 founding members plus Starknet and NEAR — shares one vision: every solution working as one toward end-to-end agentic commerce.
+One conviction binds the founding ecosystem: **no layer reaches a real economy on its own.** So the partners came together, each owning a layer of the stack.
+
+- **Payments.** **x402 Foundation**, **OKX**, **AntSeed**, **MetaMask**, **Privy**.
+- **Identity and reputation.** **Humanity Protocol**, **Humanode**, **0G Labs**, **AltLayer**.
+- **Contracts, escrow and settlement.** **ZKsync**, **Starknet**, **BNB Chain**, **NEAR**, **X Layer**, **Arkhai**.
+- **Execution and value movement.** **Heurist**, **io.net**, **Chutes**, **AppLayer**, **ChainGPT**, **OpenServ**, **Anoma**, **LI.FI**.
+- **Analytics and evidence.** **Nansen**, **Chainbase**, **Collective Memory**.
+- **Verification and disputes.** **GenLayer**, **Kleros**, **UMA**.
+
+All 28 founding members share one vision: every solution working as one toward end-to-end agentic commerce.
+
+![Internet Court's founding members, grouped by the layer each one serves](/media/blog/founding-members-by-layer.png)
 
 > The future of agentic commerce will not be owned. It will be shared.
 
@@ -121,25 +141,13 @@ The key is that disagreement becomes part of the protocol surface instead of an 
 
 ### What Internet Court makes possible
 
-With Internet Court, an agentic-commerce transaction can be designed from the beginning to survive disagreement.
+A payment says: money moved. A commercial system says something larger: money moved because a commitment was made, performed, verified, and accepted, or because a dispute was resolved and a remedy followed. That gap, between value changing hands and a commitment being honored, is what Internet Court is built to close.
 
-Before work begins, the agents can define the obligations, evidence requirements, payment conditions, escrow rules, and dispute forum. During execution, the system can preserve messages, files, logs, receipts, timestamps, and performance evidence. At delivery, verification can compare the outcome against the agreement. If the result is accepted, payment is released and reputation is updated. If the result is disputed, the case can be routed to the right adjudication mechanism, with the relevant evidence already attached.
+It is the connection that lets agents operate at that level. It lets builders add new skills, connectors, tests, and dispute scenarios without forcing every layer into a single monolith, and it gives agents a practical way to do business with other agents when the world is ambiguous, evidence is incomplete, and money depends on interpretation.
 
-That is the difference between a payment and a commercial system.
+If the opening era of this economy was about teaching agents to act, the one now arriving is about teaching them to be accountable for what they do. Acting is the easy half. An agent that can move money, sign terms, and ship work in seconds is already common. What separates a novelty from an economy is whether that same agent can stand behind its commitments after the fact, in front of a counterparty it will never meet, under rules it agreed to in advance. That capacity, once rare, is about to become a baseline expectation. The agents that carry it will be the ones other agents choose to do business with, and the ones that do not will quietly stop getting hired.
 
-A payment says: money moved.
-
-A commercial system says: money moved because a commitment was made, performed, verified, and accepted, or because a dispute was resolved and a remedy followed.
-
-Internet Court is the connection that lets agents operate at that level.
-
-It lets builders add new skills, connectors, tests, and dispute scenarios without forcing every layer into a single monolith. And it gives agents a practical way to do business with other agents when the world is ambiguous, evidence is incomplete, and money depends on interpretation.
-
-The first era of agentic commerce is about making agents capable of acting.
-
-> In the agentic economy, trust stops being a leap of faith and becomes infrastructure.
-
-Internet Court is the open coordination layer for that era: a shared path for discovery, negotiation, contracts, payment, escrow, execution, verification, adjudication, and disputes.
+Internet Court is the layer that holds agents to their word.
 
 Not just for the moment when everything goes right.
 

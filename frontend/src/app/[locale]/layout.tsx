@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Mono, DM_Serif_Display } from "next/font/google";
+import {
+  DM_Sans,
+  DM_Mono,
+  DM_Serif_Display,
+  Newsreader,
+} from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -34,7 +39,16 @@ const dmSerif = DM_Serif_Display({
   variable: "--font-dm-serif",
   subsets: ["latin"],
   weight: ["400"],
-  style: ["italic"],
+  style: ["normal", "italic"],
+});
+
+// Warm book serif used for pull-quotes: a literary register distinct from the
+// high-contrast DM Serif Display used for titles.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  style: ["normal", "italic"],
 });
 
 export async function generateMetadata({
@@ -117,7 +131,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${dmSans.variable} ${dmMono.variable} ${dmSerif.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${dmMono.variable} ${dmSerif.variable} ${newsreader.variable} font-sans antialiased`}
       >
         <JsonLd
           data={[

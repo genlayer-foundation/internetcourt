@@ -52,17 +52,17 @@ export const mdxComponents = {
   Video,
   a: Anchor,
   h1: ({ children }: { children?: ReactNode }) => (
-    <h1 className="font-heading text-3xl md:text-4xl leading-tight mt-12 mb-5">
+    <h1 className="font-display text-[2.1rem] md:text-5xl leading-[1.08] tracking-[-0.02em] text-[#1a1817] mt-12 mb-5">
       {children}
     </h1>
   ),
   h2: ({ children }: { children?: ReactNode }) => (
-    <h2 className="font-heading text-2xl md:text-3xl leading-tight mt-10 mb-4">
+    <h2 className="font-display text-3xl md:text-[2.5rem] leading-[1.12] tracking-[-0.015em] text-[#1a1817] mt-14 mb-4">
       {children}
     </h2>
   ),
   h3: ({ children }: { children?: ReactNode }) => (
-    <h3 className="font-heading text-xl md:text-2xl leading-tight mt-8 mb-3">
+    <h3 className="relative font-display text-2xl md:text-[1.7rem] leading-[1.2] tracking-[-0.01em] text-[#1a1817] mt-11 mb-3 pt-4 before:absolute before:left-0 before:top-0 before:h-[3px] before:w-9 before:rounded-full before:bg-[#dc2626] before:content-['']">
       {children}
     </h3>
   ),
@@ -85,7 +85,7 @@ export const mdxComponents = {
     <li className="pl-1">{children}</li>
   ),
   blockquote: ({ children }: { children?: ReactNode }) => (
-    <blockquote className="my-7 border-l-2 border-[#dc2626] pl-5 italic text-[#4d4944]">
+    <blockquote className="relative my-10 border-l-2 border-[#dc2626] pl-7 pr-2 py-1 before:absolute before:-left-[3px] before:-top-4 before:font-quote before:text-[5rem] before:leading-none before:text-[#dc2626]/25 before:content-['\201C'] before:pointer-events-none [&>p]:my-0 [&>p]:font-quote [&>p]:italic [&>p]:font-light [&>p]:text-[1.4rem] [&>p]:md:text-[1.6rem] [&>p]:leading-[1.45] [&>p]:tracking-[0.005em] [&>p]:text-[#1a1817] [&>p+p]:mt-4">
       {children}
     </blockquote>
   ),
