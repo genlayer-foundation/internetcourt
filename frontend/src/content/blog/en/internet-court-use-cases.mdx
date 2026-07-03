@@ -1,0 +1,54 @@
+---
+title: "Internet Court at Work: Three Use Cases Running Right Now"
+date: "2026-07-03"
+excerpt: "Three things Internet Court is being used for right now: revoking an agent that drifts off-mandate, enforcing a service agreement worth three dollars, and ruling on which records hold up as evidence."
+tag: "Dispatch"
+---
+
+Autonomous agents have started transacting with each other: discovering services, negotiating, and paying per call without a human in the loop. Each hop is a tiny contract worth fractions of a cent, and when one goes wrong there is no one to call. The cost of any human dispute process dwarfs the amount at stake.
+
+> Handling a contested deal is not a minor edge case. It is the difference between a payment network and an economy.
+
+Internet Court is the trust layer for that economy: payment, escrow, and dispute resolution in a single skill two agents can invoke in natural language. The crucial part is when the court is invoked. Two agents, or the people behind them, write the dispute clause into the contract at the moment they form it. On the happy path nothing happens: the deal completes and no dispute is ever raised. It is not a court you run to. It is a clause you sign with, and it sits dormant until needed.
+
+Here are three applications we are working on right now.
+
+### Guardrails on an agent you don't fully trust
+
+You are willing to fund an agent, but you don't trust it with your money. So you don't hand it a wallet. You hand it a **MetaMask** Smart Wallet (ERC-7710) with hard limits baked in: this merchant only, this budget, this expiry. Those are deterministic guardrails; the agent simply cannot spend outside them.
+
+On top of that sits a subjective check. An independent reviewer, run by **GenLayer**, reads the signed evidence from each purchase and judges it against a plain-language mandate ("sports news only"). If the agent drifts and buys something off-mandate, the reviewer revokes its access on-chain, and the next payment attempt is refused before any funds move. You still own the account and the remaining funds. Only the agent's authority dies.
+
+This already runs end to end today.
+
+### A self-executing SLA, worth $3
+
+An agent buys AI inference from a provider, for example over **AntSeed**, the consortium's peer-to-peer inference marketplace, settling per token in USDC. The provider has a bad hour: latency spikes, a model returns truncated output, for a minute it is down.
+
+In the human world this is what a Service Level Agreement is for. "99.9% uptime," "service credits" you claim by emailing a rep and waiting days. That apparatus only makes sense when the contract is big enough to be worth a person's afternoon. This dispute is worth $3. No agent writes a demand letter over $3, and no provider staffs a desk for it. Traditionally the SLA is fiction, and the small customer just absorbs every outage.
+
+Internet Court makes it enforceable. The two sides agreed the terms up front in plain language: 99.5% successful responses this window, p95 latency under 800ms. Payment sits in escrow. At settlement the contract, run by **GenLayer**, reads the period's signed logs and computes the payout itself. Hit the target, full release. Miss it, and the payment is docked proportionally with the rest released instantly, no ticket. If the two sides' logs genuinely disagree, that is the real dispute, and a panel of independent AI validators weighs both signed records and rules in seconds, for a fee smaller than the disagreement.
+
+The point is not a faster SLA. It is that an SLA worth three dollars becomes enforceable at all. A tier of commerce that ran on the honor system, because justice was too expensive to deploy, suddenly has a floor under it.
+
+> Machine-speed money needs machine-speed adjudication.
+
+### Adjudicating a disputed memory
+
+**Collective Memory**, another consortium partner, is building a community-staked memory layer: geo- and time-stamped, first-person records of real-world events, where people stake tokens on the memories they believe matter.
+
+Imagine a journalist searching that layer for images documenting the earthquakes in Venezuela, sifting through first-person memories, each timestamped and tied to a place, to find evidence of what happened. The trouble is that the most important memories are also the most contested: competing records, competing stakes, competing claims about the same place on the same day, some authentic, some not. A memory layer that cannot sort that is just a comment section with a wallet, and a journalist cannot cite it.
+
+That is the dispute Internet Court is built to settle. A panel of independent AI validators, run by **GenLayer**, weighs the conflicting records and produces what no single platform or human moderator credibly can: a neutral, auditable ruling on which memories hold up as evidence given the community's stated standard, with the reasoning and the dissent recorded on-chain. The journalist gets a citation that survives scrutiny.
+
+> Memory becomes evidence. Evidence gets a court that runs at internet speed.
+
+### The through-line
+
+For small amounts, traditional dispute process is not slow. It is absent. Email, evidence, and human review do not pay for themselves below a certain dollar figure, so below it there is simply no recourse. And it is not only the amounts: agents transact at machine speed, thousands of times a second, far faster than any human-paced process could keep up with even if it were worth running.
+
+Internet Court's bet is that a whole stratum of the economy, denominated in cents and transacted by software, has been running without a justice system because we never had one cheap and fast enough.
+
+It will not replace the courts that handle disputes worth fighting over.
+
+It shows up for the ones that aren't.
