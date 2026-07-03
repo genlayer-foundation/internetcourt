@@ -52,17 +52,29 @@ export const mdxComponents = {
   Video,
   a: Anchor,
   h1: ({ children }: { children?: ReactNode }) => (
-    <h1 className="font-display text-[2.1rem] md:text-5xl leading-[1.08] tracking-[-0.02em] text-[#1a1817] mt-12 mb-5">
+    <h1 className="relative mt-14 mb-5 pl-6 font-heading text-[2.1rem] leading-[1.1] text-[#1a1817] md:text-[2.5rem]">
+      <span
+        aria-hidden
+        className="absolute left-0 top-1 h-[calc(100%-0.4rem)] w-[3px] bg-[#dc2626]"
+      />
       {children}
     </h1>
   ),
   h2: ({ children }: { children?: ReactNode }) => (
-    <h2 className="font-display text-3xl md:text-[2.5rem] leading-[1.12] tracking-[-0.015em] text-[#1a1817] mt-14 mb-4">
+    <h2 className="relative mt-14 mb-4 pl-6 font-heading text-[1.75rem] leading-[1.12] text-[#1a1817] md:text-[2rem]">
+      <span
+        aria-hidden
+        className="absolute left-0 top-1 h-[calc(100%-0.4rem)] w-[3px] bg-[#dc2626]"
+      />
       {children}
     </h2>
   ),
   h3: ({ children }: { children?: ReactNode }) => (
-    <h3 className="relative font-display text-2xl md:text-[1.7rem] leading-[1.2] tracking-[-0.01em] text-[#1a1817] mt-11 mb-3 pt-4 before:absolute before:left-0 before:top-0 before:h-[3px] before:w-9 before:rounded-full before:bg-[#dc2626] before:content-['']">
+    <h3 className="relative mt-14 mb-4 pl-6 font-heading text-[1.45rem] leading-[1.18] text-[#1a1817] md:text-[1.65rem]">
+      <span
+        aria-hidden
+        className="absolute left-0 top-1 h-[calc(100%-0.4rem)] w-[3px] bg-[#dc2626]"
+      />
       {children}
     </h3>
   ),
@@ -85,7 +97,13 @@ export const mdxComponents = {
     <li className="pl-1">{children}</li>
   ),
   blockquote: ({ children }: { children?: ReactNode }) => (
-    <blockquote className="relative my-10 border-l-2 border-[#dc2626] pl-7 pr-2 py-1 before:absolute before:-left-[3px] before:-top-4 before:font-quote before:text-[5rem] before:leading-none before:text-[#dc2626]/25 before:content-['\201C'] before:pointer-events-none [&>p]:my-0 [&>p]:font-quote [&>p]:italic [&>p]:font-light [&>p]:text-[1.4rem] [&>p]:md:text-[1.6rem] [&>p]:leading-[1.45] [&>p]:tracking-[0.005em] [&>p]:text-[#1a1817] [&>p+p]:mt-4">
+    <blockquote className="relative my-10 rounded-lg bg-black/[0.035] py-5 pr-6 pl-[3.9rem] md:pl-[4.2rem] [&>p]:my-0 [&>p]:[font-family:var(--font-dm-serif),Georgia,serif] [&>p]:italic [&>p]:text-[1.3rem] [&>p]:md:text-[1.45rem] [&>p]:leading-[1.35] [&>p]:text-[#1a1817] [&>p+p]:mt-4">
+      <span
+        aria-hidden
+        className="absolute left-4 top-[0.85rem] [font-family:var(--font-dm-serif),Georgia,serif] text-[3.2rem] leading-none text-[#dc2626] md:left-5 md:text-[3.5rem]"
+      >
+        &ldquo;
+      </span>
       {children}
     </blockquote>
   ),

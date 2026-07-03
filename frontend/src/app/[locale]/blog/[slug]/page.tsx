@@ -6,7 +6,6 @@ import remarkGfm from "remark-gfm";
 import { Link } from "@/i18n/routing";
 import { getPostSlugs, getPostBySlug, formatDate } from "@/lib/blog";
 import { mdxComponents } from "@/components/blog/mdx-components";
-import { TagBadge } from "@/components/blog/TagBadge";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildAlternates, localizedUrl } from "@/lib/i18n-metadata";
 import { articleSchema, breadcrumbListSchema } from "@/lib/structured-data";
@@ -66,7 +65,7 @@ export default async function BlogPostPage({
   const t = await getTranslations({ locale, namespace: "blog" });
 
   return (
-    <article className="mx-auto max-w-3xl px-5 py-16 md:px-4 md:py-24">
+    <article className="pb-16 md:pb-24">
       <JsonLd
         data={[
           articleSchema(post, locale),
@@ -80,31 +79,47 @@ export default async function BlogPostPage({
           ),
         ]}
       />
-      <Link
-        href="/blog"
-        className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground hover:text-[#dc2626] transition-colors"
-      >
-        {t("post.backToBlog")}
-      </Link>
 
-      <header className="mt-8 mb-10 flex flex-col gap-4 border-b border-border pb-10">
-        <div className="flex items-center gap-3">
-          {post.tag && <TagBadge tag={post.tag} label={t(`tags.${post.tag}`)} />}
-          <time className="font-mono text-xs text-muted-foreground">
-            {formatDate(post.date, locale)}
-          </time>
+      <header className="bg-[#f7f7f7]">
+        <div className="mx-auto max-w-3xl px-5 pt-12 pb-10 md:px-4 md:pt-16 md:pb-12">
+          <Link
+            href="/blog"
+            className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground hover:text-[#dc2626] transition-colors"
+          >
+            {t("post.backToBlog")}
+          </Link>
+
+          <div className="relative mt-8 pl-6">
+            <span
+              aria-hidden
+              className="absolute left-0 top-1 h-[calc(100%-0.5rem)] w-[3px] bg-[#dc2626]"
+            />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.16em]">
+              {post.tag && (
+                <span className="text-[#dc2626]">{t(`tags.${post.tag}`)}</span>
+              )}
+              {post.tag && (
+                <span className="text-border" aria-hidden>
+                  &middot;
+                </span>
+              )}
+              <time className="text-muted-foreground">
+                {formatDate(post.date, locale)}
+              </time>
+            </div>
+            <h1 className="mt-3 font-heading text-[2.5rem] leading-[1.1] text-[#1a1817] md:text-[3.2rem]">
+              {post.title}
+            </h1>
+            {post.excerpt && (
+              <p className="mt-4 max-w-prose text-lg leading-relaxed text-[#4d4944]">
+                {post.excerpt}
+              </p>
+            )}
+          </div>
         </div>
-        <h1 className="font-heading text-4xl leading-[1.1] md:text-5xl">
-          {post.title}
-        </h1>
-        {post.excerpt && (
-          <p className="text-lg leading-relaxed text-muted-foreground">
-            {post.excerpt}
-          </p>
-        )}
       </header>
 
-      <div className="prose-none">
+      <div className="prose-none mx-auto max-w-3xl px-5 pt-4 md:px-4 md:pt-6">
         <MDXRemote
           source={post.content}
           components={mdxComponents}
