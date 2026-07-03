@@ -41,6 +41,14 @@ export type Partner = {
   /** Icon + HTML text composition, for logos whose wordmark asset is unusable. */
   iconSrc?: string;
   /**
+   * True for white / light-on-transparent marks. These are invisible on the
+   * light logo backgrounds, so they get flattened to dark ink (`brightness(0)`)
+   * instead of the tonal `grayscale(1)` used for colored/dark marks. Keeping the
+   * two treatments separate stops `brightness(0)` from crushing solid-fill logos
+   * (e.g. Starknet, Anoma) into featureless black blobs.
+   */
+  white?: boolean;
+  /**
    * Per-logo height in the static grid, expressed in Figma's 40px-cell units
    * (preserves the relative sizing of "Frame 68"). Scaled by a global factor
    * in PartnerGrid; absent for marquee-only usage.
@@ -55,7 +63,7 @@ export type Partner = {
 export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
   { name: "GenLayer", src: "/partners/genlayer.svg" },
   { name: "MetaMask", src: "/partners/metamask.svg" },
-  { name: "x402", src: "/partners/x402.svg" },
+  { name: "x402", src: "/partners/x402.svg", white: true },
   { name: "ZKsync", src: "/partners/zksync.svg" },
   { name: "OKX", src: "/partners/okx.svg" },
   { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
@@ -72,19 +80,19 @@ export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
   { name: "AltLayer", src: "/partners/altlayer.svg" },
   { name: "ChainGPT", src: "/partners/chaingpt.svg" },
   { name: "Anoma", src: "/partners/anoma.png" },
-  { name: "AppLayer", src: "/partners/applayer.svg" },
+  { name: "AppLayer", src: "/partners/applayer.svg", white: true },
   { name: "Chainbase", src: "/partners/chainbase.svg" },
-  { name: "LI.FI", src: "/partners/lifi.svg" },
+  { name: "LI.FI", src: "/partners/lifi.svg", white: true },
   { name: "OpenServ", src: "/partners/openserv.svg" },
   { name: "UMA", src: "/partners/uma.svg" },
-  { name: "Humanode", src: "/partners/humanode.png" },
+  { name: "Humanode", src: "/partners/humanode.png", white: true },
   { name: "Privy", src: "/partners/privy.svg" },
-  { name: "AIVM", src: "/partners/aivm.svg" },
+  { name: "AIVM", src: "/partners/aivm.svg", white: true },
   { name: "Chutes", src: "/partners/chutes.svg" },
   { name: "AntSeed", src: "/partners/antseed.svg" },
   { name: "Heurist", src: "/partners/heurist.svg" },
   { name: "Arkhai", src: "/partners/arkhai.svg" },
-  { name: "Collective Memory", src: "/partners/collective-memory.png" },
+  { name: "Collective Memory", src: "/partners/collective-memory.png", white: true },
   { name: "io.net", src: "/partners/io-net.svg" },
   { name: "NEAR", src: "/partners/near.svg" },
   { name: "Starknet", src: "/partners/starknet.svg" },

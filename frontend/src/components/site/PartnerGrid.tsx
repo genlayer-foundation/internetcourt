@@ -15,10 +15,19 @@ const SCALE = 1.75;
 /** Slightly smaller on phones, where the 3-column grid is narrower. */
 const SCALE_MOBILE = 1.3;
 
-// Uniform monochrome at rest (logos arrive as mixed colored/white/PNG assets,
-// so we flatten them all to dark ink), lifting to full opacity on hover.
-const LOGO_FILTER =
-  "[filter:grayscale(1)_brightness(0)] opacity-60 transition-opacity duration-300 group-hover:opacity-100";
+// Monochrome at rest, lifting to full opacity on hover. Two treatments,
+// matching the buró reference app: colored/dark marks get a tonal `grayscale(1)`
+// (preserves internal luminance detail, so solid-fill logos like Starknet and
+// Anoma stay recognizable), while white/light-on-transparent marks (flagged
+// `partner.white`) get `brightness(0)` so they read as dark ink on the light
+// background instead of vanishing. `brightness(0)` is NOT applied to colored
+// logos, which is what used to crush them into featureless black blobs.
+const LOGO_MOTION =
+  "opacity-60 transition-opacity duration-300 group-hover:opacity-100";
+const logoFilter = (white?: boolean) =>
+  white
+    ? `[filter:brightness(0)] ${LOGO_MOTION}`
+    : `[filter:grayscale(1)] ${LOGO_MOTION}`;
 
 /**
  * Static founding-members showcase: 6 columns on desktop (3 on mobile), source
@@ -67,7 +76,7 @@ function GridLogo({ partner }: { partner: Partner }) {
         style={style}
         className={cn(
           "h-[var(--logo-h)] w-auto max-w-full object-contain md:h-[var(--logo-h-md)]",
-          LOGO_FILTER,
+          logoFilter(partner.white),
         )}
       />
     );
@@ -81,7 +90,7 @@ function GridLogo({ partner }: { partner: Partner }) {
           aria-hidden="true"
           className={cn(
             "h-[var(--logo-h)] w-auto object-contain md:h-[var(--logo-h-md)]",
-            LOGO_FILTER,
+            logoFilter(partner.white),
           )}
         />
       )}

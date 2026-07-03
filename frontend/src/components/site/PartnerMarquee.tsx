@@ -34,11 +34,17 @@ const SPEED_PX_PER_SECOND = 45;
 const GRID_SCALE = 1.5;
 const GRID_SCALE_MOBILE = 1.2;
 
-// Identical monochrome treatment to PartnerGrid (LOGO_FILTER): flatten every
-// logo — mixed colored/white/PNG assets — to a single flat dark ink at 60%
-// opacity, lifting to full opacity on hover (matching the grid's group-hover).
-const LOGO_FILTER =
-  "[filter:grayscale(1)_brightness(0)] opacity-60 transition-opacity duration-300 group-hover:opacity-100";
+// Identical monochrome treatment to PartnerGrid: colored/dark marks get a tonal
+// `grayscale(1)` (preserves internal detail so solid-fill logos like Starknet
+// and Anoma stay recognizable), while white/light-on-transparent marks (flagged
+// `partner.white`) get `brightness(0)` so they read as dark ink on the light
+// background. Both sit at 60% opacity, lifting to full opacity on hover.
+const LOGO_MOTION =
+  "opacity-60 transition-opacity duration-300 group-hover:opacity-100";
+const logoFilter = (white?: boolean) =>
+  white
+    ? `[filter:brightness(0)] ${LOGO_MOTION}`
+    : `[filter:grayscale(1)] ${LOGO_MOTION}`;
 
 const VARIANTS = {
   primary: {
@@ -150,9 +156,10 @@ type PartnerLogoProps = {
 };
 
 /**
- * Single partner logo, rendered with the identical uniform monochrome treatment
- * as the static grid (LOGO_FILTER: grayscale + brightness(0) flat dark ink at
- * 60% opacity, lifting to full opacity on hover). No blur. Height matches the
+ * Single partner logo, rendered with the identical monochrome treatment as the
+ * static grid (logoFilter: tonal grayscale for colored marks, brightness(0) ink
+ * for white marks, at 60% opacity, lifting to full opacity on hover). No blur.
+ * Height matches the
  * static grid (gridHeight × SCALE) unless an explicit
  * `imgClassName`/`textClassName` override is supplied.
  */
@@ -174,7 +181,7 @@ export function PartnerLogo({ partner, imgClassName, textClassName }: PartnerLog
         src={partner.src}
         alt={partner.name}
         style={style}
-        className={cn("max-w-full object-contain", logoSize, LOGO_FILTER)}
+        className={cn("max-w-full object-contain", logoSize, logoFilter(partner.white))}
       />
     );
   }
@@ -185,7 +192,7 @@ export function PartnerLogo({ partner, imgClassName, textClassName }: PartnerLog
           src={partner.iconSrc}
           alt=""
           aria-hidden="true"
-          className={cn("object-contain", logoSize, LOGO_FILTER)}
+          className={cn("object-contain", logoSize, logoFilter(partner.white))}
         />
       )}
       <span
