@@ -3,9 +3,13 @@
   Generator for /media/blog/founding-members-by-layer.png
   Embedded in: frontend/src/content/blog/en/internet-court-agentic-commerce.mdx
 
-  Founding members grouped by layer, six rows, each member once. Each member's
-  real logo is pulled from frontend/public/partners/ and rendered as a
-  monochrome silhouette via CSS filter: grayscale(1) brightness(0); opacity: 0.72.
+  Founding members grouped by layer, six rows, each member once. The six rows
+  use the SAME layer labels and order as the homepage stack image
+  (agentic-stack.html / STACK_ROWS): 01 Discovery, identity & reputation;
+  02 Negotiation; 03 Contracts & obligations; 04 Payment & escrow; 05 Execution;
+  06 Verification & disputes. Each member's real logo is pulled from
+  frontend/public/partners/ and rendered as a monochrome silhouette via CSS
+  filter: grayscale(1) brightness(0); opacity: 0.72.
 
   SIZING RULE (matches the homepage partner grid):
   Every logo's height is its `gridHeight` from FOUNDING_MEMBERS_GRID in
@@ -35,10 +39,10 @@
   partners/... .
 
   Render command (macOS system headless Chrome, 2x device scale):
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --allow-file-access-from-files --window-size=1280,788 --screenshot="/Users/rasca/Dev/moltcourt2/frontend/public/media/blog/founding-members-by-layer.png" "file:///Users/rasca/Dev/moltcourt2/frontend/tools/blog-images/founding-members-by-layer.html"
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --allow-file-access-from-files --window-size=1280,866 --screenshot="/Users/rasca/Dev/moltcourt2/frontend/public/media/blog/founding-members-by-layer.png" "file:///Users/rasca/Dev/moltcourt2/frontend/tools/blog-images/founding-members-by-layer.html"
 
-  Output: 1280x788 CSS layout rendered at 2x, so the PNG is 2560x1576.
-  The window height (788) was measured to fit the content tightly. If members
+  Output: 1280x866 CSS layout rendered at 2x, so the PNG is 2560x1732.
+  The window height (866) was measured to fit the content tightly. If members
   or their gridHeights change, re-measure the rendered content height and update
   --window-size.
 -->
@@ -118,28 +122,28 @@
   <div class="rows">
 
     <div class="row">
-      <div class="label"><div class="badge">01</div><div class="label-text">Payments</div></div>
+      <div class="label"><div class="badge">01</div><div class="label-text">Discovery, identity &amp; reputation</div></div>
       <div class="logos">
-        <img src="../../public/partners/x402.svg" style="height:32.4px">
-        <img src="../../public/partners/okx.svg" style="height:28.35px">
-        <img src="../../public/partners/antseed.svg" style="height:40.5px">
-        <img src="../../public/partners/metamask.svg" style="height:44.55px">
-        <img src="../../public/partners/privy.svg" style="height:34.222px">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="label"><div class="badge">02</div><div class="label-text">Identity &amp; reputation</div></div>
-      <div class="logos">
-        <img src="../../public/partners/humanity-protocol.svg" style="height:44.347px">
-        <img src="../../public/partners/humanode.png" style="height:26.325px">
         <img src="../../public/partners/0g-labs.svg" style="height:36.45px">
         <img src="../../public/partners/altlayer.svg" style="height:32.4px">
+        <img src="../../public/partners/humanity-protocol.svg" style="height:44.347px">
+        <img src="../../public/partners/humanode.png" style="height:26.325px">
+        <img src="../../public/partners/nansen.png" style="height:32.4px">
+        <img src="../../public/partners/chainbase.svg" style="height:31.995px">
+        <img src="../../public/partners/collective-memory.png" style="height:44.55px">
       </div>
     </div>
 
     <div class="row">
-      <div class="label"><div class="badge">03</div><div class="label-text">Contracts, escrow &amp; settlement</div></div>
+      <div class="label"><div class="badge">02</div><div class="label-text">Negotiation</div></div>
+      <div class="logos">
+        <img src="../../public/partners/anoma.png" style="height:34.425px">
+        <img src="../../public/partners/openserv.svg" style="height:44.55px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">03</div><div class="label-text">Contracts &amp; obligations</div></div>
       <div class="logos">
         <img src="../../public/partners/arkhai.svg" style="height:43.943px">
         <img src="../../public/partners/zksync.svg" style="height:38.273px">
@@ -150,25 +154,25 @@
     </div>
 
     <div class="row">
-      <div class="label"><div class="badge">04</div><div class="label-text">Execution &amp; value movement</div></div>
+      <div class="label"><div class="badge">04</div><div class="label-text">Payment &amp; escrow</div></div>
       <div class="logos">
+        <img src="../../public/partners/x402.svg" style="height:32.4px">
+        <img src="../../public/partners/okx.svg" style="height:28.35px">
+        <img src="../../public/partners/metamask.svg" style="height:44.55px">
+        <img src="../../public/partners/privy.svg" style="height:34.222px">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><div class="badge">05</div><div class="label-text">Execution</div></div>
+      <div class="logos">
+        <img src="../../public/partners/antseed.svg" style="height:40.5px">
         <img src="../../public/partners/heurist.svg" style="height:32.4px">
         <img src="../../public/partners/io-net.svg" style="height:28.35px">
         <img src="../../public/partners/chutes.svg" style="height:27.844px">
         <img src="../../public/partners/applayer.svg" style="height:30.983px">
         <img src="../../public/partners/chaingpt.svg" style="height:32.4px">
-        <img src="../../public/partners/openserv.svg" style="height:44.55px">
-        <img src="../../public/partners/anoma.png" style="height:34.425px">
         <img src="../../public/partners/lifi.svg" style="height:44.55px">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="label"><div class="badge">05</div><div class="label-text">Analytics &amp; evidence</div></div>
-      <div class="logos">
-        <img src="../../public/partners/nansen.png" style="height:32.4px">
-        <img src="../../public/partners/chainbase.svg" style="height:31.995px">
-        <img src="../../public/partners/collective-memory.png" style="height:44.55px">
       </div>
     </div>
 

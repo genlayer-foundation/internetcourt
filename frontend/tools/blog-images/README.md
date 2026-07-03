@@ -32,26 +32,26 @@ Fonts are Inter and JetBrains Mono, loaded from Google Fonts, with system fallba
 
 ## Image 2: founding-members-by-layer.png
 
-What it shows: the founding members grouped by the layer each one serves. Six light gray rounded rows, each with a red 01 to 06 badge and a layer name in the fixed-width label column on the left, and the members' real logos to the right. Each logo is rendered as a monochrome silhouette using `filter: grayscale(1) brightness(0); opacity: 0.72`, object-fit contain, with wrapping allowed, and the logos in a row are vertically centered on a common center line.
+What it shows: the founding members grouped by the layer each one serves. The six rows use the same layer labels and order as the homepage stack image (`agentic-stack.png`), so the two images line up: 01 Discovery, identity & reputation; 02 Negotiation; 03 Contracts & obligations; 04 Payment & escrow; 05 Execution; 06 Verification & disputes. Six light gray rounded rows, each with a red 01 to 06 badge and a layer name in the fixed-width label column on the left, and the members' real logos to the right. Each logo is rendered as a monochrome silhouette using `filter: grayscale(1) brightness(0); opacity: 0.72`, object-fit contain, with wrapping allowed, and the logos in a row are vertically centered on a common center line.
 
 Logo sizing rule (matches the homepage partner grid): each logo's height is its `gridHeight` from `FOUNDING_MEMBERS_GRID` in `frontend/src/lib/site-content.ts`, multiplied by the homepage desktop multiplier `SCALE = 1.5` (from `frontend/src/components/site/PartnerGrid.tsx`), then by a single uniform infographic scale factor of 1.35 applied to every logo so the image reads crisply at 2x. The net per-logo multiplier is therefore 1.5 x 1.35 = 2.025, so the relative heights of the logos in the image equal the ratios of their `gridHeight` values exactly, just as on the homepage (wordmarks like GenLayer, MetaMask, LI.FI, OpenServ and Collective Memory read larger; smaller marks like Humanode, OKX, UMA and io.net read smaller). The uniform 1.35 factor scales the whole set together and preserves every ratio; do not hand-tune individual logos. Heights are set inline per logo in px (`gridHeight * 2.025`). If any `gridHeight` changes in `site-content.ts`, recompute that logo's inline height in the generator and re-render.
 
 Kleros is not in `FOUNDING_MEMBERS_GRID` (it is a dispute standard, not a founding member). It is given a manual `gridHeight` of 14, equal to UMA's value, so it sits proportionally next to its neighbor; the generator carries an HTML comment noting this manual value.
 
-Source of truth for the grouping: this is an explicit list maintained in the generator itself (there is no single data file for the by-layer grouping). Each member appears once, in this order:
+Source of truth for the grouping: this is an explicit list maintained in the generator itself (there is no single data file for the by-layer grouping). The six layer labels and their order match the homepage stack (`STACK_ROWS` in `frontend/src/lib/site-content.ts`). Each member appears once, in this order:
 
-1. Payments: x402, OKX, AntSeed, MetaMask, Privy
-2. Identity & reputation: Humanity Protocol, Humanode, 0G Labs, AltLayer
-3. Contracts, escrow & settlement: Arkhai, ZKsync, Starknet, BNB Chain, NEAR
-4. Execution & value movement: Heurist, io.net, Chutes, AppLayer, ChainGPT, OpenServ, Anoma, LI.FI
-5. Analytics & evidence: Nansen, Chainbase, Collective Memory
+1. Discovery, identity & reputation: 0G Labs, AltLayer, Humanity Protocol, Humanode, Nansen, Chainbase, Collective Memory
+2. Negotiation: Anoma, OpenServ
+3. Contracts & obligations: Arkhai, ZKsync, Starknet, BNB Chain, NEAR
+4. Payment & escrow: x402, OKX, MetaMask, Privy
+5. Execution: AntSeed, Heurist, io.net, Chutes, AppLayer, ChainGPT, LI.FI
 6. Verification & disputes: GenLayer, Kleros, UMA
 
 Logos come from `frontend/public/partners/`. The generator references them relatively as `../../public/partners/...` .
 
 Generator: `founding-members-by-layer.html`
 Output path: `frontend/public/media/blog/founding-members-by-layer.png`
-Output dimensions: 2560x1576 (a 1280x788 CSS layout rendered at 2x).
+Output dimensions: 2560x1732 (a 1280x866 CSS layout rendered at 2x).
 
 ## Render commands
 
@@ -66,12 +66,12 @@ Stack:
 Members (the logos are loaded from disk, so you must either pass `--allow-file-access-from-files` as shown, or copy the partner logos next to the HTML and change the src paths to `partners/...`):
 
 ```
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --allow-file-access-from-files --window-size=1280,788 --screenshot="/Users/rasca/Dev/moltcourt2/frontend/public/media/blog/founding-members-by-layer.png" "file:///Users/rasca/Dev/moltcourt2/frontend/tools/blog-images/founding-members-by-layer.html"
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --allow-file-access-from-files --window-size=1280,866 --screenshot="/Users/rasca/Dev/moltcourt2/frontend/public/media/blog/founding-members-by-layer.png" "file:///Users/rasca/Dev/moltcourt2/frontend/tools/blog-images/founding-members-by-layer.html"
 ```
 
 ## Window heights
 
-The window heights (722 for the stack, 788 for the members) were measured to fit the content tightly with no extra whitespace at the bottom. If you add or remove rows, if the members wrap onto more or fewer lines, or if any `gridHeight` changes and alters the logo heights, re-measure the rendered content height and update the `--window-size` value before re-rendering. A quick way to measure is to add a small script that reads `document.getElementById('stage').getBoundingClientRect().height` (or the equivalent container) and reports it, then round up.
+The window heights (722 for the stack, 866 for the members) were measured to fit the content tightly with no extra whitespace at the bottom. If you add or remove rows, if the members wrap onto more or fewer lines, or if any `gridHeight` changes and alters the logo heights, re-measure the rendered content height and update the `--window-size` value before re-rendering. A quick way to measure is to add a small script that reads `document.getElementById('stage').getBoundingClientRect().height` (or the equivalent container) and reports it, then round up.
 
 ## Prerequisites
 
