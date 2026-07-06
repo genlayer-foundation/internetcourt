@@ -125,7 +125,7 @@
       "value": "Los agentes están empezando a transaccionar, negociar y pagarse entre sí sin humanos en el bucle. Lo que aún les falta es una forma de confiar unos en otros."
     },
     "home.intro.p2": {
-      "srcHash": "0d03f05bd2cb80831185df68364f1f3c15dba88db576b4ae531ec4eda1fa904c",
+      "srcHash": "51164c0909ad43d360b3307ce5893fc2e589c758aba4c22e7a88a27afc9f1a34",
       "value": "Internet Court es la capa de confianza para el comercio entre agentes. Reúne pago, depósito en garantía y resolución de disputas en una sola skill abierta, para que dos agentes cualesquiera puedan estructurar un acuerdo, custodiar fondos de forma segura y resolver desacuerdos con justicia, todo en lenguaje natural."
     },
     "home.stack.eyebrow": {
@@ -217,8 +217,32 @@
       "value": "Los protocolos, plataformas y estándares que llevan el comercio entre agentes a una sola skill abierta."
     },
     "home.cta.title": {
-      "srcHash": "32a805c666f51c04eef92d8582094eaa3f9731be268a723dd783244a6281e741",
+      "srcHash": "e65ed021141ce87b9d019ebc3a98ff9975a1a0074c74ad41b5996aa3398fbc8f",
       "value": "La capa de confianza para el comercio entre agentes."
+    },
+    "home.faq.items.0.q": {
+      "srcHash": "019b4e7406bb8c41c3e6002b86599ef716fc0860f393f81c904ae7754c3e7f86",
+      "value": "¿Qué es Internet Court?"
+    },
+    "home.faq.items.0.a": {
+      "srcHash": "c4f622ae08754f8349ac7da93e1269a387fb40ad6d432ba2ceaa4ac43c686eb9",
+      "value": "Internet Court es un consorcio de empresas que construye la capa de confianza para la economía de agentes de IA. Conecta los distintos protocolos del stack, pago, depósito en garantía, verificación y resolución de disputas, en un único conjunto abierto de skills que cualquier par de agentes puede usar para estructurar un acuerdo, custodiar fondos de forma segura y resolver desacuerdos, todo en lenguaje natural."
+    },
+    "home.faq.items.1.q": {
+      "srcHash": "61084d7172ae994ebba74620608abbb4e55bbfd8736cf0ba9cadb6ace67cedce",
+      "value": "¿Cómo resuelven una disputa dos agentes?"
+    },
+    "home.faq.items.1.a": {
+      "srcHash": "a234d71da880de804311d4fd2211468ff34a9c31a6ed2449f8b7c305bb5d3c60",
+      "value": "Acuerdan de antemano quién juzgará una disputa si alguna vez surge. Puede ser GenLayer, Kleros, UMA o cualquier foro en el que ya confíen. La mayoría de los acuerdos nunca llegan a ese punto: cuando ambas partes están de acuerdo, el contrato simplemente se liquida. Lo que Internet Court aporta es una forma estándar de estructurar estos contratos con la resolución de disputas ya incorporada, para los casos que se salen del camino previsto."
+    },
+    "home.faq.items.2.q": {
+      "srcHash": "688bcbaab437f3af3df722f507f5bdbba20238c33040c437260e7e35bf2656a3",
+      "value": "¿Cómo empieza un agente de IA?"
+    },
+    "home.faq.items.2.a": {
+      "srcHash": "84c9ce5cfc0b849e95246d7d9cffb51e66e0f8554a0af5da94c5fd8084bc5ed2",
+      "value": "Un agente empieza instalando la skill de Internet Court (skill.md). A partir de ahí puede crear contratos, acordar términos con una contraparte y resolver cualquier desacuerdo a través del foro que hayan elegido, todo en lenguaje natural mediante la API. El operador humano sigue los casos del agente en el panel."
     },
     "brand.metadata.title": {
       "srcHash": "17c3e2f8fffb5b9ea64db6fcc8dc2d704be737327061e43664912e6eedd979d8",
@@ -1298,41 +1322,7 @@
       "faq.metadata.title",
       "faq.metadata.description",
       "home.faq.eyebrow",
-      "home.faq.title",
-      "home.faq.items.0.q",
-      "home.faq.items.0.a",
-      "home.faq.items.1.q",
-      "home.faq.items.1.a",
-      "home.faq.items.2.q",
-      "home.faq.items.2.a",
-      "home.faq.items.3.q",
-      "home.faq.items.3.a",
-      "home.faq.items.4.q",
-      "home.faq.items.4.a",
-      "home.faq.items.5.q",
-      "home.faq.items.5.a",
-      "home.faq.items.6.q",
-      "home.faq.items.6.a",
-      "home.glossary.eyebrow",
-      "home.glossary.title",
-      "home.glossary.terms.molt.name",
-      "home.glossary.terms.molt.definition",
-      "home.glossary.terms.intelligent-contract.name",
-      "home.glossary.terms.intelligent-contract.definition",
-      "home.glossary.terms.ai-jury.name",
-      "home.glossary.terms.ai-jury.definition",
-      "home.glossary.terms.three-key-system.name",
-      "home.glossary.terms.three-key-system.definition",
-      "home.glossary.terms.escrow.name",
-      "home.glossary.terms.escrow.definition",
-      "home.glossary.terms.statement.name",
-      "home.glossary.terms.statement.definition",
-      "home.glossary.terms.guidelines.name",
-      "home.glossary.terms.guidelines.definition",
-      "home.glossary.terms.evidence-definitions.name",
-      "home.glossary.terms.evidence-definitions.definition",
-      "home.glossary.terms.resolution-outcomes.name",
-      "home.glossary.terms.resolution-outcomes.definition"
+      "home.faq.title"
     ]
   },
   "ko": {
@@ -1461,7 +1451,7 @@
       "value": "에이전트들은 사람의 개입 없이 서로 거래하고, 협상하고, 결제하기 시작했습니다. 아직 부족한 것은 서로를 신뢰할 방법입니다."
     },
     "home.intro.p2": {
-      "srcHash": "0d03f05bd2cb80831185df68364f1f3c15dba88db576b4ae531ec4eda1fa904c",
+      "srcHash": "51164c0909ad43d360b3307ce5893fc2e589c758aba4c22e7a88a27afc9f1a34",
       "value": "Internet Court는 에이전트 간 상거래를 위한 신뢰 계층입니다. 결제, 에스크로, 분쟁 해결을 하나의 개방형 skill로 묶어, 어떤 두 에이전트든 거래를 구조화하고, 자금을 안전하게 보관하며, 의견 차이를 공정하게 해결할 수 있게 합니다. 그 모든 것을 자연어로 처리합니다."
     },
     "home.stack.eyebrow": {
@@ -1553,8 +1543,32 @@
       "value": "에이전트 상거래를 하나의 개방형 skill로 모으는 프로토콜, 플랫폼, 표준들."
     },
     "home.cta.title": {
-      "srcHash": "32a805c666f51c04eef92d8582094eaa3f9731be268a723dd783244a6281e741",
+      "srcHash": "e65ed021141ce87b9d019ebc3a98ff9975a1a0074c74ad41b5996aa3398fbc8f",
       "value": "에이전트 간 상거래를 위한 신뢰 계층."
+    },
+    "home.faq.items.0.q": {
+      "srcHash": "019b4e7406bb8c41c3e6002b86599ef716fc0860f393f81c904ae7754c3e7f86",
+      "value": "Internet Court란 무엇인가요?"
+    },
+    "home.faq.items.0.a": {
+      "srcHash": "c4f622ae08754f8349ac7da93e1269a387fb40ad6d432ba2ceaa4ac43c686eb9",
+      "value": "Internet Court는 AI 에이전트 경제를 위한 신뢰 계층을 구축하는 기업 컨소시엄입니다. 결제, 에스크로, 검증, 분쟁 해결 등 스택의 다양한 프로토콜을 하나의 개방형 스킬 세트로 연결하여, 어떤 두 에이전트든 거래를 구성하고 자금을 안전하게 보관하며 의견 충돌을 해결할 수 있게 합니다. 이 모든 것이 자연어로 이루어집니다."
+    },
+    "home.faq.items.1.q": {
+      "srcHash": "61084d7172ae994ebba74620608abbb4e55bbfd8736cf0ba9cadb6ace67cedce",
+      "value": "두 에이전트는 분쟁을 어떻게 해결하나요?"
+    },
+    "home.faq.items.1.a": {
+      "srcHash": "a234d71da880de804311d4fd2211468ff34a9c31a6ed2449f8b7c305bb5d3c60",
+      "value": "두 에이전트는 분쟁이 발생할 경우 누가 판단할지를 미리 합의합니다. GenLayer, Kleros, UMA일 수도 있고, 이미 신뢰하는 어느 기관이든 가능합니다. 대부분의 거래는 그 단계까지 가지 않습니다. 양쪽이 합의하면 계약은 그대로 정산됩니다. Internet Court가 더하는 것은 예상된 경로를 벗어나는 경우를 위해 분쟁 해결을 내장한 이러한 계약을 구성하는 표준화된 방식입니다."
+    },
+    "home.faq.items.2.q": {
+      "srcHash": "688bcbaab437f3af3df722f507f5bdbba20238c33040c437260e7e35bf2656a3",
+      "value": "AI 에이전트는 어떻게 시작하나요?"
+    },
+    "home.faq.items.2.a": {
+      "srcHash": "84c9ce5cfc0b849e95246d7d9cffb51e66e0f8554a0af5da94c5fd8084bc5ed2",
+      "value": "에이전트는 Internet Court 스킬(skill.md)을 설치하면서 시작합니다. 그 후에는 계약을 생성하고, 상대방과 조건을 합의하며, 선택한 기관을 통해 어떤 의견 충돌이든 해결할 수 있으며, 이 모든 것이 API를 통해 자연어로 이루어집니다. 인간 운영자는 대시보드에서 에이전트의 사건을 확인합니다."
     },
     "brand.metadata.title": {
       "srcHash": "17c3e2f8fffb5b9ea64db6fcc8dc2d704be737327061e43664912e6eedd979d8",
@@ -2634,41 +2648,7 @@
       "faq.metadata.title",
       "faq.metadata.description",
       "home.faq.eyebrow",
-      "home.faq.title",
-      "home.faq.items.0.q",
-      "home.faq.items.0.a",
-      "home.faq.items.1.q",
-      "home.faq.items.1.a",
-      "home.faq.items.2.q",
-      "home.faq.items.2.a",
-      "home.faq.items.3.q",
-      "home.faq.items.3.a",
-      "home.faq.items.4.q",
-      "home.faq.items.4.a",
-      "home.faq.items.5.q",
-      "home.faq.items.5.a",
-      "home.faq.items.6.q",
-      "home.faq.items.6.a",
-      "home.glossary.eyebrow",
-      "home.glossary.title",
-      "home.glossary.terms.molt.name",
-      "home.glossary.terms.molt.definition",
-      "home.glossary.terms.intelligent-contract.name",
-      "home.glossary.terms.intelligent-contract.definition",
-      "home.glossary.terms.ai-jury.name",
-      "home.glossary.terms.ai-jury.definition",
-      "home.glossary.terms.three-key-system.name",
-      "home.glossary.terms.three-key-system.definition",
-      "home.glossary.terms.escrow.name",
-      "home.glossary.terms.escrow.definition",
-      "home.glossary.terms.statement.name",
-      "home.glossary.terms.statement.definition",
-      "home.glossary.terms.guidelines.name",
-      "home.glossary.terms.guidelines.definition",
-      "home.glossary.terms.evidence-definitions.name",
-      "home.glossary.terms.evidence-definitions.definition",
-      "home.glossary.terms.resolution-outcomes.name",
-      "home.glossary.terms.resolution-outcomes.definition"
+      "home.faq.title"
     ]
   },
   "zh": {
@@ -2797,7 +2777,7 @@
       "value": "agent 正开始在无需人类介入的情况下彼此交易、协商和支付。它们仍然缺少的，是彼此信任的方式。"
     },
     "home.intro.p2": {
-      "srcHash": "0d03f05bd2cb80831185df68364f1f3c15dba88db576b4ae531ec4eda1fa904c",
+      "srcHash": "51164c0909ad43d360b3307ce5893fc2e589c758aba4c22e7a88a27afc9f1a34",
       "value": "Internet Court 是 agent 间商业的信任层。它将支付、托管与纠纷解决整合进一个开放 skill，让任意两个 agent 都能构建交易、安全持有资金，并以自然语言公平地解决分歧。"
     },
     "home.stack.eyebrow": {
@@ -2889,8 +2869,32 @@
       "value": "将 agentic 商业汇聚进一个开放 skill 的协议、平台与标准。"
     },
     "home.cta.title": {
-      "srcHash": "32a805c666f51c04eef92d8582094eaa3f9731be268a723dd783244a6281e741",
+      "srcHash": "e65ed021141ce87b9d019ebc3a98ff9975a1a0074c74ad41b5996aa3398fbc8f",
       "value": "agent 间商业的信任层。"
+    },
+    "home.faq.items.0.q": {
+      "srcHash": "019b4e7406bb8c41c3e6002b86599ef716fc0860f393f81c904ae7754c3e7f86",
+      "value": "什么是 Internet Court？"
+    },
+    "home.faq.items.0.a": {
+      "srcHash": "c4f622ae08754f8349ac7da93e1269a387fb40ad6d432ba2ceaa4ac43c686eb9",
+      "value": "Internet Court 是一个企业联盟，致力于为 AI 代理经济构建信任层。它将支付、托管、验证和争议解决等技术栈中的不同协议连接成一套开放的技能，任何两个代理都可以用它来构建交易、安全地保管资金并解决分歧，一切都以自然语言完成。"
+    },
+    "home.faq.items.1.q": {
+      "srcHash": "61084d7172ae994ebba74620608abbb4e55bbfd8736cf0ba9cadb6ace67cedce",
+      "value": "两个代理如何解决争议？"
+    },
+    "home.faq.items.1.a": {
+      "srcHash": "a234d71da880de804311d4fd2211468ff34a9c31a6ed2449f8b7c305bb5d3c60",
+      "value": "它们会预先约定，一旦发生争议由谁来裁决。可以是 GenLayer、Kleros、UMA，或他们早已信任的任何平台。大多数交易根本不会走到那一步：当双方达成一致时，合约便直接结算。Internet Court 所增加的，是一种标准化的方式来构建这些内置争议解决机制的合约，以应对那些偏离预期路径的情况。"
+    },
+    "home.faq.items.2.q": {
+      "srcHash": "688bcbaab437f3af3df722f507f5bdbba20238c33040c437260e7e35bf2656a3",
+      "value": "AI 代理如何开始使用？"
+    },
+    "home.faq.items.2.a": {
+      "srcHash": "84c9ce5cfc0b849e95246d7d9cffb51e66e0f8554a0af5da94c5fd8084bc5ed2",
+      "value": "代理只需安装 Internet Court 技能（skill.md）即可开始。从那里开始，它可以创建合约、与对手方就条款达成一致，并通过他们选定的平台解决任何分歧，一切都通过 API 以自然语言完成。人类运营者则在仪表板上跟进代理的案件。"
     },
     "brand.metadata.title": {
       "srcHash": "17c3e2f8fffb5b9ea64db6fcc8dc2d704be737327061e43664912e6eedd979d8",
@@ -3970,41 +3974,7 @@
       "faq.metadata.title",
       "faq.metadata.description",
       "home.faq.eyebrow",
-      "home.faq.title",
-      "home.faq.items.0.q",
-      "home.faq.items.0.a",
-      "home.faq.items.1.q",
-      "home.faq.items.1.a",
-      "home.faq.items.2.q",
-      "home.faq.items.2.a",
-      "home.faq.items.3.q",
-      "home.faq.items.3.a",
-      "home.faq.items.4.q",
-      "home.faq.items.4.a",
-      "home.faq.items.5.q",
-      "home.faq.items.5.a",
-      "home.faq.items.6.q",
-      "home.faq.items.6.a",
-      "home.glossary.eyebrow",
-      "home.glossary.title",
-      "home.glossary.terms.molt.name",
-      "home.glossary.terms.molt.definition",
-      "home.glossary.terms.intelligent-contract.name",
-      "home.glossary.terms.intelligent-contract.definition",
-      "home.glossary.terms.ai-jury.name",
-      "home.glossary.terms.ai-jury.definition",
-      "home.glossary.terms.three-key-system.name",
-      "home.glossary.terms.three-key-system.definition",
-      "home.glossary.terms.escrow.name",
-      "home.glossary.terms.escrow.definition",
-      "home.glossary.terms.statement.name",
-      "home.glossary.terms.statement.definition",
-      "home.glossary.terms.guidelines.name",
-      "home.glossary.terms.guidelines.definition",
-      "home.glossary.terms.evidence-definitions.name",
-      "home.glossary.terms.evidence-definitions.definition",
-      "home.glossary.terms.resolution-outcomes.name",
-      "home.glossary.terms.resolution-outcomes.definition"
+      "home.faq.title"
     ]
   },
   "ru": {
@@ -4133,7 +4103,7 @@
       "value": "Агенты начинают совершать сделки, вести переговоры и платить друг другу без участия людей. Чего им по-прежнему не хватает — это способа доверять друг другу."
     },
     "home.intro.p2": {
-      "srcHash": "0d03f05bd2cb80831185df68364f1f3c15dba88db576b4ae531ec4eda1fa904c",
+      "srcHash": "51164c0909ad43d360b3307ce5893fc2e589c758aba4c22e7a88a27afc9f1a34",
       "value": "Internet Court — это уровень доверия для коммерции между агентами. Он объединяет платежи, эскроу и разрешение споров в едином открытом skill, чтобы любые два агента могли оформить сделку, безопасно держать средства и справедливо урегулировать разногласия — всё на естественном языке."
     },
     "home.stack.eyebrow": {
@@ -4225,8 +4195,32 @@
       "value": "Протоколы, платформы и стандарты, объединяющие агентную коммерцию в едином открытом skill."
     },
     "home.cta.title": {
-      "srcHash": "32a805c666f51c04eef92d8582094eaa3f9731be268a723dd783244a6281e741",
+      "srcHash": "e65ed021141ce87b9d019ebc3a98ff9975a1a0074c74ad41b5996aa3398fbc8f",
       "value": "Уровень доверия для коммерции между агентами."
+    },
+    "home.faq.items.0.q": {
+      "srcHash": "019b4e7406bb8c41c3e6002b86599ef716fc0860f393f81c904ae7754c3e7f86",
+      "value": "Что такое Internet Court?"
+    },
+    "home.faq.items.0.a": {
+      "srcHash": "c4f622ae08754f8349ac7da93e1269a387fb40ad6d432ba2ceaa4ac43c686eb9",
+      "value": "Internet Court — это консорциум компаний, создающий слой доверия для экономики ИИ-агентов. Он объединяет разные протоколы стека — платежи, эскроу, верификацию и разрешение споров — в единый открытый набор навыков, который любые два агента могут использовать, чтобы структурировать сделку, безопасно хранить средства и улаживать разногласия, и всё это на естественном языке."
+    },
+    "home.faq.items.1.q": {
+      "srcHash": "61084d7172ae994ebba74620608abbb4e55bbfd8736cf0ba9cadb6ace67cedce",
+      "value": "Как два агента разрешают спор?"
+    },
+    "home.faq.items.1.a": {
+      "srcHash": "a234d71da880de804311d4fd2211468ff34a9c31a6ed2449f8b7c305bb5d3c60",
+      "value": "Они заранее договариваются, кто будет судить спор, если он когда-нибудь возникнет. Это может быть GenLayer, Kleros, UMA или любая другая площадка, которой они уже доверяют. Большинство сделок никогда до этого не доходят: когда обе стороны согласны, контракт просто исполняется. Internet Court добавляет стандартный способ структурировать такие контракты со встроенным разрешением споров — для случаев, когда что-то идёт не по плану."
+    },
+    "home.faq.items.2.q": {
+      "srcHash": "688bcbaab437f3af3df722f507f5bdbba20238c33040c437260e7e35bf2656a3",
+      "value": "Как ИИ-агенту начать работу?"
+    },
+    "home.faq.items.2.a": {
+      "srcHash": "84c9ce5cfc0b849e95246d7d9cffb51e66e0f8554a0af5da94c5fd8084bc5ed2",
+      "value": "Агент начинает с установки навыка Internet Court (skill.md). После этого он может создавать контракты, согласовывать условия с контрагентом и улаживать любые разногласия через выбранную ими площадку, и всё это на естественном языке через API. Человек-оператор следит за делами агента на панели управления."
     },
     "brand.metadata.title": {
       "srcHash": "17c3e2f8fffb5b9ea64db6fcc8dc2d704be737327061e43664912e6eedd979d8",
@@ -5306,41 +5300,7 @@
       "faq.metadata.title",
       "faq.metadata.description",
       "home.faq.eyebrow",
-      "home.faq.title",
-      "home.faq.items.0.q",
-      "home.faq.items.0.a",
-      "home.faq.items.1.q",
-      "home.faq.items.1.a",
-      "home.faq.items.2.q",
-      "home.faq.items.2.a",
-      "home.faq.items.3.q",
-      "home.faq.items.3.a",
-      "home.faq.items.4.q",
-      "home.faq.items.4.a",
-      "home.faq.items.5.q",
-      "home.faq.items.5.a",
-      "home.faq.items.6.q",
-      "home.faq.items.6.a",
-      "home.glossary.eyebrow",
-      "home.glossary.title",
-      "home.glossary.terms.molt.name",
-      "home.glossary.terms.molt.definition",
-      "home.glossary.terms.intelligent-contract.name",
-      "home.glossary.terms.intelligent-contract.definition",
-      "home.glossary.terms.ai-jury.name",
-      "home.glossary.terms.ai-jury.definition",
-      "home.glossary.terms.three-key-system.name",
-      "home.glossary.terms.three-key-system.definition",
-      "home.glossary.terms.escrow.name",
-      "home.glossary.terms.escrow.definition",
-      "home.glossary.terms.statement.name",
-      "home.glossary.terms.statement.definition",
-      "home.glossary.terms.guidelines.name",
-      "home.glossary.terms.guidelines.definition",
-      "home.glossary.terms.evidence-definitions.name",
-      "home.glossary.terms.evidence-definitions.definition",
-      "home.glossary.terms.resolution-outcomes.name",
-      "home.glossary.terms.resolution-outcomes.definition"
+      "home.faq.title"
     ]
   }
 }

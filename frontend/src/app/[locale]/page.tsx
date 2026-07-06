@@ -7,7 +7,6 @@ import { AnimatedStack } from "@/components/site/AnimatedStack";
 import { PartnerGrid } from "@/components/site/PartnerGrid";
 import { SkillCommand } from "@/components/site/SkillCommand";
 import { CTABand } from "@/components/site/CTABand";
-import { TheaterWatch } from "@/components/site/watch/TheaterWatch";
 import HomeBlogFeatured15 from "@/components/site/HomeBlogFeatured15";
 import { getHomepagePosts } from "@/lib/blog";
 import { buildAlternates } from "@/lib/i18n-metadata";
@@ -87,9 +86,6 @@ export default async function Home({
           }
         />
       </section>
-
-      {/* Section 2.5 - Watch (launch video) */}
-      <TheaterWatch />
 
       {/* Section 2.6 - Blog (Briefings from the court) */}
       <HomeBlogFeatured15 posts={getHomepagePosts(locale)} />

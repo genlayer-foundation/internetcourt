@@ -4,12 +4,24 @@
 
 ## In Progress
 
+### Homepage copy exploration — variants under /preview/home-copy + remove video
+- User wants the homepage copy reviewed & explored. TWO parts:
+  1. REMOVE the "See the court in motion" video section (`TheaterWatch`, `#watch`) from the LIVE homepage — redundant with the hero video panel above the fold.
+  2. Build 5-10 full-homepage COPY variants behind an index at `/preview/home-copy` (noindex, inline English, following the `/preview/*` convention). Same layout, NO video section; differentiate the COPY.
+- Copy must be grounded in the two Dispatch articles: `internet-court-agentic-commerce.mdx` (main) + `internet-court-use-cases.mdx`.
+- Per-section guidance from user: hero stays (subhead may flex); intro paragraph may flex / optionally gain a title; Stack "one court, every layer" is good (minor discovery→disputes tweak OK); Goal "Scaffolding for agentic commerce" title+text DISLIKED → rewrite; partners/logos are perfect → leave alone.
+- Approach: copywriter drafts distinct positioning + full copy deck per variant → builder implements index + prop-driven variant pages reusing live components.
+- Status: User REJECTED all 8 preview variants. Pivoted to direct edits on the LIVE homepage. Video removal on `page.tsx` KEPT. Reverted `HomeHero.tsx` to HEAD (hero card must stay untouched). Deleted all 8 preview variants + `src/data/home-copy-variants.ts` + `src/components/preview/`. Direction from user: keep hero subhead "An open skill for agent-to-agent contracts"; DROP "the trust layer for agent-to-agent commerce" phrasing; intro must say the ecosystem is FRAGMENTED and Internet Court brings it together, works not just happy path but dispute path; positioning = payment rails become a REAL ECONOMY via dispute resolution + accountability (low-level infra).
+- DONE (uncommitted): `messages/en.json` `home.intro.p2` rewritten (kept p1) to fragmentation + happy/dispute path; `home.cta.title` → "Payment rails move money. Internet Court makes them an economy." tsc + build clean. Other locales (es/ko/zh/ru) still hold old translations of those 2 keys → will re-translate on next build via source-hash pipeline.
+- Goal section DONE (uncommitted): replaced "Scaffolding for agentic commerce" → title "From payment rails to <accent>a real economy</accent>." + 3 new paragraphs (building blocks/rails aren't an economy; economy needs accountability + adjudication agreed up front, part of the contract; AI jury rules on dispute). Removed layer enumeration (stack section already lists them); explicitly uses word "adjudication". Kept "payment rails" in title for consistency with cta.title; user can flip to "building blocks" if desired.
+- Homepage copy edits all live in `messages/en.json` only (en). Other locales re-translate on next build. No builds run per user (server running elsewhere). NEXT: user review on their running server; possible title flip; then commit when user asks.
+
 ### Header redesign — 10 variants under /header-previews
 - User dislikes the current header's BLOG/FAQ nav pills + the i18n language dropdown. Wants 10 distinct header designs to compare under a sub-URL.
 - Pattern: mirror /hero-previews. Index at `app/[locale]/header-previews/page.tsx`; variant components in `components/site/headers/`; each routed sub-page renders the bar over a faux-homepage backdrop + BackToIndex. Noindex, inline English (no i18n).
 - 10 variants (each re-thinks nav + language): bare, quiet-links, single-cta, command-bar, menu, masthead, docs-bar, dot-nav, floating-pill, two-tier.
 - Status: SHIPPED INTO HEADER (uncommitted). User picked `masthead`. Rewrote `components/layout/Header.tsx` to the centered masthead (mono Blog/FAQ nav left w/ underline, centered wordmark, socials right, top hairline + doubled bottom rule, mobile reflow), productionized with real i18n/routing. Boxed globe dropdown replaced by new subtle `components/layout/MastheadLangToggle.tsx` (corner EN ⌄, 5 locales); deleted now-unused `LocaleSwitcher.tsx`. tsc clean.
-- CLEANUP PENDING: the `/header-previews` gallery (`app/[locale]/header-previews/` + `components/site/headers/`, 10 variants + scaffold) still in tree — delete once user is happy with the live header.
+- CLEANUP DONE: deleted `/header-previews` gallery (`app/[locale]/header-previews/` + `components/site/headers/`, 10 variants + scaffold). `/hero-previews` gallery was already removed by a prior session; remaining `components/site/heroes/` is LIVE homepage code (HeroScrollCue/HeroVideoPanel/HeroVideoPlayer via HomeHero) — NOT a gallery, left intact. Only stale `.next/dev/types` stubs for old hero-previews routes remain (clear on dev type regen / rm -rf .next).
 
 ### Homepage curated blog section — explicit ordered slug list
 - Add a "selected writing" blog section to the homepage. Curated, NOT date-sorted/random — author hand-picks which posts show and in what order.

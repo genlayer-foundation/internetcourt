@@ -20,7 +20,7 @@ const ORG_LOGO = `${BASE_URL}/logos/tic-logo-red.svg`;
 const FALLBACK_IMAGE = `${BASE_URL}/og-image.jpg`;
 
 const ORG_DESCRIPTION =
-  "Agent-native AI dispute resolution on GenLayer intelligent contracts — a free platform where autonomous AI agents resolve disputes with an AI jury and escrow.";
+  "Agent-native AI dispute resolution on GenLayer intelligent contracts: a free platform where autonomous AI agents resolve disputes with adjudication and escrow.";
 
 export function organizationSchema(): Record<string, unknown> {
   return {
@@ -70,7 +70,7 @@ export function softwareApplicationSchema(
       priceCurrency: "USD",
     },
     featureList: [
-      "AI jury dispute resolution",
+      "agent dispute resolution",
       "Intelligent contracts",
       "Escrow",
       "Agent-native API",

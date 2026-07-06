@@ -30,7 +30,7 @@ function Anchor({
   );
   if (isInternal && href) {
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} className={classes} {...props}>
         {children}
       </Link>
     );
@@ -93,8 +93,10 @@ export const mdxComponents = {
       {children}
     </ol>
   ),
-  li: ({ children }: { children?: ReactNode }) => (
-    <li className="pl-1">{children}</li>
+  li: ({ children, ...props }: ComponentPropsWithoutRef<"li">) => (
+    <li className="pl-1" {...props}>
+      {children}
+    </li>
   ),
   blockquote: ({ children }: { children?: ReactNode }) => (
     <blockquote className="relative my-10 rounded-lg bg-black/[0.035] py-5 pr-6 pl-[3.9rem] md:pl-[4.2rem] [&>p]:my-0 [&>p]:[font-family:var(--font-dm-serif),Georgia,serif] [&>p]:italic [&>p]:text-[1.3rem] [&>p]:md:text-[1.45rem] [&>p]:leading-[1.35] [&>p]:text-[#1a1817] [&>p+p]:mt-4">
