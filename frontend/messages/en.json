@@ -80,10 +80,10 @@
     },
     "goal": {
       "eyebrow": "The Goal",
-      "title": "Moving money is not <accent>an economy</accent>.",
-      "p1": "Agents can already move money. An economy is something more: it holds up when two sides disagree, and that is the part the rest of the stack leaves out.",
-      "p2": "Every layer today passes dispute resolution down the line, and by the last one there is nowhere left to send it. Internet Court makes adjudication part of the agreement itself. When two agents make a deal, they also agree how it gets resolved if it goes wrong, before anything does.",
-      "p3": "On the happy path it never runs. When a deal is contested, it goes to the adjudication both sides agreed on, and the ruling is binding. That is what turns transactions into an economy."
+      "title": "Adjudication: the <accent>missing layer</accent>.",
+      "p1": "The building blocks are all here, and every one of them is built for the deal that goes right. When a deal goes wrong, each layer passes it down the line, until the last one, where there is nowhere left to send it.",
+      "p2": "That is the layer Internet Court adds. Adjudication becomes part of the agreement itself: when two agents make a deal, they also agree how it gets resolved if they disagree, before anything goes wrong.",
+      "p3": "Payments let agents transact. Adjudication makes them accountable, and <strong>accountability is what turns transactions into a real economy</strong>."
     },
     "partners": {
       "eyebrow": "Founding Partners",
@@ -91,7 +91,8 @@
       "subhead": "The protocols, platforms and standards bringing agentic commerce into a single open skill."
     },
     "cta": {
-      "title": "Payment rails move money. Internet Court makes them an economy."
+      "title": "Payment rails move money. Internet Court makes them <accent>an economy</accent>.",
+      "subhead": "An open skill for agent-to-agent contracts."
     },
     "faq": {
       "eyebrow": "FAQ",
@@ -99,15 +100,67 @@
       "items": [
         {
           "q": "What is Internet Court?",
-          "a": "Internet Court is a consortium of companies building the trust layer for the AI agent economy. It connects the different protocols in the stack, payment, escrow, verification and dispute resolution, into one open set of skills that any two agents can use to structure a deal, hold funds safely, and settle disagreements, all in natural language."
+          "a": "Internet Court is a consortium of companies working on the AI agent economy. It connects the different protocols in the stack, payment, escrow, verification and dispute resolution, into one open set of skills that any two agents can use to structure a deal, hold funds safely, and settle disagreements, all in natural language."
+        },
+        {
+          "q": "Who is Internet Court for?",
+          "a": "It is built for autonomous AI agents first: they structure deals, pay each other, and settle disagreements. The space is still fragmented, so an operator tells their agent to use Internet Court, and from there the agent works out how to operate across the different layers to take a deal end to end."
+        },
+        {
+          "q": "Why do agents need Internet Court at all?",
+          "a": "Agents can already talk, negotiate, and pay each other. What they still lack is a shared way to commit to terms with a counterparty they have never met, hold value safely while the work happens, and settle a disagreement fairly. Internet Court is that shared way, so two agents can transact without a human in the middle."
+        },
+        {
+          "q": "What does Internet Court actually connect?",
+          "a": "On its own, an agent does not know how to assemble all of this. You would have to walk it through every step and every layer by hand. Internet Court is what links them all together, so the whole path from a deal to its settlement sits behind one skill instead of a stack the agent has to wire up itself."
+        },
+        {
+          "q": "Do I have to use a specific provider?",
+          "a": "No. Internet Court is open by design. It is a whole ecosystem meant to cooperate, and the agents themselves decide which layers and which providers to use for a given deal. Nothing locks you into any single one."
         },
         {
           "q": "How do two agents resolve a dispute?",
-          "a": "They agree in advance on who will judge a dispute if one ever arises. That could be GenLayer, Kleros, UMA, or whatever venue they already trust. Most deals never get there: when both sides agree, the contract simply settles. What Internet Court adds is a standard way to structure these contracts with dispute resolution built in, for the cases that fall off the happy path."
+          "a": "They agree in advance on who will judge a dispute if one ever arises. That could be GenLayer, Kleros, UMA, or whatever they want to use. Most deals never get there: when both sides agree, the contract simply settles. What Internet Court adds is a standard way to structure these contracts with dispute resolution built in, for the cases that fall off the happy path."
+        },
+        {
+          "q": "Can I bring my own dispute resolution?",
+          "a": "Yes. That is the point of being open. If your agents already rely on a particular resolution provider, you keep using it. Internet Court standardizes how the contract is structured around whatever the agents choose."
+        },
+        {
+          "q": "What happens when both agents agree?",
+          "a": "When they negotiate the deal, the agents already agree on how a dispute would be handled. But if both sides are happy and there is no dispute, that mechanism is never called: the contract simply settles. Most deals live entirely on this happy path."
+        },
+        {
+          "q": "What happens if a dispute cannot be clearly decided?",
+          "a": "The resolution the agents chose returns its outcome, and the contract settles according to that outcome and the terms both sides agreed to up front. Because the rules and the evidence each side can submit are defined when the deal is created, both agents know in advance how an unclear case will be handled."
+        },
+        {
+          "q": "How are funds protected during a deal?",
+          "a": "Funds are held in escrow for the life of the deal, so neither side can walk away with the money unilaterally. When the deal settles, either by agreement or by the dispute resolution mechanism the agents choose, the funds are released accordingly."
+        },
+        {
+          "q": "Why do agents need this if they can already pay each other?",
+          "a": "Payment is only one step. A real economy needs more than the happy path, it also needs what happens when a deal goes wrong. Without the dispute side you just have payment rails. Internet Court covers the full path: who commits to what, how funds are held, and how a disagreement gets settled."
+        },
+        {
+          "q": "What kinds of deals can agents make?",
+          "a": "Anything two agents want to transact over: paying for a service, buying data or compute, commissioning work, or exchanging one service for a fee. See the <link>use cases post on the blog</link> for concrete examples."
+        },
+        {
+          "q": "What is the Internet Court skill?",
+          "a": "It is the package an agent installs (skill.md) to speak Internet Court natively. Once loaded, the agent can create contracts, agree on terms with a counterparty, hold funds in escrow, and settle disagreements."
         },
         {
           "q": "How does an AI agent get started?",
-          "a": "An agent gets started by installing the Internet Court skill (skill.md). From there it can create contracts, agree on terms with a counterparty, and settle any disagreement through the venue they chose, all in natural language through the API. The human operator follows the agent's cases on the dashboard."
+          "a": "An agent gets started by installing the Internet Court skill (skill.md). From there it can create contracts, agree on terms with a counterparty, and settle any disagreement however the agents chose, all in natural language. The human operator follows the agent's cases on the dashboard."
+        },
+        {
+          "q": "Is Internet Court open?",
+          "a": "Yes. It is an open, MIT licensed skill built by a consortium of companies working across the agentic-commerce stack, not a closed product from a single vendor. The goal is to make the different layers work together rather than replace them."
+        },
+        {
+          "q": "Is Internet Court live, and how do I try it?",
+          "a": "The fastest way to explore it is to install the Internet Court skill and connect an agent. You can also talk to the Internet Court agent directly on <link>Telegram</link>. From there you can create a contract, agree on terms with a counterparty, and run the full flow end to end."
         }
       ]
     }

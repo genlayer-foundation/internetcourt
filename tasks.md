@@ -4,6 +4,13 @@
 
 ## In Progress
 
+### FAQ page (/faq) — content rework + restyle
+- Removed Glossary/"Key terms" section entirely (deleted GlossarySection + GLOSSARY_TERMS + home.glossary msgs across 5 locales). No more "molt" copy there.
+- Global copy rules: NO "API" anywhere (it is a skill, not an API); no em dashes; agnostic (no "built on GenLayer", no TRUE/FALSE/UNDETERMINED, no three-key jargon).
+- Expanding FAQ from 3 to 16 curated Q&As (user selected from a candidate list). Order + verbatim copy finalized this session. Dispute Q keeps GenLayer/Kleros/UMA + "or whatever they want to use"; use-cases Q links the use-cases blog post; open Q adds MIT licensed; try-it Q adds Telegram.
+- Restyle FaqSection to homepage design language; must scale gracefully to ~16 items.
+- Status: dispatching implementer; then run dev server on localhost for user review. Not committed, not deployed.
+
 ### Homepage copy exploration — variants under /preview/home-copy + remove video
 - User wants the homepage copy reviewed & explored. TWO parts:
   1. REMOVE the "See the court in motion" video section (`TheaterWatch`, `#watch`) from the LIVE homepage — redundant with the hero video panel above the fold.

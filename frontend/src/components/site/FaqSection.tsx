@@ -1,23 +1,63 @@
+import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { Accent } from "@/components/site/Hero";
 import { SectionHeading } from "@/components/site/SectionHeading";
+import { Link } from "@/i18n/routing";
+import { TELEGRAM_URL } from "@/lib/site-content";
 
 type FaqItem = { q: string; a: string };
 
+/** Slug of the "use cases" blog post linked from the FAQ. */
+const USE_CASES_SLUG = "internet-court-use-cases";
+
+/**
+ * Per-item link handler for next-intl rich text. Only a couple of answers embed
+ * a `<link>...</link>` marker; every other answer renders the tag as a no-op so
+ * `t.rich` can be used uniformly across all items. Internal destinations use the
+ * locale-aware Link; external ones (Telegram) use a plain anchor.
+ */
+const LINK_CLASS =
+  "text-[#dc2626] underline decoration-[#dc2626]/40 underline-offset-2 transition-colors hover:decoration-[#dc2626]";
+
+function linkFor(index: number): (chunks: ReactNode) => ReactNode {
+  // Item 12 (index 11): use-cases blog post. Item 16 (index 15): Telegram.
+  if (index === 11) {
+    return (chunks) => (
+      <Link href={`/blog/${USE_CASES_SLUG}`} className={LINK_CLASS}>
+        {chunks}
+      </Link>
+    );
+  }
+  if (index === 15) {
+    return (chunks) => (
+      <a
+        href={TELEGRAM_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={LINK_CLASS}
+      >
+        {chunks}
+      </a>
+    );
+  }
+  // Fallback: render the marked text as plain (no anchor) for any other item.
+  return (chunks) => <>{chunks}</>;
+}
+
 /**
  * FAQ section — plain semantic Q&A (not an accordion) so every answer is in the
- * DOM and crawlable for generative-engine optimization. Each answer leads with
- * a direct, self-contained statement an AI engine can quote verbatim.
+ * DOM and crawlable for generative-engine optimization. Each answer leads with a
+ * direct, self-contained statement an AI engine can quote verbatim.
  *
- * With only three deliberate questions, each Q&A is an editorial card that
- * follows the homepage visual system: DM Mono index numerals, a brand-red tick
- * rule, DM Sans ink questions, relaxed body answers, hairline borders, a soft
- * shadow, a gentle hover lift, and staggered fade-in on load.
+ * At sixteen questions the layout is a calm, editorial single-column list rather
+ * than sixteen heavy cards: hairline rules separate each Q&A, a muted DM Mono
+ * index numbers them, a short brand-red tick anchors the question, and the answer
+ * sits in relaxed gray. Questions use DM Sans; the title's highlight is the
+ * serif-italic red Accent. Subtle staggered fade-in on load.
  */
 export async function FaqSection() {
   const t = await getTranslations("home.faq");
   const items = t.raw("items") as FaqItem[];
-  const delays = ["delay-100", "delay-200", "delay-300"];
 
   return (
     <section id="faq" className="relative overflow-hidden py-16 md:py-24 bg-white">
@@ -44,16 +84,17 @@ export async function FaqSection() {
           })}
         />
 
-        <dl className="mt-10 md:mt-16 max-w-3xl mx-auto flex flex-col gap-5 md:gap-6">
+        <dl className="mt-10 md:mt-16 max-w-3xl mx-auto border-t border-black/[0.06]">
           {items.map((_, i) => (
             <div
               key={i}
-              className={`group animate-fade-in-up ${delays[i] ?? "delay-300"} rounded-2xl border border-black/[0.06] bg-white/80 backdrop-blur-sm p-6 md:p-8 shadow-[0_30px_70px_-30px_rgba(26,24,23,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_36px_80px_-28px_rgba(26,24,23,0.42)] hover:border-black/[0.1]`}
+              className="animate-fade-in-up group border-b border-black/[0.06] py-6 md:py-8"
+              style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
             >
-              <div className="flex gap-5 md:gap-7">
-                {/* Decorative index numeral. */}
+              <div className="flex gap-4 md:gap-7">
+                {/* Muted mono index numeral. */}
                 <span
-                  className="hidden sm:block shrink-0 font-mono text-2xl md:text-3xl tabular-nums leading-none text-[#1a1817]/[0.14] pt-1 tracking-tight"
+                  className="hidden sm:block shrink-0 w-8 pt-1 font-mono text-sm tabular-nums leading-none tracking-[0.12em] text-[#74706c]/70"
                   aria-hidden="true"
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -63,15 +104,15 @@ export async function FaqSection() {
                   <dt className="flex items-start gap-3">
                     {/* Brand-red tick rule. */}
                     <span
-                      className="mt-[0.7rem] hidden md:block h-[3px] w-8 shrink-0 rounded-full bg-[#dc2626] transition-all duration-300 group-hover:w-11"
+                      className="mt-[0.55rem] hidden md:block h-[3px] w-6 shrink-0 rounded-full bg-[#dc2626] transition-all duration-300 group-hover:w-9"
                       aria-hidden="true"
                     />
-                    <h3 className="text-xl md:text-2xl font-sans font-extrabold tracking-tight leading-snug text-[#1a1817]">
+                    <h3 className="text-lg md:text-xl font-sans font-extrabold tracking-tight leading-snug text-[#1a1817]">
                       {t(`items.${i}.q`)}
                     </h3>
                   </dt>
-                  <dd className="mt-3 md:mt-4 md:pl-11 text-base md:text-[1.0625rem] text-[#4d4944] leading-relaxed">
-                    {t(`items.${i}.a`)}
+                  <dd className="mt-2.5 md:mt-3 md:pl-9 text-base md:text-[1.0625rem] text-[#4d4944] leading-relaxed">
+                    {t.rich(`items.${i}.a`, { link: linkFor(i) })}
                   </dd>
                 </div>
               </div>

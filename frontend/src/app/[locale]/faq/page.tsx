@@ -42,7 +42,13 @@ export default async function FaqPage({
   setRequestLocale(locale);
   const t = await getTranslations("home");
 
-  const faqItems = t.raw("faq.items") as { q: string; a: string }[];
+  const rawFaqItems = t.raw("faq.items") as { q: string; a: string }[];
+  // Answers may embed <link>…</link> markers for inline links; strip the marker
+  // tags so the FAQPage JSON-LD carries clean plain-text answers.
+  const faqItems = rawFaqItems.map((item) => ({
+    q: item.q,
+    a: item.a.replace(/<\/?link>/g, ""),
+  }));
 
   return (
     <div className="bg-white pt-16 md:pt-20">

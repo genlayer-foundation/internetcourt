@@ -87,11 +87,8 @@ export default async function Home({
         />
       </section>
 
-      {/* Section 2.6 - Blog (Briefings from the court) */}
-      <HomeBlogFeatured15 posts={getHomepagePosts(locale)} />
-
       {/* Section 3 - The Goal */}
-      <section id="goal" className="py-16 md:py-24 bg-white">
+      <section id="goal" className="py-16 md:py-24 bg-[#f7f7f7]">
         <div className="max-w-6xl mx-auto px-4">
           <SectionHeading
             eyebrow={t("goal.eyebrow")}
@@ -99,13 +96,24 @@ export default async function Home({
               accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
             })}
           />
-          <div className="mt-10 max-w-2xl mx-auto flex flex-col gap-5 text-base md:text-lg text-[#4d4944] leading-relaxed">
+          <div className="mt-10 max-w-2xl mx-auto flex flex-col gap-5 text-center text-base md:text-lg text-[#4d4944] leading-relaxed">
             <p>{t("goal.p1")}</p>
             <p>{t("goal.p2")}</p>
-            <p>{t("goal.p3")}</p>
+            <p>
+              {t.rich("goal.p3", {
+                strong: (chunks) => (
+                  <strong className="font-semibold text-[#1a1817]">
+                    {chunks}
+                  </strong>
+                ),
+              })}
+            </p>
           </div>
         </div>
       </section>
+
+      {/* Section 2.6 - Blog (Briefings from the court) */}
+      <HomeBlogFeatured15 posts={getHomepagePosts(locale)} />
 
       {/* Section 4 - Founding partners (logo wall) */}
       <section id="founding-partners" className="py-16 md:py-24 bg-[#f7f7f7]">
@@ -123,9 +131,14 @@ export default async function Home({
         </div>
       </section>
 
-      {/* Section 5 - CTA band */}
-      <section className="py-16 md:py-24 bg-white">
-        <CTABand title={t("cta.title")}>
+      {/* Section 5 - CTA band (editorial closing) */}
+      <section className="py-24 md:py-32 bg-white">
+        <CTABand
+          title={t.rich("cta.title", {
+            accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
+          })}
+          subhead={t("cta.subhead")}
+        >
           <SkillCommand />
         </CTABand>
       </section>
