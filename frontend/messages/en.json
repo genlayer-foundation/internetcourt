@@ -491,7 +491,8 @@
       "Opinion": "Opinion",
       "Order": "Order",
       "Dispatch": "Dispatch",
-      "Exhibit": "Exhibit"
+      "Exhibit": "Exhibit",
+      "Press Release": "Press Release"
     }
   }
 }

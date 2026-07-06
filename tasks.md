@@ -343,3 +343,9 @@
 ### Frontend — commit v0.1 homepage redesign
 - Committed: `page.tsx`, `globals.css`, `frontend/public/logos/`
 - Two-path hero, blue accent, animations
+
+### Press release — final copy from Google Doc
+- Replaced draft placeholder in `frontend/src/content/blog/en/press-release.mdx` with the approved copy (verbatim from the Google Doc, July 2, 2026 dateline)
+- Frontmatter: title from doc headline, date 2026-07-02, tag "Press Release"
+- Blog styling applied (bold partner/protocol names, ### About GenLayer heading); translations left to the i18n pipeline
+- Not committed, not deployed
