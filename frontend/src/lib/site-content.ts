@@ -1,4 +1,7 @@
 export const TELEGRAM_URL = "https://t.me/internet_court";
+// Clerk Agent bot. This is the DEV bot (@internetcourtdev_bot); production
+// should use the non-dev handle (@internetcourtbot).
+export const TELEGRAM_BOT_URL = "https://t.me/internetcourtdev_bot";
 export const X_URL = "https://x.com/courtofinternet";
 
 export type StackRow = {

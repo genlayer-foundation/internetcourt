@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, ExternalLink, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { TELEGRAM_URL } from "@/lib/site-content";
+import { TELEGRAM_BOT_URL } from "@/lib/site-content";
 import { cn } from "@/lib/utils";
 
 const SKILL_CURL = "curl -s https://internetcourt.org/skill.md";
@@ -19,7 +19,7 @@ export type SkillCommandProps = {
  * ROW 1 (agent) is a copyable `curl` of the skill.md served from
  * internetcourt.org, captioned "for your agent", with a link to the canonical
  * SKILL.md on GitHub. ROW 2 (human) is the no-agent fallback, anchored by a
- * solid Telegram-blue button to the Court bot. Used in the hero and reused as
+ * solid Telegram-blue button to the Clerk Agent. Used in the hero and reused as
  * the closing CTA.
  */
 export function SkillCommand({ className }: SkillCommandProps) {
@@ -90,7 +90,7 @@ export function SkillCommand({ className }: SkillCommandProps) {
           {t("noAgent")}
         </p>
         <a
-          href={TELEGRAM_URL}
+          href={TELEGRAM_BOT_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-[#229ED9] px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#1b88bb]"

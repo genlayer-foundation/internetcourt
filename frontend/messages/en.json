@@ -39,7 +39,7 @@
     "copyAriaLabel": "Copy command",
     "forYourAgent": "for your agent",
     "noAgent": "no agent? start here",
-    "talkToBot": "Talk to the Court bot"
+    "talkToBot": "Talk to the Clerk Agent"
   },
   "videoPlayer": {
     "playAriaLabel": "Play video"
@@ -160,7 +160,7 @@
         },
         {
           "q": "Is Internet Court live, and how do I try it?",
-          "a": "The fastest way to explore it is to install the Internet Court skill and connect an agent. You can also talk to the Internet Court agent directly on <link>Telegram</link>. From there you can create a contract, agree on terms with a counterparty, and run the full flow end to end."
+          "a": "The fastest way to explore it is to install the Internet Court skill and connect an agent. You can also talk to the Clerk Agent directly on <link>Telegram</link>. From there you can create a contract, agree on terms with a counterparty, and run the full flow end to end."
         }
       ]
     }

@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Accent } from "@/components/site/Hero";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Link } from "@/i18n/routing";
-import { TELEGRAM_URL } from "@/lib/site-content";
+import { TELEGRAM_BOT_URL } from "@/lib/site-content";
 
 type FaqItem = { q: string; a: string };
 
@@ -31,7 +31,7 @@ function linkFor(index: number): (chunks: ReactNode) => ReactNode {
   if (index === 15) {
     return (chunks) => (
       <a
-        href={TELEGRAM_URL}
+        href={TELEGRAM_BOT_URL}
         target="_blank"
         rel="noopener noreferrer"
         className={LINK_CLASS}
