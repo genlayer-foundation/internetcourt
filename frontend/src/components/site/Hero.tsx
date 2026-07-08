@@ -82,7 +82,7 @@ export function Hero({
     return (
       <div
         className={cn(
-          "relative mx-auto max-w-6xl px-5 md:px-4 bg-white text-[#1a1817] overflow-x-clip",
+          "relative mx-auto max-w-6xl px-5 md:px-4 bg-[#f7f4ec] text-[#1c1a16] overflow-x-clip",
           className,
         )}
       >
@@ -118,7 +118,7 @@ export function Hero({
           )}
 
           {subhead && (
-            <p className="relative z-10 mt-5 max-w-[639px] text-lg text-[#74706c] md:text-xl text-center leading-snug">
+            <p className="relative z-10 mt-5 max-w-[639px] text-lg text-[#6c665a] md:text-xl text-center leading-snug">
               {subhead}
             </p>
           )}
@@ -133,7 +133,7 @@ export function Hero({
   return (
     <section
       className={cn(
-        "relative overflow-hidden py-20 md:py-32 bg-[#0a0913] text-white",
+        "relative overflow-hidden py-20 md:py-32 bg-[#1c1a16] text-white",
         className,
       )}
     >
@@ -162,19 +162,19 @@ export function Hero({
         className="absolute -top-40 -left-40 w-[480px] h-[480px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(192,54,43,0.20) 0%, transparent 70%)",
         }}
         aria-hidden="true"
       />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
         {eyebrow && (
-          <div className="font-mono text-xs md:text-sm uppercase tracking-[0.12em] mb-6 text-[#c8b6ff]">
+          <div className="font-mono text-xs md:text-sm uppercase tracking-[0.12em] mb-6 text-[#ef6a6a]">
             {eyebrow}
           </div>
         )}
 
-        <h1 className="font-sans font-extrabold tracking-[-0.02em] leading-[1.2] text-[40px] md:text-7xl lg:text-[96px]">
+        <h1 className="font-sans font-semibold tracking-[-0.03em] leading-[1.2] text-[40px] md:text-7xl lg:text-[96px]">
           {title}
         </h1>
 
@@ -201,10 +201,9 @@ export function Accent({ variant = "dark", children, className }: AccentProps) {
     <em
       className={cn(
         "font-heading not-italic",
-        variant === "dark" ? "text-[#c8b6ff]" : "text-[#dc2626]",
+        variant === "dark" ? "text-[#ef6a6a]" : "text-[#dc2626]",
         className,
       )}
-      style={{ fontStyle: "italic" }}
     >
       {children}
     </em>

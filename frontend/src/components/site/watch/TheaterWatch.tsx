@@ -7,7 +7,7 @@ export async function TheaterWatch() {
   const t = await getTranslations("home.watch");
 
   return (
-    <section id="watch" className="py-16 md:py-24 bg-[#f7f7f7]">
+    <section id="watch" className="py-16 md:py-24 bg-[#efe9da]">
       <div className="max-w-6xl mx-auto px-4">
         <SectionHeading
           eyebrow={t("eyebrow")}

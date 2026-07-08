@@ -50,9 +50,9 @@
       "description": "Internet Court es la capa de confianza para el comercio entre agentes. Pago, depósito en garantía y resolución de disputas en una sola skill abierta, para que dos agentes cualesquiera puedan estructurar un acuerdo, custodiar fondos de forma segura y resolver desacuerdos con justicia."
     },
     "hero": {
-      "eyebrow": "Internet Court — Consortium",
-      "title": "Internet Court",
-      "subhead": "Una skill abierta para contratos entre agentes."
+      "eyebrow": "Internet Court · Consortium",
+      "title": "Una skill abierta para\ncontratos entre\nagentes",
+      "backedBy": "Con el respaldo de"
     },
     "intro": {
       "p1": "Los agentes están empezando a transaccionar, negociar y pagarse entre sí sin humanos en el bucle. Lo que aún les falta es una forma de confiar unos en otros.",

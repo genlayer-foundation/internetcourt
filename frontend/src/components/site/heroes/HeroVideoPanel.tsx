@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { HeroVideoPlayer } from "@/components/site/heroes/HeroVideoPlayer";
 
-const FALLBACK = "#141414";
+const FALLBACK = "#1c1a16";
 
 /**
  * Continuously samples the single TOP-LEFT pixel (0,0) of a playing <video>
@@ -219,14 +219,14 @@ export function HeroVideoPanel({
        z-indices (red z-0 → fill z-10 → video z-20) so the layer order is robust
        and the panel stays below the sibling text card. */
     <div
-      className={`animate-fade-in-up delay-200 relative isolate rounded-2xl shadow-[0_2px_24px_rgba(26,24,23,0.10),0_0_60px_-20px_rgba(26,24,23,0.18)] ${className}`}
+      className={`animate-fade-in-up delay-200 relative isolate rounded-2xl shadow-[0_2px_24px_rgba(28,26,22,0.10),0_0_60px_-20px_rgba(28,26,22,0.18)] ${className}`}
     >
       {/* offset red block, sized to the container (h-full w-full), offset
           up-and-right so it peeks ~1rem at the container's top and right only.
           `z-0` keeps it BEHIND the fill within this isolated container. */}
       <div
         aria-hidden="true"
-        className="absolute -right-4 -top-4 z-0 h-full w-full rounded-2xl bg-[#dc2626] shadow-[0_2px_24px_rgba(26,24,23,0.10),0_0_60px_-20px_rgba(26,24,23,0.18)]"
+        className="absolute -right-4 -top-4 z-0 h-full w-full rounded-2xl bg-[#dc2626] shadow-[0_2px_24px_rgba(28,26,22,0.10),0_0_60px_-20px_rgba(28,26,22,0.18)]"
       />
       {/* live-colored FILL/extension, exactly the full container box (inset-0).
           Sits OVER the red, so it covers the red within the box and forms the

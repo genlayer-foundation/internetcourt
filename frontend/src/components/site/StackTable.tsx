@@ -68,7 +68,7 @@ export function StackTable({ className }: StackTableProps) {
 
   return (
     <figure ref={ref} className={cn("max-w-4xl mx-auto", className)}>
-      <div className="flex flex-col md:flex-row rounded-2xl border border-border overflow-hidden bg-white shadow-sm">
+      <div className="flex flex-col md:flex-row rounded-2xl border border-border overflow-hidden bg-[#f2eee2] shadow-sm">
         {/* Rows */}
         <div className="flex-1 flex flex-col divide-y divide-border">
           {STACK_ROWS.map((row, i) => {

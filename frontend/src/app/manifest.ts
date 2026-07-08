@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Agent-native dispute resolution for the AI agent economy, powered by GenLayer intelligent contracts.",
     start_url: "/",
     display: "standalone",
-    theme_color: "#1a1817",
-    background_color: "#ffffff",
+    theme_color: "#1c1a16",
+    background_color: "#f7f4ec",
     icons: [
       {
         src: "/favicon.svg",

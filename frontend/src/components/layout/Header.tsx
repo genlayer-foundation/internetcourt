@@ -2,12 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { Github, Send } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { TELEGRAM_URL, X_URL } from "@/lib/site-content";
-import { cn } from "@/lib/utils";
+import { HeaderNavChips } from "@/components/layout/HeaderNavChips";
 import { MastheadLangToggle } from "@/components/layout/MastheadLangToggle";
 
 const GITHUB_URL = "https://github.com/internet-court";
 
-/** Official X (formerly Twitter) brand mark — lucide ships no clean glyph for it. */
+/** Official X (formerly Twitter) brand mark: lucide ships no clean glyph for it. */
 function XMark({ className }: { className?: string }) {
   return (
     <svg
@@ -22,120 +22,96 @@ function XMark({ className }: { className?: string }) {
 }
 
 /**
- * Quiet uppercase-mono nav link with an animated red underline that wipes in
- * from the left on hover/focus. Shared by the desktop (left column) and the
- * mobile (reflowed below) navigation.
+ * Square icon chip for the social links: 36x36, warm chip fill, rounded 12px,
+ * ink icon that warms to brand red on hover.
  */
-const navLinkClasses =
-  "relative font-mono text-[11px] uppercase tracking-[0.2em] text-[#4d4944] transition-colors duration-200 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#dc2626] after:transition-transform after:duration-200 hover:text-[#dc2626] hover:after:scale-x-100 focus-visible:outline-none focus-visible:text-[#dc2626] focus-visible:after:scale-x-100";
-
-const socialLinkClasses =
-  "group inline-flex h-8 w-8 items-center justify-center rounded-full text-[#4d4944] transition-colors duration-200 hover:bg-[var(--accent-red-soft)] hover:text-[#dc2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]";
+const socialChipClasses =
+  "inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#ebe9e0] text-[#1c1a16] transition-colors duration-200 hover:text-[#dc2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f4ec]";
 
 const socials = [
   {
     key: "telegram",
     href: TELEGRAM_URL,
-    icon: <Send size={15} strokeWidth={1.7} />,
-  },
-  {
-    key: "x",
-    href: X_URL,
-    icon: <XMark className="h-[13px] w-[13px]" />,
+    icon: <Send size={20} strokeWidth={1.7} />,
   },
   {
     key: "github",
     href: GITHUB_URL,
-    icon: <Github size={15} strokeWidth={1.7} />,
+    icon: <Github size={20} strokeWidth={1.7} />,
+  },
+  {
+    key: "x",
+    href: X_URL,
+    icon: <XMark className="h-[18px] w-[18px]" />,
   },
 ] as const;
 
-const nav = [
-  { key: "blog" as const, href: "/blog" as const },
-  { key: "faq" as const, href: "/faq" as const },
-];
-
 /**
- * Header — "Centered masthead".
+ * Header: chip bar (Pablo's Figma frame).
  *
- * A law-review / journal masthead: the wordmark is centered between two
- * balanced columns (quiet nav links left, social marks right), framed by a thin
- * hairline above and a doubled rule below. Language is a tiny, unobtrusive
- * corner toggle hung in the top rule. On small screens the nav reflows centered
- * beneath the masthead.
+ * A single 1200px row directly on the paper background (no hairline rules):
+ * BLOG/FAQ nav chips on the left, the red TIC logotype centered (32px tall),
+ * and on the right the three social icon chips (Telegram, GitHub, X) plus the
+ * language-toggle chip. Chips share the 12px radius and warm `#ebe9e0` fill
+ * (transparent-until-hover for the text chips, always filled for the icon
+ * squares). On small screens the logo centers on its own row and the chips
+ * reflow centered beneath it.
  */
 export async function Header() {
   const t = await getTranslations();
 
+  const navLabels = { blog: t("nav.blog"), faq: t("nav.faq") };
+
+  const socialChips = socials.map((social) => (
+    <a
+      key={social.key}
+      href={social.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={t(`social.${social.key}`)}
+      className={socialChipClasses}
+    >
+      {social.icon}
+    </a>
+  ));
+
   return (
-    <header className="relative z-50 px-4 pt-5">
-      <div className="mx-auto max-w-[1200px] px-1">
-        {/* top hairline */}
-        <div className="h-px bg-[#1a1817]/15" />
+    <header className="relative z-50 px-4 py-5 md:py-6">
+      <div className="mx-auto max-w-[1200px]">
+        {/* Bar: three zones on md+ (nav / logo / socials+language); on small
+            screens only the centered logo remains here. */}
+        <div className="flex items-center justify-center md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4">
+          <HeaderNavChips
+            labels={navLabels}
+            className="hidden items-center justify-start gap-2 md:flex"
+          />
 
-        {/* three-column masthead: nav · wordmark · socials */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3">
-          {/* left — quiet nav */}
-          <nav className="hidden items-center gap-7 sm:flex">
-            {nav.map((item) => (
-              <Link key={item.key} href={item.href} className={navLinkClasses}>
-                {t(`nav.${item.key}`)}
-              </Link>
-            ))}
-          </nav>
-          <span aria-hidden="true" className="sm:hidden" />
-
-          {/* center — wordmark */}
+          {/* center: logotype */}
           <Link
             href="/"
             aria-label={t("nav.homeAriaLabel")}
-            className="mx-auto flex items-center justify-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7f7f7]"
+            className="mx-auto flex items-center justify-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7f4ec]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logos/tic-logo-red.svg"
               alt={t("nav.logoAlt")}
-              className="h-[29px] w-[160px] md:w-[220px]"
+              className="h-7 w-auto md:h-8"
             />
           </Link>
 
-          {/* right — socials + language */}
-          <div className="flex items-center justify-end gap-1">
-            {socials.map((social) => (
-              <a
-                key={social.key}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={t(`social.${social.key}`)}
-                className={socialLinkClasses}
-              >
-                {social.icon}
-              </a>
-            ))}
-            {/* thin hairline divider, then the language toggle, inline with socials */}
-            <span
-              aria-hidden="true"
-              className="mx-1.5 h-4 w-px bg-[#1a1817]/15"
-            />
+          <div className="hidden items-center justify-end gap-2 md:flex">
+            {socialChips}
             <MastheadLangToggle />
           </div>
         </div>
 
-        {/* bottom hairline — doubled rule for a printed-journal feel */}
-        <div className="space-y-[3px]">
-          <div className="h-px bg-[#1a1817]/15" />
-          <div className="h-px bg-[#1a1817]/10" />
+        {/* small-screen chip row: nav + socials + language, centered */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 md:hidden">
+          <HeaderNavChips labels={navLabels} className="flex items-center gap-2" />
+          {socialChips}
+          <MastheadLangToggle />
         </div>
-
-        {/* small-screen nav slips below the masthead, centered */}
-        <nav className="flex items-center justify-center gap-6 pt-2.5 sm:hidden">
-          {nav.map((item) => (
-            <Link key={item.key} href={item.href} className={navLinkClasses}>
-              {t(`nav.${item.key}`)}
-            </Link>
-          ))}
-        </nav>
       </div>
     </header>
   );

@@ -35,7 +35,7 @@ export function SkillCommand({ className }: SkillCommandProps) {
   return (
     <div
       className={cn(
-        "w-full max-w-xl mx-auto overflow-hidden rounded-xl bg-[#1a1817] text-left shadow-lg",
+        "w-full max-w-xl mx-auto overflow-hidden rounded-xl bg-[#1c1a16] text-left shadow-lg",
         className,
       )}
     >

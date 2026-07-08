@@ -47,40 +47,42 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #FFFFFF;
-  --foreground: #1a1817;
-  --card: #f7f7f7;
-  --card-foreground: #1a1817;
-  --popover: #FFFFFF;
-  --popover-foreground: #1a1817;
-  --primary: #1a1817;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F1F3F5;
-  --secondary-foreground: #1a1817;
-  --muted: #F1F3F5;
-  --muted-foreground: #4d4944;
-  --accent: #F1F3F5;
-  --accent-foreground: #1a1817;
+  --background: #f7f4ec;
+  --foreground: #1c1a16;
+  --card: #efe9da;
+  --card-foreground: #1c1a16;
+  --popover: #f7f4ec;
+  --popover-foreground: #1c1a16;
+  --primary: #1c1a16;
+  --primary-foreground: #f7f4ec;
+  --secondary: #efe9da;
+  --secondary-foreground: #1c1a16;
+  --muted: #efe9da;
+  --muted-foreground: #6c665a;
+  --accent: #efe9da;
+  --accent-foreground: #1c1a16;
   --destructive: #E63946;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #9ca3af;
+  --border: #d9d3c4;
+  --input: #d9d3c4;
+  --line-soft: #e7e1d4;
+  --ring: #a89f8d;
   --chart-1: #E63946;
   --chart-2: #2563eb;
   --chart-3: #059669;
   --chart-4: #d97706;
   --chart-5: #7c3aed;
-  --sidebar: #FAFAFA;
-  --sidebar-foreground: #1a1817;
-  --sidebar-primary: #1a1817;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F3F5;
-  --sidebar-accent-foreground: #1a1817;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #9ca3af;
+  --sidebar: #f2eee2;
+  --sidebar-foreground: #1c1a16;
+  --sidebar-primary: #1c1a16;
+  --sidebar-primary-foreground: #f7f4ec;
+  --sidebar-accent: #efe9da;
+  --sidebar-accent-foreground: #1c1a16;
+  --sidebar-border: #d9d3c4;
+  --sidebar-ring: #a89f8d;
 
   /* Brand colors */
   --accent-red: #dc2626;
+  --accent-oxblood: #c0362b;
   --accent-red-soft: rgba(220, 38, 38, 0.08);
   --accent-red-glow: rgba(220, 38, 38, 0.06);
   --accent-red-border: rgba(220, 38, 38, 0.2);
@@ -139,25 +141,31 @@
   }
 }
 
-/* Serif heading utility - DM Serif Display Italic for accent phrases */
+/* Brand heading style: DM Sans SemiBold, tight -3% tracking, upright. No
+   serif anywhere (Figma direction). .font-heading is used by headings and by
+   the red Accent words inside them; the accent color stays #dc2626. */
 .font-heading {
-  font-family: var(--font-dm-serif), Georgia, 'Times New Roman', serif;
-  font-style: italic;
-  font-weight: 400;
-}
-
-/* Upright display serif for structural article headings: authoritative,
-   clean, distinct from the italic accent treatment above. */
-.font-display {
-  font-family: var(--font-dm-serif), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
-/* Warm book serif for pull-quotes: a literary register, clearly different
-   from the high-contrast display face used for titles. */
+/* Structural headings: identical treatment, kept as a separate hook so the
+   two registers can diverge again later without touching components. */
+.font-display {
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+/* Pull-quotes: same DM Sans treatment. */
 .font-quote {
-  font-family: var(--font-newsreader), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 /* Entrance animations */
@@ -192,7 +200,7 @@
   will-change: transform;
 }
 
-/* Counter-scrolling row for the double marquee — same track, opposite direction. */
+/* Counter-scrolling row for the double marquee: same track, opposite direction. */
 .animate-marquee-reverse {
   animation: marquee 36s linear infinite reverse;
   will-change: transform;

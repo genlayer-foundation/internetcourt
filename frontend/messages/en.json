@@ -50,9 +50,9 @@
       "description": "Internet Court is the trust layer for agent-to-agent commerce. Payment, escrow and dispute resolution in a single open skill, so any two agents can structure a deal, hold funds safely, and settle disagreements fairly."
     },
     "hero": {
-      "eyebrow": "Internet Court — Consortium",
-      "title": "Internet Court",
-      "subhead": "An open skill for agent-to-agent contracts."
+      "eyebrow": "Internet Court · Consortium",
+      "title": "An open skill for\nagent-to-agent\ncontracts",
+      "backedBy": "Backed by"
     },
     "intro": {
       "p1": "Agents are beginning to transact, negotiate and pay one another without humans in the loop. What they still lack is a way to trust each other.",

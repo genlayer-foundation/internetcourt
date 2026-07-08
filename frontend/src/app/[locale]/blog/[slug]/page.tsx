@@ -80,7 +80,7 @@ export default async function BlogPostPage({
         ]}
       />
 
-      <header className="bg-[#f7f7f7]">
+      <header className="bg-[#efe9da]">
         <div className="mx-auto max-w-3xl px-5 pt-12 pb-10 md:px-4 md:pt-16 md:pb-12">
           <Link
             href="/blog"
@@ -107,11 +107,11 @@ export default async function BlogPostPage({
                 {formatDate(post.date, locale)}
               </time>
             </div>
-            <h1 className="mt-3 font-heading text-[2.5rem] leading-[1.1] text-[#1a1817] md:text-[3.2rem]">
+            <h1 className="mt-3 font-heading text-[2.5rem] leading-[1.1] text-[#1c1a16] md:text-[3.2rem]">
               {post.title}
             </h1>
             {post.excerpt && (
-              <p className="mt-4 max-w-prose text-lg leading-relaxed text-[#4d4944]">
+              <p className="mt-4 max-w-prose text-lg leading-relaxed text-[#6c665a]">
                 {post.excerpt}
               </p>
             )}

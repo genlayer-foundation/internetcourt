@@ -53,20 +53,20 @@ function linkFor(index: number): (chunks: ReactNode) => ReactNode {
  * than sixteen heavy cards: hairline rules separate each Q&A, a muted DM Mono
  * index numbers them, a short brand-red tick anchors the question, and the answer
  * sits in relaxed gray. Questions use DM Sans; the title's highlight is the
- * serif-italic red Accent. Subtle staggered fade-in on load.
+ * red Accent words. Subtle staggered fade-in on load.
  */
 export async function FaqSection() {
   const t = await getTranslations("home.faq");
   const items = t.raw("items") as FaqItem[];
 
   return (
-    <section id="faq" className="relative overflow-hidden py-16 md:py-24 bg-white">
+    <section id="faq" className="relative overflow-hidden py-16 md:py-24 bg-[#f7f4ec]">
       {/* Dotted radial grid backdrop, matching the homepage atmosphere. */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.5]"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(26,24,23,0.06) 1px, transparent 1px)",
+            "radial-gradient(rgba(28,26,22,0.06) 1px, transparent 1px)",
           backgroundSize: "22px 22px",
           maskImage:
             "radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 75%)",
@@ -94,7 +94,7 @@ export async function FaqSection() {
               <div className="flex gap-4 md:gap-7">
                 {/* Muted mono index numeral. */}
                 <span
-                  className="hidden sm:block shrink-0 w-8 pt-1 font-mono text-sm tabular-nums leading-none tracking-[0.12em] text-[#74706c]/70"
+                  className="hidden sm:block shrink-0 w-8 pt-1 font-mono text-sm tabular-nums leading-none tracking-[0.12em] text-[#6c665a]/70"
                   aria-hidden="true"
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -107,11 +107,11 @@ export async function FaqSection() {
                       className="mt-[0.55rem] hidden md:block h-[3px] w-6 shrink-0 rounded-full bg-[#dc2626] transition-all duration-300 group-hover:w-9"
                       aria-hidden="true"
                     />
-                    <h3 className="text-lg md:text-xl font-sans font-extrabold tracking-tight leading-snug text-[#1a1817]">
+                    <h3 className="text-lg md:text-xl font-sans font-semibold tracking-[-0.03em] leading-snug text-[#1c1a16]">
                       {t(`items.${i}.q`)}
                     </h3>
                   </dt>
-                  <dd className="mt-2.5 md:mt-3 md:pl-9 text-base md:text-[1.0625rem] text-[#4d4944] leading-relaxed">
+                  <dd className="mt-2.5 md:mt-3 md:pl-9 text-base md:text-[1.0625rem] text-[#6c665a] leading-relaxed">
                     {t.rich(`items.${i}.a`, { link: linkFor(i) })}
                   </dd>
                 </div>

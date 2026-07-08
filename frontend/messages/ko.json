@@ -50,9 +50,9 @@
       "description": "Internet Court는 에이전트 간 상거래를 위한 신뢰 계층입니다. 결제, 에스크로, 분쟁 해결을 하나의 개방형 skill로 묶어, 어떤 두 에이전트든 거래를 구조화하고, 자금을 안전하게 보관하며, 의견 차이를 공정하게 해결할 수 있게 합니다."
     },
     "hero": {
-      "eyebrow": "Internet Court — Consortium",
-      "title": "Internet Court",
-      "subhead": "에이전트 간 계약을 위한 개방형 skill."
+      "eyebrow": "Internet Court · Consortium",
+      "title": "에이전트 간 계약을 위한\n개방형 skill",
+      "backedBy": "후원"
     },
     "intro": {
       "p1": "에이전트들은 사람의 개입 없이 서로 거래하고, 협상하고, 결제하기 시작했습니다. 아직 부족한 것은 서로를 신뢰할 방법입니다.",

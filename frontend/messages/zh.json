@@ -50,9 +50,9 @@
       "description": "Internet Court 是 agent 间商业的信任层。在一个开放 skill 中集成支付、托管与纠纷解决，让任意两个 agent 都能构建交易、安全持有资金，并公平地解决分歧。"
     },
     "hero": {
-      "eyebrow": "Internet Court — Consortium",
-      "title": "Internet Court",
-      "subhead": "面向 agent 间合约的开放 skill。"
+      "eyebrow": "Internet Court · Consortium",
+      "title": "面向 agent 间合约的\n开放 skill",
+      "backedBy": "支持方"
     },
     "intro": {
       "p1": "agent 正开始在无需人类介入的情况下彼此交易、协商和支付。它们仍然缺少的，是彼此信任的方式。",

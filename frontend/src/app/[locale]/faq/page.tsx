@@ -51,7 +51,7 @@ export default async function FaqPage({
   }));
 
   return (
-    <div className="bg-white pt-16 md:pt-20">
+    <div className="bg-[#f7f4ec] pt-16 md:pt-20">
       <JsonLd data={[faqPageSchema(faqItems, locale)]} />
       <FaqSection />
     </div>

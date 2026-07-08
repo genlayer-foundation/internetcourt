@@ -5,7 +5,7 @@ import { formatDate, type BlogPost } from "@/lib/blog";
 /**
  * Academic — a law-review table of contents. Single column, no cards.
  * Each entry is a ruled row: volume-style index number, title set in the
- * italic serif heading face, mono dateline + register tag, and the excerpt
+ * heading face (DM Sans SemiBold), mono dateline + register tag, and the excerpt
  * as an abstract. Thin border-t rules separate entries like a printed journal.
  */
 export async function AcademicIndex({
@@ -27,12 +27,12 @@ export async function AcademicIndex({
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="border-t-2 border-[#1a1817]">
+      <div className="border-t-2 border-[#1c1a16]">
         {posts.map((post, i) => (
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
-            className="group grid grid-cols-[2.5rem_1fr] gap-x-5 border-b border-border py-8 transition-colors hover:bg-[#f7f7f7]/60"
+            className="group grid grid-cols-[2.5rem_1fr] gap-x-5 border-b border-border py-8 transition-colors hover:bg-[#efe9da]/60"
           >
             <span className="font-mono text-sm text-muted-foreground tabular-nums pt-1">
               {String(i + 1).padStart(2, "0")}
@@ -44,11 +44,11 @@ export async function AcademicIndex({
                 )}
                 <span>{formatDate(post.date, locale)}</span>
               </div>
-              <h3 className="font-heading text-2xl md:text-3xl leading-snug text-[#1a1817] group-hover:text-[#dc2626] transition-colors">
+              <h3 className="font-heading text-2xl md:text-3xl leading-snug text-[#1c1a16] group-hover:text-[#dc2626] transition-colors">
                 {post.title}
               </h3>
               {post.excerpt && (
-                <p className="max-w-prose text-base leading-relaxed text-[#4d4944]">
+                <p className="max-w-prose text-base leading-relaxed text-[#6c665a]">
                   {post.excerpt}
                 </p>
               )}

@@ -21,7 +21,7 @@ const LOCALE_LABELS: Record<(typeof routing.locales)[number], string> = {
 };
 
 /**
- * MastheadLangToggle — the masthead's tiny language control.
+ * MastheadLangToggle: the masthead's tiny language control.
  *
  * Visually it reads as a quiet two-letter mono mark (e.g. `EN ▾`) that sits
  * inline in the right-side social cluster, on the same baseline/height as the
@@ -41,7 +41,7 @@ export function MastheadLangToggle() {
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
 
-  // Close on outside click / Escape — lightweight, no extra deps.
+  // Close on outside click / Escape: lightweight, no extra deps.
   useEffect(() => {
     if (!open) return;
 
@@ -72,16 +72,16 @@ export function MastheadLangToggle() {
         aria-controls={listboxId}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "inline-flex h-8 items-center gap-0.5 rounded-full px-1.5",
-          "font-mono text-[10px] uppercase tracking-[0.22em] text-[#4d4944]",
-          "transition-colors duration-200 hover:text-[#dc2626]",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f7f7]",
-          open && "text-[#dc2626]",
+          "inline-flex items-center gap-1 rounded-xl px-5 py-2",
+          "font-mono text-xs leading-5 uppercase text-[#1c1a16]",
+          "transition-colors duration-200 hover:bg-[#ebe9e0]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-red-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f4ec]",
+          open && "bg-[#ebe9e0]",
         )}
       >
         <span aria-hidden="true">{activeLocale}</span>
         <ChevronDown
-          size={11}
+          size={12}
           strokeWidth={2}
           className={cn("transition-transform duration-200", open && "rotate-180")}
         />
@@ -94,7 +94,7 @@ export function MastheadLangToggle() {
           aria-label="Change language"
           className={cn(
             "absolute right-0 z-50 mt-2 min-w-[9.5rem] overflow-hidden rounded-[10px]",
-            "border border-border/70 bg-[#f7f7f7] p-1 shadow-lg shadow-black/5",
+            "border border-border/70 bg-[#f7f4ec] p-1 shadow-lg shadow-black/5",
             "animate-fade-in-up",
           )}
         >
@@ -115,8 +115,8 @@ export function MastheadLangToggle() {
                     "text-sm transition-colors duration-150",
                     "focus-visible:outline-none focus-visible:bg-[var(--accent-red-soft)] focus-visible:text-[#dc2626]",
                     isActive
-                      ? "bg-white font-medium text-foreground"
-                      : "text-foreground/80 hover:bg-white hover:text-[#dc2626]",
+                      ? "bg-[#efe9da] font-medium text-foreground"
+                      : "text-foreground/80 hover:bg-[#efe9da] hover:text-[#dc2626]",
                   )}
                 >
                   <span>{LOCALE_LABELS[locale]}</span>

@@ -197,7 +197,7 @@ export function PartnerLogo({ partner, imgClassName, textClassName }: PartnerLog
       )}
       <span
         className={cn(
-          "font-sans font-medium leading-none text-[#1a1817]/60 transition-colors duration-300 group-hover:text-[#1a1817]",
+          "font-sans font-medium leading-none text-[#1c1a16]/60 transition-colors duration-300 group-hover:text-[#1c1a16]",
           textSize,
         )}
       >

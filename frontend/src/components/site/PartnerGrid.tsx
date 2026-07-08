@@ -96,7 +96,7 @@ function GridLogo({ partner }: { partner: Partner }) {
       )}
       <span
         className={cn(
-          "font-sans font-medium leading-none text-[#1a1817]/60 transition-colors duration-300 group-hover:text-[#1a1817]",
+          "font-sans font-medium leading-none text-[#1c1a16]/60 transition-colors duration-300 group-hover:text-[#1c1a16]",
           // Text height tracks the logo height (0.9× the cell unit) so icon+text
           // logos scale with the same Figma ratio as wordmark logos.
           "text-[length:calc(var(--logo-h)*0.9)] md:text-[length:calc(var(--logo-h-md)*0.9)]",

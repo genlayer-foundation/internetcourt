@@ -48,18 +48,16 @@ export default async function Home({
 
   return (
     <>
-      {/* Section 1 - Hero (split-5-tall). Self-contained above-the-fold hero:
-          localized eyebrow/title/subhead + SkillCommand card over the live
-          video panel, with its OWN pinned founding-logo marquee + scroll cue.
-          (Replaces the former shared-video-backdrop hero; the standalone
-          <FoundingMarquee/> is gone because HomeHero already includes it.) */}
+      {/* Section 1 - Hero (Figma "cleaner top" layout). Self-contained top
+          section: eyebrow + headline left, SkillCommand card right, then the
+          full-width video panel and the cycling "Backed by" logo row (which
+          replaces the old FoundingMarquee on this page). */}
       <HomeHero />
 
-      {/* Explanatory paragraphs - constrained, centered. Scroll below the
-          above-the-fold hero (the hero's scroll-cue arrow points here). */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-5 pt-12 md:pt-16 md:px-4 text-[#1a1817]">
-          <div className="mx-auto mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-center text-base md:text-lg text-[#4d4944] leading-relaxed">
+      {/* Explanatory paragraphs - constrained, centered. */}
+      <section className="bg-[#f7f4ec]">
+        <div className="mx-auto max-w-6xl px-5 pt-12 md:pt-16 md:px-4 text-[#1c1a16]">
+          <div className="mx-auto mb-20 md:mb-28 flex max-w-2xl flex-col gap-5 text-center text-base md:text-lg text-[#6c665a] leading-relaxed">
             <p>{t("intro.p1")}</p>
             <p>{t("intro.p2")}</p>
           </div>
@@ -67,7 +65,7 @@ export default async function Home({
       </section>
 
       {/* Section 2 - The stack (centerpiece) */}
-      <section id="stack" className="py-16 md:py-24 bg-white">
+      <section id="stack" className="py-16 md:py-24 bg-[#f7f4ec]">
         <AnimatedStack
           pinned
           header={
@@ -88,7 +86,7 @@ export default async function Home({
       </section>
 
       {/* Section 3 - The Goal */}
-      <section id="goal" className="py-16 md:py-24 bg-[#f7f7f7]">
+      <section id="goal" className="py-16 md:py-24 bg-[#efe9da]">
         <div className="max-w-6xl mx-auto px-4">
           <SectionHeading
             eyebrow={t("goal.eyebrow")}
@@ -96,13 +94,13 @@ export default async function Home({
               accent: (chunks) => <Accent variant="light">{chunks}</Accent>,
             })}
           />
-          <div className="mt-10 max-w-2xl mx-auto flex flex-col gap-5 text-center text-base md:text-lg text-[#4d4944] leading-relaxed">
+          <div className="mt-10 max-w-2xl mx-auto flex flex-col gap-5 text-center text-base md:text-lg text-[#6c665a] leading-relaxed">
             <p>{t("goal.p1")}</p>
             <p>{t("goal.p2")}</p>
             <p>
               {t.rich("goal.p3", {
                 strong: (chunks) => (
-                  <strong className="font-semibold text-[#1a1817]">
+                  <strong className="font-semibold text-[#1c1a16]">
                     {chunks}
                   </strong>
                 ),
@@ -116,7 +114,7 @@ export default async function Home({
       <HomeBlogFeatured15 posts={getHomepagePosts(locale)} />
 
       {/* Section 4 - Founding partners (logo wall) */}
-      <section id="founding-partners" className="py-16 md:py-24 bg-[#f7f7f7]">
+      <section id="founding-partners" className="py-16 md:py-24 bg-[#efe9da]">
         <div className="max-w-6xl mx-auto px-4">
           <SectionHeading
             eyebrow={t("partners.eyebrow")}
@@ -132,7 +130,7 @@ export default async function Home({
       </section>
 
       {/* Section 5 - CTA band (editorial closing) */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-24 md:py-32 bg-[#f7f4ec]">
         <CTABand
           title={t.rich("cta.title", {
             accent: (chunks) => <Accent variant="light">{chunks}</Accent>,

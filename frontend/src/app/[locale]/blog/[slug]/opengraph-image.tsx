@@ -8,10 +8,10 @@ export function generateStaticParams(): { slug: string }[] {
   return getPostSlugs().map((slug) => ({ slug }));
 }
 
-const INK = "#1a1817";
+const INK = "#1c1a16";
 const RED = "#dc2626";
-const PAPER = "#f5f3ef";
-const MUTED = "#a8a29e";
+const PAPER = "#f7f4ec";
+const MUTED = "#a39b89";
 
 type Params = { locale: string; slug: string };
 

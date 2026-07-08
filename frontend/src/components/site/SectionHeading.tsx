@@ -30,7 +30,7 @@ export function SectionHeading({
         </div>
       )}
       {title && (
-        <h2 className="text-3xl md:text-5xl font-sans font-extrabold tracking-tight leading-[1.2]">
+        <h2 className="text-3xl md:text-5xl font-sans font-semibold tracking-[-0.03em] leading-[1.2]">
           {title}
         </h2>
       )}

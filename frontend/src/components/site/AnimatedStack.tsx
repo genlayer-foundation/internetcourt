@@ -135,7 +135,12 @@ export function AnimatedStack({
             onUpdate: (self) => {
               if (!settled) tl.progress(self.progress);
             },
-            onLeave: () => {
+            // NOTE: use the `self` instance ScrollTrigger passes to callbacks,
+            // NOT the outer `const st`: when the page loads already scrolled
+            // past the trigger, ScrollTrigger.create() fires onLeave
+            // SYNCHRONOUSLY while `st` is still in its temporal dead zone
+            // (ReferenceError: Cannot access 'st' before initialization).
+            onLeave: (self) => {
               if (settled) return;
               settled = true;
               setScrollHint(false); // sequence done → drop the hint
@@ -145,7 +150,7 @@ export function AnimatedStack({
                 spacer && spacer.classList.contains("pin-spacer")
                   ? spacer.offsetHeight - el.offsetHeight
                   : 1400;
-              st.kill(true); // remove pin + spacer (leaves the finished tl state)
+              self.kill(true); // remove pin + spacer (leaves the finished tl state)
               window.scrollBy(0, -pinDist); // keep the view exactly where it was
             },
           });
@@ -247,9 +252,9 @@ export function AnimatedStack({
           {STACK_ROWS.map((row) => (
             <div
               key={row.n}
-              className="as-row relative flex items-center gap-4 rounded-2xl bg-[#f3f3f2] px-5 py-5 md:gap-6 md:px-8 md:py-6"
+              className="as-row relative flex items-center gap-4 rounded-2xl bg-[#efe9da] px-5 py-5 md:gap-6 md:px-8 md:py-6"
             >
-              <span className="inline-flex h-7 w-9 shrink-0 items-center justify-center rounded-md border border-[#dc2626]/50 font-mono text-xs text-[#74706c]">
+              <span className="inline-flex h-7 w-9 shrink-0 items-center justify-center rounded-md border border-[#dc2626]/50 font-mono text-xs text-[#6c665a]">
                 {row.n}
               </span>
               <span className="flex-1 font-sans font-medium text-base leading-snug md:text-xl">
