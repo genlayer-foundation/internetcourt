@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FOUNDING_MEMBERS, type Partner } from "@/lib/site-content";
+import {
+  FOUNDING_MEMBERS_PRIMARY,
+  FOUNDING_MEMBERS_SECONDARY,
+  type Partner,
+} from "@/lib/site-content";
 import { PartnerLogo } from "@/components/site/PartnerMarquee";
 import { cn } from "@/lib/utils";
 
@@ -12,10 +16,42 @@ import { cn } from "@/lib/utils";
  */
 const SPEED_PX_PER_SECOND = 45;
 
-/** Split the full founding-members list across the two rows (15 / 14). */
-const ROW_SPLIT = Math.ceil(FOUNDING_MEMBERS.length / 2);
-const ROW_ONE = FOUNDING_MEMBERS.slice(0, ROW_SPLIT);
-const ROW_TWO = FOUNDING_MEMBERS.slice(ROW_SPLIT);
+/**
+ * Split the founding-members list across the two rows using the original
+ * primary/secondary grouping, with a few members moved between rows: NEAR and
+ * Starknet are promoted to row 1, and BNB Chain is moved down to row 2.
+ */
+const MOVED_UP = new Set(["NEAR", "Starknet"]);
+const MOVED_DOWN = new Set(["BNB Chain"]);
+
+const ROW_ONE = [
+  ...FOUNDING_MEMBERS_PRIMARY.filter((p) => !MOVED_DOWN.has(p.name)),
+  ...FOUNDING_MEMBERS_SECONDARY.filter((p) => MOVED_UP.has(p.name)),
+];
+const ROW_TWO = [
+  ...FOUNDING_MEMBERS_SECONDARY.filter((p) => !MOVED_UP.has(p.name)),
+  ...FOUNDING_MEMBERS_PRIMARY.filter((p) => MOVED_DOWN.has(p.name)),
+];
+
+/**
+ * The seamless loop (two identical copies translated -50%) only stays gap-free
+ * while ONE copy is at least as wide as the viewport; a shorter copy leaves a
+ * blank stretch right before the loop resets, which then snaps back to full.
+ * Row 1 carries few enough boxes that its copy is narrower than a typical
+ * viewport, so we repeat each row's sequence until one copy comfortably exceeds
+ * the widest screens. Box footprint is 152px + 15px gap; targeting ~3600px of
+ * copy width covers ultrawide displays. Duration is measured from the real
+ * width, so repeating leaves the px/sec speed unchanged.
+ */
+const BOX_UNIT_PX = 152 + 15;
+const MIN_COPY_WIDTH_PX = 3600;
+const MIN_BOXES_PER_COPY = Math.ceil(MIN_COPY_WIDTH_PX / BOX_UNIT_PX);
+function fillRow(partners: Partner[]): Partner[] {
+  const times = Math.max(1, Math.ceil(MIN_BOXES_PER_COPY / partners.length));
+  return Array.from({ length: times }, () => partners).flat();
+}
+const ROW_ONE_FILLED = fillRow(ROW_ONE);
+const ROW_TWO_FILLED = fillRow(ROW_TWO);
 
 /**
  * One copy of a row's box sequence. The track renders it twice (the duplicate
@@ -43,9 +79,9 @@ function BoxRow({
       aria-hidden={ariaHidden || undefined}
       className="flex shrink-0 items-center gap-[15px] pr-[15px]"
     >
-      {partners.map((partner) => (
+      {partners.map((partner, index) => (
         <li
-          key={partner.name}
+          key={`${partner.name}-${index}`}
           title={partner.name}
           className="group flex h-[72px] w-[152px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#ebe9e0] px-4"
         >
@@ -117,8 +153,8 @@ function BoxMarqueeRow({
 /**
  * "Backed by" double marquee: TWO counter-scrolling lines of logo boxes (no
  * label; the `home.hero.backedBy` message key still exists but is not
- * rendered). Row 1 (first 15 founding members) scrolls right-to-left; row 2
- * (remaining 14) scrolls left-to-right, mirroring the site's old double
+ * rendered). Row 1 (the 8 primary founding members) scrolls right-to-left;
+ * row 2 (the secondary members) scrolls left-to-right, mirroring the site's old double
  * marquee. Every logo is always somewhere in the track (no swapping or
  * crossfade), and the rows run full-bleed edge to edge with no fade masks,
  * matching the old FoundingMarquee behavior.
@@ -130,8 +166,8 @@ export function BackedByLogos({ className }: { className?: string }) {
           FoundingMarquee): symmetric 50% - 50vw margins span the viewport
           without introducing a horizontal scrollbar. */}
       <div className="relative mx-[calc(50%-50vw)] flex flex-col gap-[15px]">
-        <BoxMarqueeRow partners={ROW_ONE} />
-        <BoxMarqueeRow partners={ROW_TWO} reverse />
+        <BoxMarqueeRow partners={ROW_ONE_FILLED} />
+        <BoxMarqueeRow partners={ROW_TWO_FILLED} reverse />
       </div>
     </div>
   );
