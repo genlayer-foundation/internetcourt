@@ -21,9 +21,16 @@ const ROW_TWO = FOUNDING_MEMBERS.slice(ROW_SPLIT);
  * One copy of a row's box sequence. The track renders it twice (the duplicate
  * aria-hidden) and translates -50%, which loops seamlessly because the two
  * halves are identical in width; `pr-[15px]` keeps the box gap across the
- * seam. Boxes keep the fixed "Backed by" treatment: 218x104, warm `#ebe9e0`
- * fill, 12px radius, logo centered.
+ * seam. Boxes keep the "Backed by" treatment at a compact size: 152x72 (seven
+ * boxes per 1152px container width instead of the previous five 218x104),
+ * warm `#ebe9e0` fill, 12px radius, logo centered. Logos reuse PartnerLogo's
+ * per-partner CSS vars scaled down x0.72 to match the smaller box.
  */
+const LOGO_IMG_CLASS =
+  "h-[calc(var(--logo-h)*0.72)] w-auto md:h-[calc(var(--logo-h-md)*0.72)]";
+const LOGO_TEXT_CLASS =
+  "text-[length:calc(var(--logo-h)*0.65)] md:text-[length:calc(var(--logo-h-md)*0.65)]";
+
 function BoxRow({
   partners,
   ariaHidden = false,
@@ -40,9 +47,13 @@ function BoxRow({
         <li
           key={partner.name}
           title={partner.name}
-          className="group flex h-[104px] w-[218px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#ebe9e0] px-6"
+          className="group flex h-[72px] w-[152px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#ebe9e0] px-4"
         >
-          <PartnerLogo partner={partner} />
+          <PartnerLogo
+            partner={partner}
+            imgClassName={LOGO_IMG_CLASS}
+            textClassName={LOGO_TEXT_CLASS}
+          />
         </li>
       ))}
     </ul>
@@ -104,25 +115,17 @@ function BoxMarqueeRow({
 }
 
 /**
- * "Backed by" double marquee: the label over TWO counter-scrolling lines of
- * logo boxes. Row 1 (first 15 founding members) scrolls right-to-left; row 2
+ * "Backed by" double marquee: TWO counter-scrolling lines of logo boxes (no
+ * label; the `home.hero.backedBy` message key still exists but is not
+ * rendered). Row 1 (first 15 founding members) scrolls right-to-left; row 2
  * (remaining 14) scrolls left-to-right, mirroring the site's old double
  * marquee. Every logo is always somewhere in the track (no swapping or
  * crossfade), and the rows run full-bleed edge to edge with no fade masks,
  * matching the old FoundingMarquee behavior.
  */
-export function BackedByLogos({
-  label,
-  className,
-}: {
-  label: string;
-  className?: string;
-}) {
+export function BackedByLogos({ className }: { className?: string }) {
   return (
     <div className={className}>
-      <p className="mb-3 font-mono text-sm uppercase tracking-[0.1em] text-[#6c665a]">
-        {label}
-      </p>
       {/* Full-bleed escape from the centered container (same trick as the old
           FoundingMarquee): symmetric 50% - 50vw margins span the viewport
           without introducing a horizontal scrollbar. */}
