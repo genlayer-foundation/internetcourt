@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ArrowUpRight } from "lucide-react";
+import {
+  RiArrowRightUpLine,
+  RiCheckLine,
+  RiCloseLine,
+} from "@/components/icons/remix";
 import {
   FOUNDING_MEMBERS_PRIMARY,
   FOUNDING_MEMBERS_SECONDARY,
@@ -238,7 +242,7 @@ export default async function BrandPage({
                 <span className="text-[15px] text-foreground transition-colors group-hover:text-[#dc2626]">
                   {t(`toc.items.${id}`)}
                 </span>
-                <ArrowUpRight
+                <RiArrowRightUpLine
                   size={14}
                   className="ml-auto translate-y-px text-muted-foreground/0 transition-colors group-hover:text-[#dc2626]"
                 />
@@ -442,9 +446,9 @@ export default async function BrandPage({
                 <div className="flex items-center gap-2 border-t border-border bg-card px-4 py-3">
                   <span
                     aria-hidden
-                    className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#dc2626] text-[10px] font-bold text-white"
+                    className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#dc2626] text-white"
                   >
-                    ✕
+                    <RiCloseLine size={10} />
                   </span>
                   <span className="text-[13px] text-muted-foreground">
                     {m.label}
@@ -741,8 +745,8 @@ export default async function BrandPage({
           {/* Do */}
           <Card className="!bg-background ring-1 ring-inset ring-[var(--success-green)]/25">
             <div className="flex items-center gap-2">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-[var(--success-green)] text-[11px] font-bold text-white">
-                ✓
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-[var(--success-green)] text-white">
+                <RiCheckLine size={12} />
               </span>
               <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-[var(--success-green)]">
                 {t("voice.doLabel")}
@@ -761,8 +765,8 @@ export default async function BrandPage({
           {/* Don't */}
           <Card className="!bg-background ring-1 ring-inset ring-[var(--accent-red-border)]">
             <div className="flex items-center gap-2">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-[#dc2626] text-[11px] font-bold text-white">
-                ✕
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-[#dc2626] text-white">
+                <RiCloseLine size={12} />
               </span>
               <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-[#dc2626]">
                 {t("voice.dontLabel")}

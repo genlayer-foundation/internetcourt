@@ -1,4 +1,4 @@
-import { ArrowDown } from "lucide-react";
+import { RiArrowDownLine } from "@/components/icons/remix";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,7 +16,7 @@ export function HeroScrollCue({ className }: { className?: string }) {
       className={cn("pointer-events-none flex justify-center", className)}
     >
       <div className="flex h-10 w-10 animate-bounce items-center justify-center rounded-full bg-[#dc2626] text-white shadow-lg motion-reduce:animate-none">
-        <ArrowDown size={20} />
+        <RiArrowDownLine size={20} />
       </div>
     </div>
   );

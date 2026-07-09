@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ExternalLink, Send } from "lucide-react";
+import {
+  RiCheckLine,
+  RiExternalLinkLine,
+  RiFileCopyLine,
+  RiSendPlane2Line,
+} from "@/components/icons/remix";
 import { useTranslations } from "next-intl";
 import { TELEGRAM_BOT_URL } from "@/lib/site-content";
 import { cn } from "@/lib/utils";
@@ -51,7 +56,7 @@ export function SkillCommand({ className }: SkillCommandProps) {
           className="inline-flex shrink-0 items-center gap-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#ef6a6a] transition-colors hover:text-white"
         >
           {t("viewOnGithub")}
-          <ExternalLink size={11} />
+          <RiExternalLinkLine size={11} />
         </a>
       </div>
 
@@ -70,9 +75,9 @@ export function SkillCommand({ className }: SkillCommandProps) {
             aria-label={t("copyAriaLabel")}
           >
             {copied ? (
-              <Check size={14} className="text-green-400" />
+              <RiCheckLine size={14} className="text-green-400" />
             ) : (
-              <Copy size={14} />
+              <RiFileCopyLine size={14} />
             )}
           </button>
         </div>
@@ -95,7 +100,7 @@ export function SkillCommand({ className }: SkillCommandProps) {
           rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-[#229ED9] px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#1b88bb]"
         >
-          <Send size={13} />
+          <RiSendPlane2Line size={13} />
           {t("talkToBot")}
         </a>
       </div>

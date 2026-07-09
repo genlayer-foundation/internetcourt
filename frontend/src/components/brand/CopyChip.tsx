@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Copy } from "lucide-react";
+import { RiCheckLine, RiFileCopyLine } from "@/components/icons/remix";
 import { cn } from "@/lib/utils";
 
 /**
@@ -50,9 +50,9 @@ export function CopyChip({
     >
       <span>{label ?? value}</span>
       {copied ? (
-        <Check size={12} className="text-[var(--success-green)]" />
+        <RiCheckLine size={12} className="text-[var(--success-green)]" />
       ) : (
-        <Copy
+        <RiFileCopyLine
           size={12}
           className="opacity-40 transition-opacity group-hover/chip:opacity-100"
         />

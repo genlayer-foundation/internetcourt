@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { RiArrowDownSLine, RiCheckLine } from "@/components/icons/remix";
 import { useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { routing } from "@/i18n/routing";
@@ -80,9 +80,8 @@ export function MastheadLangToggle() {
         )}
       >
         <span aria-hidden="true">{activeLocale}</span>
-        <ChevronDown
+        <RiArrowDownSLine
           size={12}
-          strokeWidth={2}
           className={cn("transition-transform duration-200", open && "rotate-180")}
         />
       </button>
@@ -121,7 +120,7 @@ export function MastheadLangToggle() {
                 >
                   <span>{LOCALE_LABELS[locale]}</span>
                   {isActive && (
-                    <Check size={14} strokeWidth={2.25} className="text-[#dc2626]" />
+                    <RiCheckLine size={14} className="text-[#dc2626]" />
                   )}
                 </Link>
               </li>

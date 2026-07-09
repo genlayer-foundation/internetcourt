@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play } from "lucide-react";
+import { RiPlayFill } from "@/components/icons/remix";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
@@ -48,10 +48,7 @@ export function VideoPlayer({
               className="group absolute inset-0 flex items-center justify-center bg-black/10 transition-colors hover:bg-black/20"
             >
               <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#dc2626] shadow-lg transition-transform duration-200 group-hover:scale-110 md:h-20 md:w-20">
-                <Play
-                  className="ml-1 h-7 w-7 fill-white text-white md:h-8 md:w-8"
-                  strokeWidth={1.5}
-                />
+                <RiPlayFill className="ml-1 h-7 w-7 text-white md:h-8 md:w-8" />
               </span>
             </button>
           </>

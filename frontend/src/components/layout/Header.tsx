@@ -1,25 +1,15 @@
 import { getTranslations } from "next-intl/server";
-import { Github, Send } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { TELEGRAM_URL, X_URL } from "@/lib/site-content";
+import {
+  RiGithubLine,
+  RiTelegramLine,
+  RiTwitterXLine,
+} from "@/components/icons/remix";
 import { HeaderNavChips } from "@/components/layout/HeaderNavChips";
 import { MastheadLangToggle } from "@/components/layout/MastheadLangToggle";
 
 const GITHUB_URL = "https://github.com/internet-court";
-
-/** Official X (formerly Twitter) brand mark: lucide ships no clean glyph for it. */
-function XMark({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z" />
-    </svg>
-  );
-}
 
 /**
  * Square icon chip for the social links: 36x36, warm chip fill, rounded 12px,
@@ -32,17 +22,17 @@ const socials = [
   {
     key: "telegram",
     href: TELEGRAM_URL,
-    icon: <Send size={20} strokeWidth={1.7} />,
+    icon: <RiTelegramLine size={20} />,
   },
   {
     key: "github",
     href: GITHUB_URL,
-    icon: <Github size={20} strokeWidth={1.7} />,
+    icon: <RiGithubLine size={20} />,
   },
   {
     key: "x",
     href: X_URL,
-    icon: <XMark className="h-[18px] w-[18px]" />,
+    icon: <RiTwitterXLine size={18} />,
   },
 ] as const;
 

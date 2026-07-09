@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check } from "lucide-react";
+import { RiCheckLine } from "@/components/icons/remix";
 import { cn } from "@/lib/utils";
 
 function hexToRgb(hex: string): string | null {
@@ -79,7 +79,7 @@ export function Swatch({ name, value, role, ink, bordered }: SwatchProps) {
         >
           {copied === "hex" ? (
             <span className="inline-flex items-center gap-1">
-              <Check size={11} /> {t("copied")}
+              <RiCheckLine size={11} /> {t("copied")}
             </span>
           ) : (
             t("clickToCopy")

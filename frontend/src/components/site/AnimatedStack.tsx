@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { ArrowDown } from "lucide-react";
+import { RiArrowDownLine } from "@/components/icons/remix";
 import { useTranslations } from "next-intl";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -310,7 +310,7 @@ export function AnimatedStack({
         )}
       >
         <div className="flex h-12 w-12 animate-bounce items-center justify-center rounded-full bg-[#dc2626] text-white shadow-lg">
-          <ArrowDown size={22} />
+          <RiArrowDownLine size={22} />
         </div>
       </div>
     </>

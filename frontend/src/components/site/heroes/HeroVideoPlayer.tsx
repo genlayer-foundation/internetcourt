@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, type RefObject } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { RiVolumeMuteLine, RiVolumeUpLine } from "@/components/icons/remix";
 import { cn } from "@/lib/utils";
 
 const LAUNCH_VIDEO =
@@ -124,9 +124,9 @@ export function HeroVideoPlayer({
         className="absolute right-4 top-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-black/55 text-white ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-black/70 peer-hover:ring-2 peer-hover:ring-[#dc2626] peer-hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#dc2626]"
       >
         {muted ? (
-          <VolumeX className="h-7 w-7" />
+          <RiVolumeMuteLine className="h-7 w-7" />
         ) : (
-          <Volume2 className="h-7 w-7" />
+          <RiVolumeUpLine className="h-7 w-7" />
         )}
       </button>
     </div>

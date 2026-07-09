@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { RiArrowRightLine } from "@/components/icons/remix";
 import { type BlogPost } from "@/lib/blog";
 
 /**
@@ -45,9 +45,8 @@ export default function HomeBlogFeatured15({ posts }: { posts: BlogPost[] }) {
             className="group inline-flex items-center gap-2 rounded-full bg-[#ebe9e0] px-4 py-1.5 font-mono text-xs uppercase tracking-[0.16em] text-[#1c1a16] transition-colors hover:text-[#dc2626]"
           >
             All posts
-            <ArrowRight
+            <RiArrowRightLine
               size={12}
-              aria-hidden
               className="transition-transform duration-300 group-hover:translate-x-0.5"
             />
           </Link>

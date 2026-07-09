@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { RiDoubleQuotesL } from "@/components/icons/remix";
 import { VideoPlayer } from "@/components/site/VideoPlayer";
 
 type VideoProps = {
@@ -100,12 +101,7 @@ export const mdxComponents = {
   ),
   blockquote: ({ children }: { children?: ReactNode }) => (
     <blockquote className="relative my-10 rounded-lg bg-black/[0.035] py-5 pr-6 pl-[3.9rem] md:pl-[4.2rem] [&>p]:my-0 [&>p]:italic [&>p]:text-[1.3rem] [&>p]:md:text-[1.45rem] [&>p]:leading-[1.35] [&>p]:text-[#1c1a16] [&>p+p]:mt-4">
-      <span
-        aria-hidden
-        className="absolute left-4 top-[0.85rem] font-semibold text-[3.2rem] leading-none tracking-[-0.03em] text-[#dc2626] md:left-5 md:text-[3.5rem]"
-      >
-        &ldquo;
-      </span>
+      <RiDoubleQuotesL className="absolute left-4 top-[1.15rem] h-7 w-7 text-[#dc2626] md:left-5 md:h-8 md:w-8" />
       {children}
     </blockquote>
   ),
