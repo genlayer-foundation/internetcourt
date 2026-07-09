@@ -13,6 +13,7 @@ export type BlogPost = {
   tag?: BlogTag;
   updated?: string;
   author?: string;
+  draft?: boolean;
   content: string;
 };
 
@@ -23,10 +24,24 @@ function localeDir(locale: string): string {
   return path.join(POSTS_ROOT, locale);
 }
 
+/** Read the English frontmatter for a slug (drafts are flagged there). */
+function readFrontmatter(cleanSlug: string): Record<string, unknown> {
+  const filePath = resolveFile(DEFAULT_LOCALE, cleanSlug);
+  if (!filePath) return {};
+  return matter(fs.readFileSync(filePath, "utf8")).data;
+}
+
+/** A post with `draft: true` in its frontmatter is unpublished. */
+function isDraft(cleanSlug: string): boolean {
+  return readFrontmatter(cleanSlug).draft === true;
+}
+
 /**
- * Canonical slug set. Enumerated from the English directory — `en` is the
- * source of truth for which posts exist. Translated locales may be missing
- * individual files; those fall back to the English version at read time.
+ * Canonical slug set of PUBLISHED posts. Enumerated from the English directory
+ * — `en` is the source of truth for which posts exist. Drafts (`draft: true`)
+ * are excluded so they are never statically generated, listed, or indexed.
+ * Translated locales may be missing individual files; those fall back to the
+ * English version at read time.
  */
 export function getPostSlugs(): string[] {
   const dir = localeDir(DEFAULT_LOCALE);
@@ -34,7 +49,8 @@ export function getPostSlugs(): string[] {
   return fs
     .readdirSync(dir)
     .filter((file) => file.endsWith(".mdx") || file.endsWith(".md"))
-    .map((file) => file.replace(/\.mdx?$/, ""));
+    .map((file) => file.replace(/\.mdx?$/, ""))
+    .filter((slug) => !isDraft(slug));
 }
 
 /** Resolve the on-disk path for a slug in a locale, or null if absent. */
@@ -55,8 +71,14 @@ function resolveFile(locale: string, cleanSlug: string): string | null {
 export function getPostBySlug(
   slug: string,
   locale: string = DEFAULT_LOCALE,
+  { includeDrafts = false }: { includeDrafts?: boolean } = {},
 ): BlogPost | null {
   const cleanSlug = slug.replace(/\.mdx?$/, "");
+
+  // Drafts are unpublished: treat them as absent unless explicitly requested,
+  // so a direct URL 404s even when rendered on demand (not just at build time).
+  if (!includeDrafts && isDraft(cleanSlug)) return null;
+
   const filePath =
     resolveFile(locale, cleanSlug) ??
     (locale !== DEFAULT_LOCALE
@@ -77,6 +99,7 @@ export function getPostBySlug(
     tag: data.tag as BlogTag | undefined,
     updated: typeof data.updated === "string" ? data.updated : undefined,
     author: typeof data.author === "string" ? data.author : undefined,
+    draft: data.draft === true,
     content,
   };
 }
@@ -85,8 +108,8 @@ export function getPostBySlug(
 export const HOMEPAGE_POSTS: string[] = [
   "internet-court-agentic-commerce",
   "press-release",
+  "internet-court-use-cases",
   "launch-video",
-  "welcome",
 ];
 
 export function getHomepagePosts(locale: string = DEFAULT_LOCALE): BlogPost[] {
