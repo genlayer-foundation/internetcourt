@@ -1,0 +1,2695 @@
+{
+  "version": 2,
+  "generatedAt": "2026-06-20",
+  "entries": [
+    {
+      "id": "layer-01",
+      "type": "layer",
+      "layer": "layer-01",
+      "from": null,
+      "to": null,
+      "name": "Discovery, identity & reputation",
+      "title": "On-chain registries that let agents find, identify and rate each other",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Identity/reputation registries are live on mainnet (~39k registrations), but raw counts are heavily inflated by test/sybil activity.",
+      "reason": "This layer covers how agents are discovered, identified and trusted: on-chain identity registries, reputation/feedback systems and discovery explorers. It has moved fast in 2026. ERC-8004 is the anchor standard, live on Ethereum mainnet since 29 Jan 2026 with ~39,000 registrations and ~73,000 feedback events across 15 chains in its first 90 days (QuickNode), plus a deep tooling ecosystem (8004scan, agentscan, RNWY indexing 150k+ agents, QuickNode's explorer/API, dozens of SDKs and TEE/x402 integrations). 0G's ERC-7857 iNFTs add an identity-as-asset variant, with the AIverse marketplace minting on 0G's Galileo testnet and a mainnet (Aristotle) launch announced March 2026. Real production identity deployments exist (AgentLux, Chitin, ORIGIN, RNWY on Base mainnet), so the plumbing is genuinely live.\n\nThe score is 3 (emerging) rather than 4 because the gap between registration counts and real economic usage is severe and well-documented. RNWY's sybil analysis flags that ERC-8004 identities are transferable ERC-721s (reputation laundering), cites the Moltbook case of 1.5M 'agents' controlled by 17k humans (88:1), and notes 13-40% sybil rates in comparable airdrop populations; ERC-7857's traction is still largely testnet/demo. The standards, registries and explorers are real and on mainnet, but verified, non-sybil reputation and validation events that drive real commerce are still thin — emerging infrastructure, not yet a trustworthy production trust layer.",
+      "metrics": [
+        {
+          "label": "ERC-8004 agent registrations (first 90 days)",
+          "value": "~39,000 across 15 chains; 8004scan separately shows ~21.5k — counts unverified for sybils",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "ERC-8004 feedback/reputation events",
+          "value": "~73,000 in 90 days (QuickNode); no filtering for self-dealing/sock puppets",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Agents indexed by reputation tools",
+          "value": "RNWY 150,000+ across 12 EVM chains + Solana (indexed, not verified-active)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Production identity deployments",
+          "value": "Several mainnet (AgentLux, Chitin, ORIGIN, RNWY on Base); most others experimental",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Estimated sybil/test share",
+          "value": "High — comparable airdrop populations run 13-40% sybil; Moltbook showed 88:1 agent:human",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Ethereum Foundation",
+          "role": "co-author (dAI team) + security audit",
+          "where": "Switzerland / open-source"
+        },
+        {
+          "name": "MetaMask (Consensys)",
+          "role": "co-author of ERC-8004",
+          "where": "USA"
+        },
+        {
+          "name": "Google",
+          "role": "co-author; A2A complement",
+          "where": "USA"
+        },
+        {
+          "name": "Coinbase",
+          "role": "co-author; x402 complement",
+          "where": "USA"
+        },
+        {
+          "name": "AltLayer",
+          "role": "builder of 8004scan explorer",
+          "where": "protocol"
+        },
+        {
+          "name": "QuickNode",
+          "role": "ERC-8004 explorer, x402 REST API",
+          "where": "USA"
+        },
+        {
+          "name": "0G Labs",
+          "role": "author of ERC-7857 iNFT standard",
+          "where": "USA"
+        },
+        {
+          "name": "RNWY",
+          "role": "reputation indexer + sybil scanner",
+          "where": "open-source / Base"
+        },
+        {
+          "name": "The Graph, ENS, EigenLayer, Nethermind, OpenZeppelin, Phala, Virtuals, Cisco, Eliza Labs",
+          "role": "100+ contributors to ERC-8004 spec",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://www.quicknode.com/blog/the-quicknode-erc-8004-stack-a-public-window-into-onchain-agents",
+        "https://news.bitcoin.com/what-is-erc-8004-ethereums-new-agent-standard-powers-thousands-of-onchain-ai-identities/",
+        "https://rnwy.com/sybil",
+        "https://www.crypto-reporter.com/press-releases/ethereum-foundations-dai-team-consensys-launch-protocol-erc-8004-to-bootstrap-ai-agent-economies-113145/"
+      ],
+      "notes": "Registration counts vary by source (8004scan ~21.5k vs QuickNode ~39k) and reflect raw on-chain registrations, not verified active or non-sybil agents. Transferable ERC-721 identities enable reputation laundering. Treat all counts as upper bounds; real economic usage is materially lower.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "layer-02",
+      "type": "layer",
+      "layer": "layer-02",
+      "from": null,
+      "to": null,
+      "name": "Negotiation",
+      "title": "How agents agree on terms, price, and scope",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Autonomous negotiation ships in procurement and retail, but it's agent-to-human; true agent-to-agent deal-making is barely live.",
+      "reason": "The negotiation layer is how parties converge on terms, price, and scope before a deal closes. Real production exists but is overwhelmingly agent-to-human, not agent-to-agent. Pactum runs autonomous supplier negotiations for 50+ Global 2000 firms including Walmart, Maersk, and Wesco, with $140M+ in closed deals, a single deal of $99.6M, a fastest deal of 87 seconds, 270% YoY platform-usage growth, and 2.5x ARR growth; it raised a $54M Series C (Insight Partners, 2025), ~$87M total. Keelvar reports 71% of sourcing events run by AI agents and 85% of activity automated. Nibble has handled 1M+ consumer-haggling negotiations for brands like ASOS and Oh Polly. On the agent-to-AGENT side, AP2's A2A x402 extension lets agents exchange structured terms (amount, currency, escrow, dispute window), but this is early and crypto-scoped.\n\nScore is 3 (emerging) because robust, revenue-generating autonomous negotiation is real and at scale — but the production volume is almost entirely AI-against-human-suppliers or AI-against-consumers, with humans setting rules and approving outcomes ('manager of agents'). Genuine machine-to-machine negotiation where two autonomous agents bargain and settle terms without a human counterparty is still nascent, protocol-dependent, and largely unproven at volume, so the layer as a whole sits below 'available' for the agent-native use case this map measures.",
+      "metrics": [
+        {
+          "label": "Pactum enterprise customers",
+          "value": "50+ Global 2000 firms (Walmart, Maersk, Wesco); $140M+ deals closed, largest $99.6M",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Pactum funding",
+          "value": "$54M Series C (Insight Partners, 2025); ~$87M total raised",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Keelvar autonomy",
+          "value": "71% of sourcing events run by AI agents; 85% automated (vendor-reported)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Nibble consumer negotiations",
+          "value": "1M+ AI negotiations handled (vendor-reported)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Agent-to-agent negotiation",
+          "value": "AP2/A2A x402 term-negotiation extension is crypto-only with minimal real volume",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Pactum AI",
+          "role": "autonomous procurement-negotiation vendor",
+          "where": "Mountain View, USA / Tallinn, Estonia"
+        },
+        {
+          "name": "Walmart",
+          "role": "Pactum production user",
+          "where": "USA"
+        },
+        {
+          "name": "Maersk",
+          "role": "Pactum production user",
+          "where": "Denmark"
+        },
+        {
+          "name": "Wesco",
+          "role": "Pactum named customer",
+          "where": "USA"
+        },
+        {
+          "name": "Insight Partners",
+          "role": "Pactum Series C lead investor",
+          "where": "USA"
+        },
+        {
+          "name": "Keelvar",
+          "role": "autonomous-sourcing / negotiation-agent vendor",
+          "where": "Cork, Ireland"
+        },
+        {
+          "name": "GEP",
+          "role": "procurement platform w/ negotiation agents",
+          "where": "USA"
+        },
+        {
+          "name": "Nibble Technology",
+          "role": "consumer AI negotiation chatbot",
+          "where": "London, UK"
+        },
+        {
+          "name": "ASOS",
+          "role": "Nibble retail deployment",
+          "where": "UK"
+        },
+        {
+          "name": "Oh Polly",
+          "role": "Nibble retail deployment",
+          "where": "UK"
+        }
+      ],
+      "sources": [
+        "https://itkey.media/pactum-secures-usd-54m-of-series-c-funding-to-expand-ai-procurement-platform/",
+        "https://thunderbird.asu.edu/thought-leadership/journals-case-series/case-series-listing/pactums-ai-contract-negotiations",
+        "https://www.keelvar.com/knowledge-hub/autonomous-negotiation-agents-the-end-of-the-chatbot-era-in-sourcing",
+        "https://retailtechinnovationhub.com/home/2025/4/30/the-price-isnt-right-online-shoppers-quibble-as-fashion-retailer-oh-polly-deploys-ai-chatbot-nibble"
+      ],
+      "notes": "Production negotiation is overwhelmingly agent-to-human (AI vs suppliers/consumers), humans set guardrails. True agent-to-agent autonomous negotiation is early. Keelvar/Nibble adoption %s vendor self-reported; Pactum figures company-disclosed.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "layer-03",
+      "type": "layer",
+      "layer": "layer-03",
+      "from": null,
+      "to": null,
+      "name": "Contracts & obligations",
+      "title": "On-chain delegation, escrow & job-obligation primitives for agents",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Delegation (ERC-7710) is audited and live, but agentic-escrow standards (ERC-8183, Alkahest) are draft/testnet with near-zero use.",
+      "reason": "This layer covers the contract-level primitives by which agents grant scoped permissions and bind to obligations: smart-account delegation (ERC-7710 via MetaMask's Delegation Framework), draft job-escrow standards (ERC-8183 'Agentic Commerce'), and EAS-based arbitrated escrow (Arkhai's Alkahest). The delegation half is genuinely production-grade — MetaMask's framework is audited, multi-chain, at v1.3.0, ~10k weekly SDK downloads, and being re-implemented by OpenZeppelin. The escrow/obligation half is far behind: ERC-8183 is a Draft EIP barely four months old, and every known implementation (BNBAgent SDK, Arc, World Chain commitments) is testnet; Arkhai/Alkahest is Base Sepolia-only and its public SDKs were archived in Feb 2026.\n\nScore 3 (emerging) reflects this split: one strong, deployed pillar (delegation) dragging up two experimental ones (agentic escrow standards). There is real, audited delegation infrastructure with measurable usage, but the specifically agent-commerce obligation layer — the part that lets two agents escrow a job and settle a dispute on mainnet — has essentially no production deployments or transaction volume yet, so the layer as a whole sits between experimental and available rather than at production.",
+      "metrics": [
+        {
+          "label": "MetaMask Delegation Framework",
+          "value": "211 GitHub stars, v1.3.0, audited, multi-chain",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Delegation Toolkit SDK weekly npm downloads",
+          "value": "~10,351/wk (Jun 2026); still labeled public beta/experimental",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "ERC-8183 status",
+          "value": "Draft (2026-02-25); all implementations testnet",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Arkhai/Alkahest deployment",
+          "value": "Base Sepolia testnet only; public SDK repos archived 2026-02-14",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "MetaMask / Consensys",
+          "role": "author & maintainer of ERC-7710 + Delegation Framework",
+          "where": "USA/UK"
+        },
+        {
+          "name": "OpenZeppelin",
+          "role": "re-implementing ERC-7710 as ERC-7579 module",
+          "where": "open-source"
+        },
+        {
+          "name": "Virtuals Protocol",
+          "role": "co-author of ERC-8183",
+          "where": "agentic escrow"
+        },
+        {
+          "name": "Ethereum Foundation (dAI)",
+          "role": "co-author ERC-8183 (Davide Crapis)",
+          "where": "open-source"
+        },
+        {
+          "name": "BNB Chain",
+          "role": "BNBAgent SDK — first live ERC-8183 impl (testnet)",
+          "where": "protocol"
+        },
+        {
+          "name": "Arc Network / Circle",
+          "role": "ERC-8183 flows on Arc Testnet w/ USDC",
+          "where": "USA"
+        },
+        {
+          "name": "World Chain",
+          "role": "announced intent to adopt ERC-8183",
+          "where": "protocol"
+        },
+        {
+          "name": "CoopHive / Arkhai",
+          "role": "Alkahest EAS-based arbitrated escrow",
+          "where": "open-source"
+        },
+        {
+          "name": "Pimlico",
+          "role": "bundler+paymaster integration",
+          "where": "open-source"
+        },
+        {
+          "name": "UMA",
+          "role": "Optimistic Oracle for ERC-8183 disputes (BNBAgent)",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://github.com/MetaMask/delegation-framework",
+        "https://eips.ethereum.org/EIPS/eip-8183",
+        "https://www.bnbchain.org/en/blog/bnbagent-sdk-the-first-live-erc-8183-implementation-for-onchain-ai-agents",
+        "https://github.com/CoopHive/alkahest-rs",
+        "https://www.arkhai.io/products/escrow-and-arbitration"
+      ],
+      "notes": "Layer is bimodal: delegation is production-real, agentic-escrow standards are draft/testnet. Score reflects the weighted middle; MetaMask's maturity does NOT imply the agent-job-escrow primitive is deployed at scale — it is not.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "layer-04",
+      "type": "layer",
+      "layer": "layer-04",
+      "from": null,
+      "to": null,
+      "name": "Payment & escrow",
+      "title": "Rails for agents to authorize and settle payments — plus escrow/dispute (the lagging part)",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Agent payment rails ship fast (x402 leads with real volume), but money moved is tiny and escrow/dispute is near-absent.",
+      "reason": "The agentic payment layer is the most active in the stack: HTTP-native crypto rails (x402), a Stripe+Tempo standard (MPP), Google's authorization protocol (AP2, now donated to FIDO), OpenAI/Shopify's ACP, and card-network programs (Mastercard Agent Pay, Visa Trusted Agent/Intelligent Commerce) all launched between Sep 2025 and Apr 2026. Real money is moving, but mostly via x402 (~119-165M cumulative tx on Base, ~$50M actual settled volume / ~$600M annualized run-rate, avg ~$0.20/tx — and a CoinDesk analysis estimated ~half is testing or gamified, not commerce). Card networks have completed genuine 'first live' authenticated agentic transactions across the US, Australia, Korea, Thailand, Hong Kong and LATAM, but these are pilots/demos, not scaled flow. MPP and AP2 disclose no transaction volume.\n\nScore 3 (emerging) because the rails exist and a few carry real (if tiny) settlement, but adoption is overwhelmingly directory listings, LOIs and pilots rather than production throughput — and the 'escrow' half of this layer barely exists: none of x402, MPP, AP2, ACP or the card programs ship a native escrow, custody or dispute-resolution construct. Settlement is immediate (x402), session-batched (MPP) or token-scoped (ACP); chargeback/arbitration is delegated to Stripe/card networks or simply undefined. Escrow specifically lags the rest of the layer, which is exactly the gap dispute-resolution infrastructure addresses.",
+      "metrics": [
+        {
+          "label": "x402 cumulative transactions (most mature rail)",
+          "value": "~119M-165M on Base by Apr 2026; ~$50M actually settled (~$600M annualized), avg ~$0.20/tx",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "x402 real-commerce share",
+          "value": "~50% estimated testing/gamified per CoinDesk (Mar 2026)",
+          "asOf": "2026-06",
+          "confidence": "low"
+        },
+        {
+          "label": "Card-network live agentic pilots",
+          "value": "Mastercard Agent Pay 'first live' tx across US, AU, NZ, SG, MY, IN, KR, TH, HK, LATAM — pilots, no volume disclosed",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Native escrow / dispute support across rails",
+          "value": "0 of 5 (x402, MPP, AP2, ACP, card programs) ship native escrow/custody/arbitration",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "MPP & AP2 disclosed payment volume",
+          "value": "None disclosed by either as of Jun 2026",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Coinbase",
+          "role": "x402 originator/facilitator",
+          "where": "USA"
+        },
+        {
+          "name": "Cloudflare",
+          "role": "x402 Foundation backer; extended MPP",
+          "where": "USA"
+        },
+        {
+          "name": "Stripe",
+          "role": "MPP co-author",
+          "where": "USA"
+        },
+        {
+          "name": "Tempo (Paradigm)",
+          "role": "MPP co-author; L1 settlement chain",
+          "where": "USA"
+        },
+        {
+          "name": "Google",
+          "role": "AP2 author; donated to FIDO",
+          "where": "USA"
+        },
+        {
+          "name": "OpenAI",
+          "role": "ACP co-author; MPP design partner",
+          "where": "USA"
+        },
+        {
+          "name": "Shopify",
+          "role": "ACP co-author; MPP design partner",
+          "where": "Canada"
+        },
+        {
+          "name": "Mastercard",
+          "role": "Agent Pay + Agentic Tokens; AP2 partner",
+          "where": "USA"
+        },
+        {
+          "name": "Visa",
+          "role": "Trusted Agent + Intelligent Commerce; extended MPP to cards",
+          "where": "USA"
+        },
+        {
+          "name": "American Express",
+          "role": "AP2 card-network partner",
+          "where": "USA"
+        },
+        {
+          "name": "PayPal",
+          "role": "AP2 partner",
+          "where": "USA"
+        },
+        {
+          "name": "FIDO Alliance",
+          "role": "steward of AP2 + agentic-payment standards",
+          "where": "USA"
+        },
+        {
+          "name": "Lightspark",
+          "role": "extended MPP to Bitcoin Lightning",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://stripe.com/blog/machine-payments-protocol",
+        "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+        "https://www.coindesk.com/markets/2026/03/11/coinbase-backed-ai-payments-protocol-wants-to-fix-micropayment-but-demand-is-just-not-there-yet",
+        "https://www.openfort.io/blog/agentic-payments-landscape"
+      ],
+      "notes": "x402 covered separately; figures here used only for layer rollup. Volume varies widely by source (100M-165M tx; $50M settled vs $600M annualized) — treat as order-of-magnitude. Escrow is the standout gap across the entire layer.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "layer-05",
+      "type": "layer",
+      "layer": "layer-05",
+      "from": null,
+      "to": null,
+      "name": "Execution",
+      "title": "How agreed work gets carried out: tool-use & action execution, standardized by MCP",
+      "score": 5,
+      "status": "production",
+      "summary": "MCP is the production-grade universal standard for agent tool-use: ~97M monthly SDK downloads, 10k+ servers, neutral governance.",
+      "reason": "The Execution layer covers how agents actually take actions in the world (tool-use, function calling, action execution). The Model Context Protocol (MCP), introduced by Anthropic, has become the de-facto open standard for this layer. By March 2026 it reached ~97 million monthly SDK downloads and 10,000+ published public MCP servers in production, with first-class client support in ChatGPT, Claude, Cursor, Gemini, Microsoft Copilot and VS Code. The TypeScript SDK has ~13k GitHub stars and the Python SDK ~23k (June 2026). On 9 Dec 2025 Anthropic donated MCP to the Linux Foundation's new Agentic AI Foundation (AAIF), giving it vendor-neutral governance alongside Block's goose and OpenAI's AGENTS.md.\n\nThis is a 5 (production) because the layer is no longer hype: real tool-use runs in shipping products from every major lab, the standard is downloaded ~97M times/month, server count is in five figures, and governance has moved to a neutral foundation backed by AWS, Anthropic, Block, Bloomberg, Cloudflare, Google, Microsoft and OpenAI as platinum members. The main caveat is fragmentation/quality across the long tail of community servers and ongoing security hardening, but the core execution primitive is unquestionably in production.",
+      "metrics": [
+        {
+          "label": "MCP monthly SDK downloads",
+          "value": "~97M/month (Mar 2026; up from ~100k at launch) — incl. CI/non-prod pulls",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Public MCP servers",
+          "value": "10,000+ published/active across registries",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "MCP SDK GitHub stars",
+          "value": "~23k Python + ~13k TypeScript",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Major-lab client support",
+          "value": "6+ (ChatGPT, Claude, Gemini, Copilot, Cursor, VS Code)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "AAIF governance members",
+          "value": "8 platinum, 18 gold, 20+ silver",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Anthropic",
+          "role": "created and donated MCP",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "OpenAI",
+          "role": "MCP in ChatGPT; AAIF co-founder",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "Google / DeepMind",
+          "role": "MCP in Gemini",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "Microsoft",
+          "role": "MCP in Copilot & VS Code",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "AWS",
+          "role": "governance member",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "Block",
+          "role": "goose agent; AAIF co-founder",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "Cloudflare",
+          "role": "MCP hosting/infra",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "Bloomberg",
+          "role": "enterprise governance member",
+          "where": "USA / AAIF platinum"
+        },
+        {
+          "name": "Salesforce, Shopify, SAP, Snowflake, IBM, Oracle, Cisco, Docker, JetBrains, Okta, Datadog, Twilio, Temporal",
+          "role": "enterprise adopters/integrators",
+          "where": "AAIF gold"
+        },
+        {
+          "name": "Hugging Face, Zapier, Pydantic, Solo.io, WorkOS, Uber, Elastic",
+          "role": "ecosystem adopters",
+          "where": "AAIF silver"
+        },
+        {
+          "name": "Linux Foundation (AAIF)",
+          "role": "neutral governance host",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation",
+        "https://blog.modelcontextprotocol.io/posts/2025-12-09-mcp-joins-agentic-ai-foundation/",
+        "https://aaif.io/projects/model-context-protocol/",
+        "https://github.com/modelcontextprotocol/python-sdk"
+      ],
+      "notes": "97M downloads / 10k servers figures are vendor/foundation-reported (Anthropic + AAIF), not independently audited; downloads include CI/non-production pulls. Long-tail community servers vary widely in quality/security. SDK star counts verified on GitHub.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "layer-06",
+      "type": "layer",
+      "layer": "layer-06",
+      "from": null,
+      "to": null,
+      "name": "Verification & disputes",
+      "title": "Adjudication, oracles and dispute resolution for agent transactions",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Crypto arbitration (Kleros, UMA) is live but human-keyed; card nets ship AI dispute tools; agent-native adjudication is nascent.",
+      "reason": "This layer answers 'who decides when an agent transaction goes wrong?' Two camps exist. Crypto-native arbitration is genuinely live: UMA's Optimistic Oracle secures ~$1.8B and settles tens of thousands of Polymarket resolutions monthly; Kleros has ruled 1,000+ cases since 2018 and runs v2 on Arbitrum. Meanwhile incumbents are moving fast on AI-assisted (not agent-native) dispute handling: Visa processed 106M disputes in 2025 (+35% vs 2019) and shipped Dispute Intelligence and Dispute Doc Analyzer AI tools; Mastercard and Visa both launched agentic-commerce rails in 2025. GenLayer's AI-validator jury (Internet Court's engine) is the most agent-native design but is pre-mainnet.\n\nScore is 3 (emerging) because the building blocks are production-grade for their original use cases (DeFi value-securing, prediction-market settlement, card chargebacks), yet almost none are wired to autonomous agents today. Crypto oracles depend on human token-holders and bonded humans; card-network AI tools assist human dispute teams rather than adjudicate agent-to-agent commerce. The agent-native adjudication layer (programmatic dispute filing, machine-speed evidence, AI juries) remains mostly theoretical to experimental, so the layer sits between proven infrastructure and unproven agent fit.",
+      "metrics": [
+        {
+          "label": "Visa disputes processed (2025)",
+          "value": "106M globally, +35% vs 2019 (human/AI-assisted, not agent-native)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "UMA total value secured",
+          "value": "~$1.84B (Aug 2025); DeFi/prediction-market, ~0 agent use",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Kleros cases ruled all-time",
+          "value": "1,000+ since 2018; jury = humans, ~0 agent cases",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Agent-native dispute systems live in production",
+          "value": "~0 (GenLayer pre-mainnet; no incumbent agent adjudication)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Visa",
+          "role": "Dispute Intelligence + Doc Analyzer AI; Intelligent Commerce agent rails",
+          "where": "USA"
+        },
+        {
+          "name": "Mastercard",
+          "role": "Agent Pay agentic-commerce + AI dispute deployments",
+          "where": "USA"
+        },
+        {
+          "name": "Polymarket",
+          "role": "largest live consumer of optimistic-oracle disputes (via UMA)",
+          "where": "prediction market"
+        },
+        {
+          "name": "Kleros",
+          "role": "decentralized arbitration / juror court",
+          "where": "crypto-native"
+        },
+        {
+          "name": "UMA / Risk Labs",
+          "role": "Optimistic Oracle dispute settlement",
+          "where": "USA"
+        },
+        {
+          "name": "GenLayer",
+          "role": "AI-validator jury (Internet Court engine)",
+          "where": "crypto + AI native"
+        }
+      ],
+      "sources": [
+        "https://www.digitalcommerce360.com/2026/04/01/visa-adds-ai-tools-for-dispute-resolution/",
+        "https://www.americanbanker.com/payments/news/visa-mastercard-expand-agentic-ai-deployments",
+        "https://dune.com/risk_labs/uma-total-value-secured",
+        "https://docs.kleros.io/kleros-faq"
+      ],
+      "notes": "Sharp split: incumbent card-network AI tools assist HUMAN dispute teams at massive scale but are not agent-native; crypto oracles are agent-addressable in theory but human-staked in practice. True agent-native adjudication is the gap this layer must fill.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-erc7857",
+      "type": "standard",
+      "layer": "layer-01",
+      "from": null,
+      "to": null,
+      "name": "ERC-7857",
+      "title": "Intelligent NFT (iNFT) standard for AI agents with encrypted, transferable private metadata",
+      "score": 2,
+      "status": "experimental",
+      "summary": "0G Labs' iNFT standard for tokenizing AI agents; usage is largely confined to 0G's own chain and mostly testnet/demo.",
+      "reason": "ERC-7857, authored by 0G Labs (introduced Jan 2025, EIP draft), extends ERC-721 to represent AI agents as 'Intelligent NFTs' carrying encrypted, transferable metadata with verifiable re-encryption on transfer — enabling agents to be owned, traded, leased and to evolve. Real activity is centered on 0G's own stack: the AIverse iNFT marketplace launched on the 0G Galileo testnet (first iNFTs mintable from 4 Sept 2025), and a Web 4.0 mainnet marketplace on 0G Aristotle Mainnet was announced 4 March 2026. 0G is well funded (>$325M incl. $40M seed led by Hack VC plus a $250M token commitment) and has 100+ ecosystem partners, but there is no published count of iNFTs minted and no evidence of meaningful cross-chain adoption — usage is 0G-native.\n\nThe score is 2 (experimental) because, despite a real standard, strong backing and a launched marketplace, adoption is shallow and single-ecosystem: mints have been concentrated on the Galileo testnet, the mainnet marketplace is freshly announced with no disclosed volume, and integrations beyond 0G's own deAIOS are not demonstrated. There are no public figures distinguishing real iNFT deployments from hackathon/demo mints, and no third-party explorer tracks it the way 8004scan tracks ERC-8004. It is a credible, funded experiment that has not yet shown standalone production traction.",
+      "metrics": [
+        {
+          "label": "iNFTs minted",
+          "value": "No public count; first batch on 0G Galileo testnet from 4 Sep 2025 — mostly testnet/demo",
+          "asOf": "2026-06",
+          "confidence": "low"
+        },
+        {
+          "label": "Chains supported",
+          "value": "Effectively 0G-only (Galileo testnet, Aristotle mainnet); no cross-chain deployments",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Mainnet marketplace status",
+          "value": "AIverse on 0G Aristotle Mainnet announced 4 Mar 2026; no disclosed volume",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "0G Labs funding",
+          "value": ">$325M total ($40M seed led by Hack VC + $250M token commitment)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "0G Labs / 0G Foundation",
+          "role": "standard author + host chain",
+          "where": "USA"
+        },
+        {
+          "name": "AIverse",
+          "role": "iNFT marketplace built on ERC-7857",
+          "where": "0G ecosystem"
+        },
+        {
+          "name": "Chainlink",
+          "role": "ecosystem partner",
+          "where": "protocol"
+        },
+        {
+          "name": "Google Cloud",
+          "role": "ecosystem partner",
+          "where": "USA"
+        },
+        {
+          "name": "MetaMask",
+          "role": "ecosystem partner",
+          "where": "USA"
+        },
+        {
+          "name": "Halborn Security",
+          "role": "smart contract audit",
+          "where": "USA"
+        },
+        {
+          "name": "Hack VC, Delphi Digital, OKX Ventures, Samsung Next, Animoca Brands, Bankless Ventures",
+          "role": "investors/backers",
+          "where": "global"
+        }
+      ],
+      "sources": [
+        "https://0g.ai/blog/0g-introducing-erc-7857",
+        "https://docs.0g.ai/developer-hub/building-on-0g/inft/erc7857",
+        "https://www.globenewswire.com/news-release/2026/03/04/3249474/0/en/Decentralized-AI-Company-0G-And-AIverse-Introduce-The-First-Web-4-0-Marketplace-Where-AI-Agents-Own-Trade-and-Evolve-On-Chain.html",
+        "https://eips.ethereum.org/EIPS/eip-7857"
+      ],
+      "notes": "No public iNFT mint counts; activity concentrated on 0G's own testnet/mainnet, so adoption is single-ecosystem. Funding/partner lists are 0G-ecosystem-wide, not ERC-7857-specific. Distinguish announced launches from demonstrated volume.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-erc8004",
+      "type": "standard",
+      "layer": "layer-01",
+      "from": null,
+      "to": null,
+      "name": "ERC-8004",
+      "title": "Trustless Agents — on-chain Identity, Reputation and Validation registries for AI agents",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Live on Ethereum mainnet with ~39k registrations and ~73k feedback events, but raw counts are heavily inflated by test/sybil activity.",
+      "reason": "ERC-8004 ('Trustless Agents') defines three on-chain registries — Identity, Reputation, Validation — letting agents be discovered, rated and verified across chains; it complements Google's A2A messaging and Coinbase's x402 payments. It was authored Aug 2025 by Marco De Rossi (MetaMask), Davide Crapis (Ethereum Foundation), Jordan Ellis (Google) and Erik Reppel (Coinbase), with 100+ contributors, and went live on Ethereum mainnet on 29 Jan 2026. Adoption is the strongest in this layer: ~39,000 registrations across 15 chains and ~73,000 feedback events in the first 90 days (QuickNode), tracked by multiple explorers (8004scan ~21.5k, agentscan, Agent Arena ~22k), with reference contracts deployed on 20+ networks (audited by Cyfrin, Nethermind and the EF Security Team) and a deep SDK/tooling ecosystem (Agent0, create-8004-agent, mcp8004, x402 facilitators, TEE attestation via Automata/Phala).\n\nThe score is 3 (emerging) rather than 4 because the headline counts overstate real economic usage. The standard's own security section flags sybil risk, and because identities are transferable ERC-721s, reputation can be laundered by buying aged accounts. Independent analysis (RNWY) cites the Moltbook case of 1.5M 'agents' for 17k humans (88:1) and 13-40% sybil rates in comparable populations, with coordinated sock-puppet feedback. So while the registries, audits, mainnet deployment and tooling are genuinely production-grade infrastructure, the verified, non-sybil reputation/validation events that would make it a trustworthy production trust layer are still thin — strong emerging adoption, not yet proven real-economy usage.",
+      "metrics": [
+        {
+          "label": "Agent registrations (first 90 days)",
+          "value": "~39,000 across 15 chains (QuickNode); 8004scan ~21.5k — raw, unverified for sybils",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Feedback / reputation events",
+          "value": "~73,000 in 90 days; no filtering for self-dealing or sock puppets",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Per-chain breakdown (8004scan)",
+          "value": "Ethereum 11.4k, Base 4.4k, Gnosis 2.7k, BNB 2.3k, rest <130 each",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Mainnet status",
+          "value": "Live on Ethereum mainnet 29 Jan 2026; reference contracts on 20+ networks, audited",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Estimated sybil/test contamination",
+          "value": "High — comparable airdrops 13-40% sybil; Moltbook 88:1 agent:human",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Ethereum Foundation",
+          "role": "co-author (Davide Crapis, dAI) + security audit",
+          "where": "Switzerland / open-source"
+        },
+        {
+          "name": "MetaMask (Consensys)",
+          "role": "co-author (Marco De Rossi)",
+          "where": "USA"
+        },
+        {
+          "name": "Google",
+          "role": "co-author (Jordan Ellis); A2A complement",
+          "where": "USA"
+        },
+        {
+          "name": "Coinbase",
+          "role": "co-author (Erik Reppel); x402 complement",
+          "where": "USA"
+        },
+        {
+          "name": "AltLayer",
+          "role": "built 8004scan explorer",
+          "where": "protocol"
+        },
+        {
+          "name": "QuickNode",
+          "role": "explorer, x402 REST API",
+          "where": "USA"
+        },
+        {
+          "name": "RNWY",
+          "role": "reputation/sybil scanner indexing 150k+ agents",
+          "where": "open-source / Base"
+        },
+        {
+          "name": "Cyfrin, Nethermind, OpenZeppelin",
+          "role": "auditors / spec contributors",
+          "where": "open-source"
+        },
+        {
+          "name": "ENS, EigenLayer, The Graph, Phala, Automata, Virtuals, Cisco, Eliza Labs",
+          "role": "contributors / TEE & infra (100+ total)",
+          "where": "open-source"
+        },
+        {
+          "name": "AgentLux, Chitin, ORIGIN Protocol, Helixa, Agent Arena",
+          "role": "production identity/reputation deployments (mostly Base)",
+          "where": "protocol"
+        }
+      ],
+      "sources": [
+        "https://eips.ethereum.org/EIPS/eip-8004",
+        "https://www.quicknode.com/blog/the-quicknode-erc-8004-stack-a-public-window-into-onchain-agents",
+        "https://news.bitcoin.com/what-is-erc-8004-ethereums-new-agent-standard-powers-thousands-of-onchain-ai-identities/",
+        "https://rnwy.com/sybil"
+      ],
+      "notes": "Registration figures differ by source (8004scan ~21.5k vs QuickNode ~39k) and count raw on-chain registrations, not verified-active or non-sybil agents. Identities are transferable ERC-721s, enabling reputation laundering. Feedback unfiltered for self-dealing. Treat all counts as upper bounds.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-a2a",
+      "type": "standard",
+      "layer": "layer-02",
+      "from": null,
+      "to": null,
+      "name": "A2A",
+      "title": "Agent2Agent interop/messaging protocol (Google to Linux Foundation)",
+      "score": 4,
+      "status": "available",
+      "summary": "A2A interop standard has 150+ orgs, v1.0, native AWS/Azure/Google support; it's messaging, not a negotiation protocol per se.",
+      "reason": "A2A (Agent2Agent) is an open interoperability and messaging standard for AI agents, originated by Google and donated to the Linux Foundation in 2025. At its one-year mark (April 2026) it surpassed 150 supporting organizations (up from ~50 at launch), shipped a stable v1.0 spec (adding Signed Agent Cards), has 22,000+ GitHub stars, 5 SDK languages (Python, JavaScript, Java, Go, .NET), and native integration in all three major clouds: Microsoft (Azure AI Foundry, Copilot Studio), AWS (Amazon Bedrock AgentCore Runtime), and Google Cloud. Backers include AWS, Cisco, Google, IBM, Microsoft, Salesforce, SAP, ServiceNow, and Workday, with the companion AP2 payments protocol drawing 60+ supporters. The Linux Foundation cites active enterprise production use across supply chain, financial services, insurance, and IT operations.\n\nScore is 4 (available) rather than 5 because, despite broad governance, cloud integration, a stable spec, and named production verticals, the project discloses no hard production-deployment counts, no SDK download numbers, and no count of published AgentCards or named end-users — so 'production use' remains largely announced and platform-embedded rather than independently quantified at scale. Critically for this Negotiation layer, A2A is interop/transport (how agents discover each other and exchange structured messages and tasks), NOT a negotiation protocol; bargaining over terms only happens via add-on extensions (e.g., the A2A x402 payment-term extension), which keeps A2A a strong enabler of negotiation rather than a negotiation standard itself.",
+      "metrics": [
+        {
+          "label": "Supporting organizations",
+          "value": "150+ as of April 2026 (up from ~50 at April 2025 launch)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "GitHub stars",
+          "value": "22,000+",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "SDK languages",
+          "value": "5 (Python, JavaScript, Java, Go, .NET)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Cloud-native integrations",
+          "value": "3 (Azure AI Foundry/Copilot, AWS Bedrock AgentCore, Google Cloud)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Quantified production deployments",
+          "value": "None publicly disclosed (no deployment counts, SDK downloads, or AgentCard totals)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Linux Foundation",
+          "role": "host/steward of the A2A Protocol Project",
+          "where": "USA"
+        },
+        {
+          "name": "Google / Google Cloud",
+          "role": "originator; donor to LF; cloud integration",
+          "where": "USA"
+        },
+        {
+          "name": "Microsoft",
+          "role": "native integration (Azure AI Foundry, Copilot Studio)",
+          "where": "USA"
+        },
+        {
+          "name": "Amazon Web Services",
+          "role": "native integration (Bedrock AgentCore)",
+          "where": "USA"
+        },
+        {
+          "name": "IBM",
+          "role": "supporting organization",
+          "where": "USA"
+        },
+        {
+          "name": "Salesforce",
+          "role": "supporting organization",
+          "where": "USA"
+        },
+        {
+          "name": "SAP",
+          "role": "supporting organization",
+          "where": "Germany"
+        },
+        {
+          "name": "ServiceNow",
+          "role": "supporting organization",
+          "where": "USA"
+        },
+        {
+          "name": "Workday",
+          "role": "supporting organization",
+          "where": "USA"
+        },
+        {
+          "name": "Cisco",
+          "role": "supporting organization",
+          "where": "USA"
+        },
+        {
+          "name": "LangGraph / CrewAI",
+          "role": "framework compatibility",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year",
+        "https://www.hpcwire.com/aiwire/2026/04/09/linux-foundation-a2a-protocol-marks-one-year-with-broad-enterprise-and-cloud-adoption/",
+        "https://en.wikipedia.org/wiki/Agent2Agent"
+      ],
+      "notes": "A2A is interop/messaging, NOT a negotiation protocol — negotiation requires extensions (e.g. A2A x402). 150+ orgs and v1.0 verified; LF cites no production-deployment counts, SDK downloads, or AgentCard totals, so 'enterprise production use' is largely announced/platform-embedded.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-erc7710",
+      "type": "standard",
+      "layer": "layer-03",
+      "from": null,
+      "to": null,
+      "name": "ERC-7710",
+      "title": "Minimal interface for accounts to delegate scoped capabilities (MetaMask Delegation Framework)",
+      "score": 4,
+      "status": "available",
+      "summary": "Audited multi-chain delegation standard with a real SDK (~10k wk downloads), but vendor-led beta with thin third-party production use.",
+      "reason": "ERC-7710 defines the minimal interface for one account to delegate scoped, redeemable permissions to another (an EOA or smart account), and is the standard that came out of MetaMask's Delegation Framework. The framework is concretely deployed: a v1.3.0 Solidity codebase (211 GitHub stars, 109 forks, dual Apache/MIT, dedicated /audits directory), available on Arbitrum, Avalanche, Base, Linea, Optimism, and Polygon, with a Viem-based Delegation/Smart Accounts Kit pulling ~10,351 npm downloads in the week of Jun 13-19 2026. Adoption beyond MetaMask is starting: OpenZeppelin has an open effort to implement the ERC-7710 DelegationManager as an ERC-7579 module, Pimlico/permissionless.js support MetaMask smart accounts, and ERC-7715 (the dapp permission-request layer) sits on top of 7710 via account sessions.\n\nScore 4 (available) rather than 5 because the production footprint is real but still largely vendor-driven and explicitly beta: the toolkit is labeled 'public beta' and ERC-7710 is flagged 'experimental and may change,' the npm package shows only a handful of dependent projects, there is no published count of mainnet delegations actually redeemed, and broad third-party wallet support (Rabby, Ambire, etc. center on EIP-7702, not 7710 redemption) is thin. It is shipped, audited, and usable today, but not yet a widely-relied-upon production default across the ecosystem.",
+      "metrics": [
+        {
+          "label": "Delegation Framework version & repo",
+          "value": "v1.3.0 (Jul 2025); 211 stars / 109 forks; audited (/audits dir)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "SDK weekly npm downloads",
+          "value": "~10,351 (Jun 13-19 2026); v0.13.0; still public beta",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Supported mainnets",
+          "value": "Arbitrum, Avalanche, Base, Linea, Optimism, Polygon (any bundler-supported EVM)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "npm dependent projects",
+          "value": "~3 listed dependents — thin third-party uptake",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Mainnet delegations redeemed",
+          "value": "Not publicly disclosed — no usage count available",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "MetaMask / Consensys",
+          "role": "standard author & framework maintainer",
+          "where": "USA/UK"
+        },
+        {
+          "name": "OpenZeppelin",
+          "role": "implementing ERC-7710 DelegationManager as ERC-7579 module",
+          "where": "open-source"
+        },
+        {
+          "name": "Pimlico",
+          "role": "recommended bundler + paymaster for MetaMask smart accounts",
+          "where": "open-source"
+        },
+        {
+          "name": "Viem",
+          "role": "underlying library the toolkit is built on",
+          "where": "open-source"
+        },
+        {
+          "name": "Scaffold-ETH 2",
+          "role": "listed ecosystem integration",
+          "where": "open-source"
+        },
+        {
+          "name": "Arbitrum",
+          "role": "listed ecosystem/chain partner",
+          "where": "protocol"
+        }
+      ],
+      "sources": [
+        "https://eips.ethereum.org/EIPS/eip-7710",
+        "https://github.com/MetaMask/delegation-framework",
+        "https://api.npmjs.org/downloads/point/last-week/@metamask/delegation-toolkit",
+        "https://github.com/openzeppelin/openzeppelin-contracts/issues/5884",
+        "https://docs.metamask.io/smart-accounts-kit/experimental/erc-7710-redeem-delegations/"
+      ],
+      "notes": "Strongest entry in the layer. Caveats: vendor-led, still 'public beta'/'experimental,' no public count of redeemed mainnet delegations, and most rival-wallet '7702' support is not the same as 7710 redemption. Kept at 4, not 5.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-erc8183",
+      "type": "standard",
+      "layer": "layer-03",
+      "from": null,
+      "to": null,
+      "name": "ERC-8183",
+      "title": "'Agentic Commerce' draft standard: a job with escrowed budget and Client/Provider/Evaluator roles",
+      "score": 2,
+      "status": "experimental",
+      "summary": "Draft EIP (Feb 2026) with credible authors and chain commitments, but every implementation is testnet — essentially zero mainnet use.",
+      "reason": "ERC-8183 defines an on-chain job-escrow protocol for agent-to-agent commerce: a Client funds escrow, a Provider submits a deliverable, and a single trusted Evaluator alone marks the job completed or rejected, across four states. It was created 2026-02-25 by Davide Crapis (Ethereum Foundation dAI), Bryan Lim and Tay Weixiong (Virtuals), and Chooi Zuhwa, ships reference contracts (AgenticCommerce.sol + IACPHook.sol, UUPS-upgradeable on OpenZeppelin deps), and has attracted unusually fast attention: BNB Chain's BNBAgent SDK (live on BNB testnet Mar 2026, UMA Optimistic Oracle for disputes), Arc Network tutorials/hackathon on Arc Testnet with USDC+Circle Wallets, and a stated adoption intent from World Chain.\n\nScore 2 (experimental) because, skeptically, the standard is still a Draft EIP — function signatures and state transitions are explicitly subject to change — and there is no evidence of meaningful mainnet deployment or transaction volume: BNBAgent is testnet-only, Arc flows run on Arc Testnet, and 'first production implementation' claims describe early/testnet builds. The headline ecosystem (Virtuals' 17k+ agents) is context, not 8183 usage. Real promise and momentum, but it is pre-production interface churn rather than available infrastructure.",
+      "metrics": [
+        {
+          "label": "EIP status",
+          "value": "Draft (created 2026-02-25); not advanced to Review/Final",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Reference implementation",
+          "value": "AgenticCommerce.sol + IACPHook.sol in EIP (UUPS, OZ deps) — not a deployed product",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "BNBAgent SDK (first live impl)",
+          "value": "BNB Chain testnet only (Mar 2026); mainnet 'coming soon'; no usage numbers",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Other adopters",
+          "value": "Arc Network (testnet tutorials/hackathon Apr 2026); World Chain (intent announced)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Mainnet deployments / volume",
+          "value": "None confirmed — effectively zero",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Virtuals Protocol",
+          "role": "co-author; primary backer pushing it as agent settlement layer",
+          "where": "protocol"
+        },
+        {
+          "name": "Ethereum Foundation (dAI)",
+          "role": "co-author (Davide Crapis)",
+          "where": "open-source"
+        },
+        {
+          "name": "BNB Chain",
+          "role": "BNBAgent SDK — first live (testnet) implementation",
+          "where": "protocol"
+        },
+        {
+          "name": "UMA",
+          "role": "Optimistic Oracle / DVM for contested-job arbitration in BNBAgent",
+          "where": "USA"
+        },
+        {
+          "name": "Arc Network",
+          "role": "tutorials + hackathon; ERC-8183 flows on Arc Testnet",
+          "where": "protocol"
+        },
+        {
+          "name": "Circle",
+          "role": "USDC + Circle Wallets used in Arc's ERC-8183 flows",
+          "where": "USA"
+        },
+        {
+          "name": "World Chain",
+          "role": "announced intent to adopt ERC-8183",
+          "where": "protocol"
+        },
+        {
+          "name": "OpenZeppelin",
+          "role": "contracts library used by reference implementation",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://eips.ethereum.org/EIPS/eip-8183",
+        "https://ethereum-magicians.org/t/erc-8183-agentic-commerce/27902",
+        "https://www.bnbchain.org/en/blog/bnbagent-sdk-the-first-live-erc-8183-implementation-for-onchain-ai-agents",
+        "https://www.arc.network/blog/running-an-agentic-economic-flow-on-arc-with-erc-8183"
+      ],
+      "notes": "Lots of media/announcement momentum, near-zero verifiable mainnet usage. Single-trusted-evaluator design is a known centralization caveat (mitigated only by optional ERC-8004 reputation / UMA). Confirmed near-zero production.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-arkhai",
+      "type": "standard",
+      "layer": "layer-03",
+      "from": null,
+      "to": null,
+      "name": "Arkhai",
+      "title": "Company (ex-CoopHive) building Alkahest: EAS-based arbitrated escrow/obligation framework",
+      "score": 2,
+      "status": "experimental",
+      "summary": "Alkahest EAS escrow is Base Sepolia-only with public SDKs archived Feb 2026; venture-backed but pre-mainnet with negligible traction.",
+      "reason": "Arkhai (the company behind CoopHive's Alkahest) builds 'open infrastructure for machine-readable markets' — discovery, negotiation, escrow, arbitration and settlement — using an EAS-attestation-based, arbiter-pattern escrow/obligation framework (Escrow + Arbiter contracts with Lock/Wait/Release/Return phases, marketed as 'boolean-native escrow with recursive review' for agent-to-agent barter and atomic asset exchange). It is venture-backed: PitchBook lists 7 investors including BeakerDAO, Chorus One Ventures, Crucible Capital, PL Capital, and ETHGlobal, and the original target market is decentralized compute/storage/data marketplaces. The Alkahest library is real and multi-language (Rust, TypeScript, Python SDKs).\n\nScore 2 (experimental) because the on-chain reality is thin: the public SDK repos are tiny (alkahest-rs ~2 stars, alkahest-ts ~1 star) and were archived/read-only as of 2026-02-14, deployment is explicitly 'only Base Sepolia for now' (testnet, no mainnet), and there are no public adoption metrics, live markets, or transaction volumes. There is a Zellic audit of Alkahest and clear backing, which keeps it above purely theoretical, but with archived tooling and testnet-only deployment this is early-stage/experimental obligation infrastructure, not available production.",
+      "metrics": [
+        {
+          "label": "Alkahest SDK repos",
+          "value": "alkahest-rs ~2 stars, alkahest-ts ~1 star; both archived/read-only 2026-02-14",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Deployment status",
+          "value": "Base Sepolia testnet only; no mainnet deployment found",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Funding / investors",
+          "value": "7 investors per PitchBook (BeakerDAO, Chorus One Ventures, Crucible Capital, PL Capital, ETHGlobal +2); amount undisclosed",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Audit",
+          "value": "Alkahest audited by Zellic (report published)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Live markets / volume",
+          "value": "None publicly confirmed — negligible",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "CoopHive",
+          "role": "origin project / builder of Alkahest",
+          "where": "open-source"
+        },
+        {
+          "name": "Ethereum Attestation Service (EAS)",
+          "role": "underlying attestation layer",
+          "where": "protocol"
+        },
+        {
+          "name": "Zellic",
+          "role": "security auditor of Alkahest",
+          "where": "USA"
+        },
+        {
+          "name": "BeakerDAO",
+          "role": "investor",
+          "where": "DAO"
+        },
+        {
+          "name": "Chorus One Ventures",
+          "role": "investor",
+          "where": "Switzerland"
+        },
+        {
+          "name": "Crucible Capital",
+          "role": "investor",
+          "where": "USA"
+        },
+        {
+          "name": "PL Capital",
+          "role": "investor",
+          "where": "global"
+        },
+        {
+          "name": "ETHGlobal",
+          "role": "investor / ecosystem backer",
+          "where": "global"
+        }
+      ],
+      "sources": [
+        "https://www.arkhai.io/products/escrow-and-arbitration",
+        "https://github.com/CoopHive/alkahest-rs",
+        "https://alkahest.coophive.network/",
+        "https://reports.zellic.io/publications/alkahest/"
+      ],
+      "notes": "Public Alkahest SDKs archived Feb 2026 — possible repo consolidation/rebrand under Arkhai, but no evidence of newer mainnet deployment. Investor list from PitchBook; funding amount not disclosed. Testnet-only + archived tooling = experimental.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-x402",
+      "type": "standard",
+      "layer": "layer-04",
+      "from": null,
+      "to": null,
+      "name": "x402",
+      "title": "Coinbase's HTTP 402 protocol for stablecoin (USDC) agent payments",
+      "score": 4,
+      "status": "available",
+      "summary": "Production but incipient: 100M+ raw tx but only ~$28k real daily volume, ~half wash, and ~10-15 genuine paid services.",
+      "reason": "x402 is Coinbase's open HTTP-402 standard letting servers demand a stablecoin (mostly USDC) micropayment per request, settled on Base and now ~14 chains via facilitators. It is genuinely shipping: the coinbase/x402 repo (~5.4k stars) has official TS/Python/Go/Java/Rust SDKs and framework middleware (Express, Next, Hono, Fastify), an x402 Foundation stewards it, and Chainalysis confirmed 100M+ on-chain transactions on Base within ~3 quarters (120-165M cumulative across chains by mid-2026; Coinbase claims 160M+). But raw tx hugely overstate real commerce: Artemis estimates roughly half are self-dealing/wash trading, much of the Q4-2025 spike came from the PING 'pay-to-mint' meme experiment, daily value is only ~$28k (down ~77% from a Nov-2025 peak), and cumulative settled value is just ~$41-50M. The widely cited '$7B ecosystem' is misleading — $6.3B of it is Chainlink's LINK market cap. Headline '480k agents'/'417k buyers' are wallets inflated by airdrop-farming, not recurring paying agents; ecosystem directories (x402scan, awesome-x402, x402.org) list dozens of resources but only ~10-15 read as real production paid endpoints, the rest demos and starter kits.\n\nIt earns a 4 (available, not 5) because the standard, SDKs, facilitators and hosted infrastructure are live and usable in production today with serious institutional backing — the x402 Foundation's premier members include Visa, Mastercard, Amex, Stripe, AWS, Google, Shopify, Circle, Cloudflare and Solana — yet 'multiple real live deployments serving genuine demand' is not yet true. The honest frame is production-but-incipient: the rails exist and a few real APIs charge per call, but actual paid economic activity is tiny, dominated by tests/wash, and the merchant base x402 targets is still largely absent. The gap between infrastructure readiness (high) and real agent-paid demand (very low) is why a 5 would be overstated.",
+      "metrics": [
+        {
+          "label": "On-chain transactions (cumulative)",
+          "value": "~100M on Base (Chainalysis); 120-165M across ~14 chains — but ~50% est. self-dealing/wash (Artemis)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Total settled value (cumulative)",
+          "value": "~$41-50M USDC — small for the tx count; daily volume only ~$28k, down ~77% from Nov-2025 peak",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Live production paid endpoints",
+          "value": "~10-15 genuine (CoinMarketCap, Exa, Venice, x402scan, etc.); dozens more are demos/starter kits",
+          "asOf": "2026-06",
+          "confidence": "low"
+        },
+        {
+          "label": "'Agents' / wallets transacting",
+          "value": "480k claimed (Coinbase), 417k buyers / 83k sellers (KPMG) — wallet counts inflated by farming",
+          "asOf": "2026-06",
+          "confidence": "low"
+        },
+        {
+          "label": "SDK / GitHub adoption",
+          "value": "coinbase/x402 ~5.4k stars; official TS/Python/Go/Java/Rust SDKs + Express/Next/Hono/Fastify middleware",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "$1+ transaction share",
+          "value": "95% of value moved (up from 49% early-2025) — signals shift past pure micro-test spam",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Coinbase",
+          "role": "creator / x402 Foundation steward / hosted facilitator",
+          "where": "USA"
+        },
+        {
+          "name": "Cloudflare",
+          "role": "co-founder / facilitator / edge integration",
+          "where": "USA"
+        },
+        {
+          "name": "x402 Foundation",
+          "role": "standard steward / governance",
+          "where": "USA"
+        },
+        {
+          "name": "Circle",
+          "role": "premier member / USDC issuer",
+          "where": "USA"
+        },
+        {
+          "name": "Visa",
+          "role": "premier member (card network)",
+          "where": "USA"
+        },
+        {
+          "name": "Mastercard",
+          "role": "premier member (card network)",
+          "where": "USA"
+        },
+        {
+          "name": "American Express",
+          "role": "premier member",
+          "where": "USA"
+        },
+        {
+          "name": "Stripe",
+          "role": "premier member (processor)",
+          "where": "USA"
+        },
+        {
+          "name": "Amazon Web Services",
+          "role": "premier member (cloud)",
+          "where": "USA"
+        },
+        {
+          "name": "Google",
+          "role": "premier member; AP2 agent-payments",
+          "where": "USA"
+        },
+        {
+          "name": "Shopify",
+          "role": "premier member (commerce)",
+          "where": "Canada"
+        },
+        {
+          "name": "Adyen",
+          "role": "premier member (payments)",
+          "where": "Netherlands"
+        },
+        {
+          "name": "Fiserv",
+          "role": "premier member (payment infra)",
+          "where": "USA"
+        },
+        {
+          "name": "Solana",
+          "role": "premier member / supported chain (~45M tx)",
+          "where": "USA"
+        },
+        {
+          "name": "Polygon Labs",
+          "role": "general member / facilitator / chain",
+          "where": "global"
+        },
+        {
+          "name": "Kakaopay",
+          "role": "general member (fintech)",
+          "where": "South Korea"
+        },
+        {
+          "name": "Kite AI",
+          "role": "general member (agent payment infra)",
+          "where": "USA"
+        },
+        {
+          "name": "Quant Network",
+          "role": "general member (interoperability)",
+          "where": "UK"
+        },
+        {
+          "name": "thirdweb",
+          "role": "facilitator + SDK variant",
+          "where": "USA"
+        },
+        {
+          "name": "QuickNode",
+          "role": "Ruby gems (x402-rails) + demos",
+          "where": "USA"
+        },
+        {
+          "name": "Vercel",
+          "role": "x402 + MCP + AI SDK starter templates",
+          "where": "USA"
+        },
+        {
+          "name": "Exa, Venice, CoinMarketCap",
+          "role": "live paid services (pay-per-call)",
+          "where": "USA / Singapore"
+        }
+      ],
+      "sources": [
+        "https://www.chainalysis.com/blog/x402-agentic-payments-adoption/",
+        "https://www.coindesk.com/markets/2026/03/11/coinbase-backed-ai-payments-protocol-wants-to-fix-micropayment-but-demand-is-just-not-there-yet",
+        "https://www.x402.org/ecosystem",
+        "https://github.com/Merit-Systems/awesome-x402",
+        "https://github.com/coinbase/x402"
+      ],
+      "notes": "Calibration: raw tx counts (100-165M) are real on-chain but a poor adoption proxy — Artemis estimates ~50% self-dealing/wash, and a Q4-2025 PING meme experiment inflated counts. Settled value (~$41-50M cumulative, ~$28k/day) is the truer, small signal. '480k agents' are farmed wallets; genuine recurring payers likely low thousands. Live paid endpoints ~10-15 vs many demos. '$7B ecosystem' is misleading ($6.3B is Chainlink LINK). Partner list = x402 Foundation membership; membership != live x402 traffic. Best frame: production-grade rails, blue-chip backing, incipient real demand.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-mpp",
+      "type": "standard",
+      "layer": "layer-04",
+      "from": null,
+      "to": null,
+      "name": "MPP",
+      "title": "Machine Payments Protocol — Stripe + Tempo's open standard for billing AI agents",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Stripe+Tempo's agent-billing standard launched Mar 2026 with a '100+ services' directory — but that's listings, not validated volume.",
+      "reason": "MPP is an open, HTTP-native protocol co-authored by Stripe and Tempo, launched March 18, 2026 alongside Tempo's mainnet, extending agent payments beyond one-shot calls into subscriptions, streaming usage ('sessions' primitive added at Sessions 2026, Apr 29-30), cancellation and reconciliation across stablecoins, cards and BNPL. Visa extended it to cards, Lightspark to Bitcoin Lightning, Stripe to cards/wallets. The headline '100+ integrated services' is a payments directory listing (model providers, compute, data APIs) — not validated production deployments. Stripe's own launch blog names only ~5 concrete live integrations (Browserbase, Parallel Web Systems, Prospect Butcher Co., PostalForm, CoinGecko per-API-call). Tempo's broader partner list (Anthropic, DoorDash, Nubank, Ramp, Revolut, Shopify, Standard Chartered, Mastercard, Visa, OpenAI) is explicitly 'collaborations' — which can mean anything from an LOI to a live production integration.\n\nScore 3 (emerging): the protocol is real, backed by Stripe's distribution ('accept payments over MPP in a few lines of code' via PaymentIntents) and a live settlement chain, which puts it above experimental. But no transaction volume has been disclosed anywhere, the marquee design partners (Anthropic, OpenAI, Shopify) are named rather than confirmed shipping, and the '100+' figure is directory marketing. It also ships no native escrow/dispute layer — settlement flows into the merchant's Stripe balance, creating compliance/custody dependency on Stripe rather than a neutral escrow construct.",
+      "metrics": [
+        {
+          "label": "Integrated services at launch",
+          "value": "100+ in payments directory — a listing, not validated deployments; ~5 named live in Stripe's blog",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Disclosed payment volume",
+          "value": "None disclosed since Mar 18 2026 launch",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Payment methods supported",
+          "value": "3 live rails: stablecoins on Tempo, Lightning (via Lightspark), cards via Stripe; BNPL described",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Marquee design partners confirmed shipping",
+          "value": "0 of Anthropic/OpenAI/Shopify confirmed in production (named as collaborators)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Stripe",
+          "role": "co-author; card/wallet settlement",
+          "where": "USA"
+        },
+        {
+          "name": "Tempo",
+          "role": "co-author; payments L1 settlement chain",
+          "where": "USA"
+        },
+        {
+          "name": "Paradigm",
+          "role": "Tempo backer/co-developer",
+          "where": "USA"
+        },
+        {
+          "name": "Visa",
+          "role": "extended MPP to card payments",
+          "where": "USA"
+        },
+        {
+          "name": "Lightspark",
+          "role": "extended MPP to Bitcoin Lightning",
+          "where": "USA"
+        },
+        {
+          "name": "Cloudflare",
+          "role": "extended MPP to its network",
+          "where": "USA"
+        },
+        {
+          "name": "Anthropic",
+          "role": "named design partner (shipping unconfirmed)",
+          "where": "USA"
+        },
+        {
+          "name": "OpenAI",
+          "role": "named design partner (shipping unconfirmed)",
+          "where": "USA"
+        },
+        {
+          "name": "Shopify",
+          "role": "named design partner (shipping unconfirmed)",
+          "where": "Canada"
+        },
+        {
+          "name": "Browserbase",
+          "role": "live integration — pay-per-session browsers",
+          "where": "USA"
+        },
+        {
+          "name": "Parallel Web Systems",
+          "role": "live integration — per-API-call web access",
+          "where": "USA"
+        },
+        {
+          "name": "Prospect Butcher Co.",
+          "role": "live integration — agent food orders",
+          "where": "USA"
+        },
+        {
+          "name": "PostalForm",
+          "role": "live integration — agents print/send mail",
+          "where": "USA"
+        },
+        {
+          "name": "CoinGecko",
+          "role": "live integration — pay per API call",
+          "where": "Singapore"
+        },
+        {
+          "name": "DoorDash, Nubank, Ramp, Revolut, Standard Chartered, Mastercard",
+          "role": "listed partners (status ambiguous)",
+          "where": "global"
+        }
+      ],
+      "sources": [
+        "https://stripe.com/blog/machine-payments-protocol",
+        "https://tempo.xyz/blog/mainnet/",
+        "https://defiprime.com/stripe-mpp-vs-x402",
+        "https://www.theblock.co/post/394131/tempo-mainnet-goes-live-with-machine-payments-protocol-for-agents"
+      ],
+      "notes": "Heavy caveat: '100+ services' = directory listing, not deployments. Zero disclosed volume. Marquee partners named but not confirmed shipping. No native escrow — settlement depends on Stripe's compliance layer (vendor lock-in concern). Launched <3 months ago; too early for traction data.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-app",
+      "type": "standard",
+      "layer": "layer-04",
+      "from": null,
+      "to": null,
+      "name": "APP",
+      "title": "Google's AP2 (Agent Payments Protocol) — payment-agnostic authorization/mandate layer; donated to FIDO Apr 2026",
+      "score": 2,
+      "status": "experimental",
+      "summary": "Google's AP2 is an authorization layer (moves no money) with 60+ collaborators; near-zero real volume, now governed by FIDO.",
+      "reason": "AP2 (Agent Payments Protocol), announced by Google on Sep 16, 2025, is a payment-agnostic authorization layer — it does NOT itself move money. It uses cryptographically signed, verifiable 'mandates' (Intent, Cart, Payment) to prove user authorization and accountability, working across cards, bank transfers, stablecoins and crypto. It launched with 60+ payments/tech partners (PayPal, Mastercard, American Express, Adyen, Coinbase, Worldpay, JCB, UnionPay, Etsy, Salesforce, ServiceNow, Revolut, Adobe). Crucially, all 60+ are described as 'collaborating'/'developing' — the only production-ready piece at launch was the Coinbase/MetaMask x402 crypto extension. v0.2 (Apr 28, 2026) added 'Human Not Present' payments and Verifiable Intent (co-developed with Mastercard). On the same day Google donated AP2 to the FIDO Alliance, spawning two working groups — Agentic Authentication (chaired by CVS Health, Google, OpenAI) and Payments (chaired by Mastercard and Visa).\n\nScore 2 (experimental): AP2 has unusually broad industry alignment and a credible standards path via FIDO, but as an authorization framework it carries essentially no transaction volume of its own and remains pre-production for nearly all of its 60+ partners — partner language is 'excited to partner,' 'committed to contributing,' not 'live.' It is a spec-and-mandate layer (v0.2, Apache-licensed on GitHub) rather than a settlement rail, and like the rest of the layer it defines no escrow or dispute mechanism. The FIDO donation is a maturity signal but also confirms it's still in the standards-formation phase, not production deployment.",
+      "metrics": [
+        {
+          "label": "Collaborating partners",
+          "value": "60+ at launch (all 'collaborating/developing,' not shipping)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Spec version",
+          "value": "v0.2 (released Apr 28 2026); Apache-licensed on GitHub",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Disclosed transaction volume",
+          "value": "None — authorization layer, moves no money itself; pre-production",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "FIDO standardization status",
+          "value": "Donated to FIDO Apr 2026; 2 working groups (Agentic Auth; Payments, chaired Mastercard/Visa)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Live extensions at launch",
+          "value": "1 — Coinbase/MetaMask x402 stablecoin extension; rest in development",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Google",
+          "role": "author; donated to FIDO; WG chair",
+          "where": "USA"
+        },
+        {
+          "name": "Mastercard",
+          "role": "card network; co-developed Verifiable Intent; FIDO Payments WG co-chair",
+          "where": "USA"
+        },
+        {
+          "name": "Visa",
+          "role": "card network; FIDO Payments WG co-chair",
+          "where": "USA"
+        },
+        {
+          "name": "American Express",
+          "role": "card network",
+          "where": "USA"
+        },
+        {
+          "name": "PayPal",
+          "role": "payments / commerce",
+          "where": "USA"
+        },
+        {
+          "name": "Coinbase",
+          "role": "x402 stablecoin extension (only production-ready piece)",
+          "where": "USA"
+        },
+        {
+          "name": "MetaMask",
+          "role": "wallet; stablecoin integration",
+          "where": "USA"
+        },
+        {
+          "name": "Adyen",
+          "role": "payment processor",
+          "where": "Netherlands"
+        },
+        {
+          "name": "Worldpay",
+          "role": "payment processor",
+          "where": "USA"
+        },
+        {
+          "name": "JCB",
+          "role": "card network",
+          "where": "Japan"
+        },
+        {
+          "name": "UnionPay International",
+          "role": "card network",
+          "where": "China"
+        },
+        {
+          "name": "Ant International",
+          "role": "alternative payments",
+          "where": "Singapore"
+        },
+        {
+          "name": "Revolut",
+          "role": "digital banking",
+          "where": "UK"
+        },
+        {
+          "name": "DLocal",
+          "role": "emerging-markets payments",
+          "where": "Uruguay"
+        },
+        {
+          "name": "Etsy",
+          "role": "e-commerce marketplace",
+          "where": "USA"
+        },
+        {
+          "name": "Salesforce",
+          "role": "digital commerce",
+          "where": "USA"
+        },
+        {
+          "name": "ServiceNow",
+          "role": "enterprise automation",
+          "where": "USA"
+        },
+        {
+          "name": "Adobe",
+          "role": "commerce platform",
+          "where": "USA"
+        },
+        {
+          "name": "Okta/Auth0",
+          "role": "identity / authentication",
+          "where": "USA"
+        },
+        {
+          "name": "FIDO Alliance",
+          "role": "standards steward (since Apr 2026)",
+          "where": "USA"
+        },
+        {
+          "name": "Mysten Labs, Eigen Labs, Ethereum Foundation",
+          "role": "blockchain / verifiability support",
+          "where": "global"
+        }
+      ],
+      "sources": [
+        "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+        "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/",
+        "https://fidoalliance.org/fido-alliance-to-develop-standards-for-trusted-ai-agent-interactions/",
+        "https://ap2-protocol.org/"
+      ],
+      "notes": "AP2 is authorization/mandate layer, NOT a settlement rail — moves no money, so 'volume' is inherently near-zero. All 60+ partners 'collaborating,' not shipping; only Coinbase x402 extension was production-ready at launch. v0.2 + FIDO donation (Apr 2026) shows momentum but confirms standards-formation phase. No escrow/dispute construct. Scored 2 over 3 because it remains pre-production for nearly all participants.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-openclaw",
+      "type": "standard",
+      "layer": "layer-05",
+      "from": null,
+      "to": null,
+      "name": "OpenClaw",
+      "title": "Open-source, MIT, local-first self-hosted personal agent runtime (ex-Clawdbot/Moltbot)",
+      "score": 4,
+      "status": "available",
+      "summary": "Viral MIT self-hosted agent (~380k stars, fastest-growing repo ever) but with a severe documented security track record.",
+      "reason": "OpenClaw (formerly Clawdbot/Moltbot, created by Peter Steinberger) is an MIT-licensed, local-first personal agent runtime that connects via WhatsApp/Telegram/Slack/Signal and executes shell, browser, email, calendar and file actions. Its growth is genuinely extraordinary and exceeds the 'six-figure' claim: it went from ~9k to ~190k stars within two weeks of its late-Jan 2026 launch, surpassed React to become GitHub's most-starred project (~302k by April), and now sits around ~380k stars with ~79k forks and 300+ contributors. Sponsors listed include OpenAI, GitHub, NVIDIA, Vercel, Convex and Blacksmith. It is real, widely cloned software (~186B daily tokens on OpenRouter), not just a demo.\n\nIt scores 4 (available) rather than 5 because adoption is overwhelmingly enthusiast/self-hosted rather than vetted production, and the security record is alarming: CVE-2026-25253 (CVSS 8.8 one-click RCE, patched 2026.1.29), six further SSRF/auth-bypass/path-traversal flaws, tens of thousands of exposed instances (Censys ~21k; one study 42k+ with ~5k verified vulnerable), and the 'ClawHavoc' supply-chain campaign with 824 malicious ClawHub skills. The hype and viral star velocity are real, but the immaturity of its security posture keeps it short of production-grade.",
+      "metrics": [
+        {
+          "label": "GitHub stars",
+          "value": "~380k (fastest-growing repo ever; understates 'six-figure' framing)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Forks",
+          "value": "~79k",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Contributors",
+          "value": "300+",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Daily token volume (OpenRouter)",
+          "value": "~186B/day",
+          "asOf": "2026-05",
+          "confidence": "medium"
+        },
+        {
+          "label": "Documented CVEs / exposed instances",
+          "value": "7+ CVEs incl. CVSS 8.8 RCE; 21k-42k exposed instances",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Peter Steinberger",
+          "role": "creator/lead maintainer",
+          "where": "open-source"
+        },
+        {
+          "name": "OpenAI",
+          "role": "sponsor",
+          "where": "USA"
+        },
+        {
+          "name": "GitHub",
+          "role": "sponsor",
+          "where": "USA"
+        },
+        {
+          "name": "NVIDIA",
+          "role": "sponsor; promoted OpenClaw agents",
+          "where": "USA"
+        },
+        {
+          "name": "Vercel",
+          "role": "sponsor",
+          "where": "USA"
+        },
+        {
+          "name": "Convex",
+          "role": "sponsor",
+          "where": "USA"
+        },
+        {
+          "name": "Blacksmith",
+          "role": "sponsor (CI infra)",
+          "where": "USA"
+        },
+        {
+          "name": "Gen-Verse (OpenClaw-RL)",
+          "role": "third-party RL training fork",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://github.com/openclaw/openclaw",
+        "https://milvus.io/blog/openclaw-formerly-clawdbot-moltbot-explained-a-complete-guide-to-the-autonomous-ai-agent.md",
+        "https://thehackernews.com/2026/05/four-openclaw-flaws-enable-data-theft.html",
+        "https://blogs.nvidia.com/blog/what-openclaw-agents-mean-for-every-organization/"
+      ],
+      "notes": "Star count real and verified across multiple sources but partly reflects viral/novelty momentum. Sponsors fund the project but are not necessarily production users. 'Six-figure stars' premise is true but materially understated — mid-six-figures. Security track record is the dominant caveat.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-hermes",
+      "type": "standard",
+      "layer": "layer-05",
+      "from": null,
+      "to": null,
+      "name": "Hermes",
+      "title": "Self-hosted self-improving agent by Nous Research with a built-in learning loop",
+      "score": 4,
+      "status": "available",
+      "summary": "Nous Research's MIT self-improving agent (~198k stars, v0.x); now #1 on OpenRouter by token volume — real usage, early version.",
+      "reason": "Hermes Agent (Nous Research, released ~25 Feb 2026, MIT) is a self-hosted, self-improving agent — 'the agent that grows with you' — that creates and refines its own skills, persists memory, searches its past conversations and supports 300+ models across Telegram/Discord/Slack/WhatsApp/Signal. The 'curated learning loop' (with a separate self-evolution repo using DSPy + GEPA) is its differentiator. The '~95k stars in 7 weeks' premise was an early snapshot and is now understated: the repo is at ~198k stars, ~35k forks and ~1,000 contributors, currently on v0.17.0 (June 2026). Crucially, usage is real, not demo-ware — by May 2026 Hermes was the #1 app/agent on OpenRouter's global daily rankings at ~224B tokens/day (ahead of OpenClaw's ~186B), and OpenRouter rankings are based on actual API calls.\n\nIt scores 4 (available) because the real, measurable usage (OpenRouter #1) and large contributor base put it clearly past prototype, but it is held below production because it remains v0.x with no guaranteed API stability, documentation is incomplete, the self-improvement loop is largely unproven at scale, and its usage is consumer/enthusiast inference rather than vetted enterprise deployment. Security scrutiny is also far lighter than OpenClaw's — absence of evidence, not evidence of safety.",
+      "metrics": [
+        {
+          "label": "GitHub stars",
+          "value": "~198k (premise '~95k in 7 weeks' was an early figure, now far higher)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Forks",
+          "value": "~35k",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Contributors",
+          "value": "~1,000 (v0.13 release alone: 295 devs, 864 commits)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Daily token volume (OpenRouter)",
+          "value": "~224B/day, ranked #1 globally",
+          "asOf": "2026-05",
+          "confidence": "medium"
+        },
+        {
+          "label": "Version",
+          "value": "v0.17.0 (still pre-1.0 / v0.x)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Nous Research",
+          "role": "creator/maintainer/backer",
+          "where": "USA"
+        },
+        {
+          "name": "NVIDIA",
+          "role": "promotes Hermes on RTX PCs & DGX Spark",
+          "where": "USA"
+        },
+        {
+          "name": "OpenRouter",
+          "role": "inference routing; ranks Hermes #1 by token volume",
+          "where": "USA"
+        },
+        {
+          "name": "Community (awesome-hermes-agent)",
+          "role": "ecosystem skill/tool lists",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://github.com/nousresearch/hermes-agent",
+        "https://www.marktechpost.com/2026/05/10/openclaw-vs-hermes-agent-why-nous-researchs-self-improving-agent-now-leads-openrouters-global-rankings/",
+        "https://blogs.nvidia.com/blog/rtx-ai-garage-hermes-agent-dgx-spark/",
+        "https://openrouter.ai/apps/hermes-agent"
+      ],
+      "notes": "Still v0.x (pre-1.0), so API/feature stability not guaranteed and the 'self-improving' loop is largely unproven at scale. Star count verified on GitHub, exceeds the premise's '~95k' (a ~2-week snapshot). OpenRouter #1 is real-usage-based but reflects consumer/enthusiast inference, not enterprise production. Revised UP from 3 to 4 on the strength of real measured usage.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-genlayer",
+      "type": "standard",
+      "layer": "layer-06",
+      "from": null,
+      "to": null,
+      "name": "GenLayer",
+      "title": "Intelligent contracts with an AI-validator jury (Internet Court's engine)",
+      "score": 2,
+      "status": "experimental",
+      "summary": "AI-native blockchain with LLM-validator 'Optimistic Democracy' jury; on its second incentivized testnet, no mainnet, $0 real value secured.",
+      "reason": "GenLayer (built by YeagerAI) is an AI-native L1 where validators each run a different LLM and reach consensus on subjective/unstructured inputs, enabling 'Intelligent Contracts' that interpret language and adjudicate disputes — the engine behind Internet Court. It raised a $7.5M seed (Aug 2024) led by North Island Ventures with Arrington Capital, Node Capital and Arthur Hayes' Maelstrom among many others. It launched its first incentivized testnet 'Asimov' (June 17, 2025) and a second testnet 'Bradbury' (Jan 8, 2026) adding live validator-level LLM inference. Ecosystem/infra partners include ZKsync, Caldera, io.net, Heurist/LibertAI, Atoma Network and Comput3.\n\nScore is 2 (experimental) and graded honestly: there is no mainnet, so real-value secured is effectively $0 and there is no production adoption. Public figures are about testnet incentives and architecture (e.g., appeal rounds scaling 5 to 1000 validators, 60-100x inference-as-gas anti-laziness economics) rather than deployed-contract counts or secured value. The design is the most genuinely agent-native adjudication approach in this layer, but it remains unproven under adversarial mainnet conditions, has no track record of real disputes settled for value, and mainnet timing is still 'later this year' with a token not yet live. Promising thesis, pre-production reality.",
+      "metrics": [
+        {
+          "label": "Mainnet status",
+          "value": "Not live — 2nd testnet (Bradbury) since Jan 2026; mainnet 'later this year'",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Real value secured",
+          "value": "~$0 (testnet only, no mainnet)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Funding raised",
+          "value": "$7.5M seed (Aug 2024), led by North Island Ventures",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Validator/appeal scaling (design)",
+          "value": "Appeals scale 5 to 1000 validators (spec, not live throughput)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Intelligent contracts deployed (mainnet)",
+          "value": "0 mainnet; only testnet/example contracts",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "North Island Ventures",
+          "role": "lead seed investor",
+          "where": "USA"
+        },
+        {
+          "name": "Arrington Capital",
+          "role": "seed investor",
+          "where": "USA"
+        },
+        {
+          "name": "Node Capital",
+          "role": "seed investor",
+          "where": "global"
+        },
+        {
+          "name": "Maelstrom (Arthur Hayes)",
+          "role": "investor / family office",
+          "where": "global"
+        },
+        {
+          "name": "ZKsync",
+          "role": "L2 security/scaling partner for testnet",
+          "where": "protocol"
+        },
+        {
+          "name": "Caldera",
+          "role": "modular network-deployment infra",
+          "where": "protocol"
+        },
+        {
+          "name": "io.net",
+          "role": "decentralized GPU infrastructure for validators",
+          "where": "USA"
+        },
+        {
+          "name": "Heurist AI / LibertAI",
+          "role": "decentralized model hosting / inference",
+          "where": "protocol"
+        },
+        {
+          "name": "Atoma Network",
+          "role": "privacy-preserving execution",
+          "where": "protocol"
+        },
+        {
+          "name": "Comput3 AI",
+          "role": "subsidized testnet inference",
+          "where": "protocol"
+        },
+        {
+          "name": "Internet Court (internetcourt.org)",
+          "role": "dispute-resolution app built on GenLayer",
+          "where": "ecosystem app"
+        }
+      ],
+      "sources": [
+        "https://www.genlayer.com/news/genlayer-launches-incentivized-testnet-asimov-the-court-of-the-internet-activates",
+        "https://www.genlayer.com/news/announcing-testnet-bradbury",
+        "https://www.genlayer.com/news/genlayer-raises-7-5m-to-build-the-first-intelligent-blockchain",
+        "https://www.genlayer.com/news/genlayer-partners-with-io-net-to-unlock-decentralized-gpu-infrastructure-for-ai-powered-dapps-agents"
+      ],
+      "notes": "Honest read: compelling agent-native design and credible backers, but pre-mainnet, $0 secured, no production disputes, token not live. Score reflects experimental stage, not the ambition. This is Internet Court's own engine — graded without boosterism.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-kleros",
+      "type": "standard",
+      "layer": "layer-06",
+      "from": null,
+      "to": null,
+      "name": "Kleros",
+      "title": "Decentralized human-juror arbitration protocol (live since 2018, v2 on Arbitrum)",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Live decentralized court since 2018; 1,000+ cases ruled, 760+ jurors, v2 on Arbitrum — but jurors are humans and agent-native usage is ~0.",
+      "reason": "Kleros is the longest-running decentralized dispute-resolution protocol, live on Ethereum since 2018, using crowdsourced PNK-staking jurors and Schelling-point voting to rule disputes. It has ruled 1,000+ cases across 23 courts with 760+ active jurors (total PNK supply ~764.6M). Kleros 2.0 Beta deployed on Arbitrum One in Nov 2024 for cheaper, scalable arbitration, with V2 contracts audited by Certora. Real integrations exist: the Lemon fintech integration processed ~120 cases, Curate/Curation Court has 508 all-time disputes (235 in 2025), Scout has 200k+ tagged addresses and verifies 250+ Seer prediction markets, and the Kleros Oracle runs on 6 production networks plus block-explorer integrations. Backed by real-world legal pilots in Mendoza and Junin, Argentina.\n\nScore is 3 (emerging) because Kleros is a production-grade, battle-tested arbitration primitive — but for HUMAN-keyed, mostly DeFi/curation/content-moderation use cases. Its jurors are humans incentivized by token rewards, dispute throughput is modest (hundreds of cases/year, not the millions card networks handle), and agent-native usage is effectively zero: no documented autonomous-agent dispute flows. As infrastructure that could be wired into agent commerce it is the most mature decentralized option, yet it was not built for and is not yet used by autonomous agents at machine speed, capping it below 'available' for this specific stack.",
+      "metrics": [
+        {
+          "label": "Cases ruled all-time",
+          "value": "1,000+ since 2018 (human jurors)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Active jurors",
+          "value": "760+ across 23 courts",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "PNK total supply",
+          "value": "~764.6M PNK",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Curation Court disputes",
+          "value": "508 all-time / 235 in 2025",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Agent-native dispute usage",
+          "value": "~0 (no documented autonomous-agent flows)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Lemon",
+          "role": "fintech integration (~120 cases)",
+          "where": "integrator"
+        },
+        {
+          "name": "Curate / Curation Court",
+          "role": "decentralized list curation (508 disputes)",
+          "where": "native product"
+        },
+        {
+          "name": "Kleros Scout",
+          "role": "address-tagging registry (200k+ addresses)",
+          "where": "native product"
+        },
+        {
+          "name": "Seer",
+          "role": "prediction markets verified via Scout (250+ markets)",
+          "where": "integrator"
+        },
+        {
+          "name": "Proof of Humanity",
+          "role": "sybil-resistance registry using Kleros arbitration",
+          "where": "integrator"
+        },
+        {
+          "name": "Arbitrum One",
+          "role": "host chain for Kleros 2.0 Beta",
+          "where": "chain"
+        },
+        {
+          "name": "Gnosis Chain",
+          "role": "hosts Curation Court PNK staking",
+          "where": "chain"
+        },
+        {
+          "name": "Base / Polygon / zkSync",
+          "role": "Kleros Oracle production networks",
+          "where": "chains"
+        },
+        {
+          "name": "Certora",
+          "role": "V2 smart-contract auditor",
+          "where": "security"
+        },
+        {
+          "name": "Mendoza & Junin (Argentina)",
+          "role": "government legal pilots",
+          "where": "Argentina"
+        }
+      ],
+      "sources": [
+        "https://docs.kleros.io/kleros-faq",
+        "https://blog.kleros.io/kleros-project-update-2026/",
+        "https://blog.kleros.io/kleros-partnerships-integrations-and-v2/",
+        "https://docs.kleros.io/pnk-token"
+      ],
+      "notes": "Most mature decentralized court, but human-juror based and low-throughput vs incumbents. Agent-native usage ~0 — an available primitive agents could call, not something agents actually use today.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "std-uma",
+      "type": "standard",
+      "layer": "layer-06",
+      "from": null,
+      "to": null,
+      "name": "UMA",
+      "title": "Optimistic Oracle — bond-and-dispute truth machine backing Polymarket",
+      "score": 3,
+      "status": "emerging",
+      "summary": "Optimistic Oracle secures ~$1.84B and settles Polymarket, but relies on human token-voting (gamed before) with ~0 agent use.",
+      "reason": "UMA (by Risk Labs) runs the Optimistic Oracle: data is assumed true unless someone posts a bond and disputes within a challenge window, with disputes escalated to UMA token-holder voting (the 'managed' Data Verification Mechanism). It secured ~$1.84B in total value (Aug 2025) and is the settlement layer for Polymarket, which traded $64B+ in 2025; the OO processed ~7,000 proposals/month in H1 2025. Beyond Polymarket, it secures Across (bridge), Sherlock (smart-contract cover), Cozy Finance and Jarvis Network, and is rolling out LLM bots to propose/dispute assertions faster and cheaper.\n\nScore is 3 (emerging) because UMA is genuinely production infrastructure settling large real value, yet it carries material caveats and is not agent-native. Its security ultimately rests on human UMA token-voting, which has been repeatedly stress-tested: a March 2025 incident saw a single actor wield ~25% (about 6M UMA) of voting power to push a contested ~$7M Polymarket settlement, and Polymarket logged 1,150+ disputed markets in 2026 already exceeding 2025's total — including high-dollar contested resolutions ($60M Strategy market, prior $237M market). The model works for objective-ish prediction/DeFi facts but degrades on subjective or whale-attackable questions, and there is essentially no autonomous-agent usage. Solid, value-securing, but human-governed and contested — emerging, not production-clean.",
+      "metrics": [
+        {
+          "label": "Total value secured",
+          "value": "~$1.84B (Aug 2025)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "OO proposals processed",
+          "value": "~7,000/month (H1 2025)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Polymarket volume settled via UMA",
+          "value": "$64B+ traded in 2025 (prediction volume)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Disputed markets (Polymarket)",
+          "value": "1,150+ in 2026 YTD, already past full-2025 total",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Agent-native usage",
+          "value": "~0 (human token-voting governs disputes)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Polymarket",
+          "role": "flagship integrator — UMA settles market resolutions",
+          "where": "prediction market"
+        },
+        {
+          "name": "Across Protocol",
+          "role": "cross-chain bridge using UMA",
+          "where": "integrator"
+        },
+        {
+          "name": "Sherlock",
+          "role": "smart-contract exploit coverage via UMA",
+          "where": "integrator"
+        },
+        {
+          "name": "Cozy Finance",
+          "role": "protection-market protocol using UMA",
+          "where": "integrator"
+        },
+        {
+          "name": "Jarvis Network",
+          "role": "synthetic-asset protocol using UMA",
+          "where": "integrator"
+        },
+        {
+          "name": "Risk Labs",
+          "role": "foundation/developer behind UMA",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://dune.com/risk_labs/uma-total-value-secured",
+        "https://docs.uma.xyz/protocol-overview/example-projects",
+        "https://thedefiant.io/news/markets/usd85m-polymarket-dispute-over-strategy-s-may-bitcoin-sale-puts-uma-s-token-voting-oracle-on",
+        "https://www.webopedia.com/crypto/learn/polymarkets-uma-oracle-controversy/"
+      ],
+      "notes": "Real value-securing oracle, but human token-voting is the trust root and has been gamed (March 2025 ~25% voting-power attack; rising disputed-market counts). Strong for objective DeFi/prediction facts, weak on subjective/whale-attackable questions; no agent-native usage. Revised DOWN from 4 to 3 on governance fragility + zero agent use.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-01-02",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-01",
+      "to": "layer-02",
+      "name": "Discovery → Negotiation",
+      "title": "",
+      "score": 4,
+      "status": "available",
+      "summary": "ERC-8004 extends A2A AgentCards with on-chain identity/reputation so agents can discover and trust each other before negotiating.",
+      "reason": "This edge is the hand-off where a discovered agent (A2A AgentCard at /.well-known/agent-card.json plus ERC-8004 Identity/Reputation registries) carries enough trust signal into a negotiation session. It really ships at the protocol level: ERC-8004 is explicitly framed as a trustless extension of Google's A2A, AgentCards are a live web standard, and ChaosChain built the first end-to-end commercial prototype wiring discovery into agent interaction. The reputation-aware discovery proposal (A2A discussion #1631) formalizes feeding ERC-8004 trust metrics into capability selection.\n\nIt scores 4 (available, not 5) because the pieces are deployed and interoperable but ERC-8004 is still EIP Draft status (created Aug 2025, in peer review) and reputation-scoped discovery remains a proposal rather than a ratified A2A extension. AgentCard discovery is production-grade; the on-chain trust binding feeding negotiation is available and prototyped but not yet at broad autonomous production scale.",
+      "metrics": [
+        {
+          "label": "ERC-8004 status",
+          "value": "EIP Draft (created Aug 2025, peer review); 3 registries specced",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "A2A trust extension",
+          "value": "Reputation-Aware Discovery is an open A2A proposal (#1631), not yet merged",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Reference implementations",
+          "value": "ChaosChain Genesis Studio: first end-to-end commercial prototype",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Google (Agentic Commerce)",
+          "role": "A2A protocol + AgentCard discovery",
+          "where": "USA"
+        },
+        {
+          "name": "Ethereum Foundation (Davide Crapis)",
+          "role": "ERC-8004 co-author",
+          "where": "open-source"
+        },
+        {
+          "name": "MetaMask (Marco De Rossi)",
+          "role": "ERC-8004 co-author",
+          "where": "USA/UK"
+        },
+        {
+          "name": "ChaosChain",
+          "role": "first commercial ERC-8004 + A2A discovery prototype",
+          "where": "crypto-native"
+        }
+      ],
+      "sources": [
+        "https://eips.ethereum.org/EIPS/eip-8004",
+        "https://github.com/a2aproject/A2A/discussions/1631",
+        "https://medium.com/coinmonks/erc-8004-a-trustless-extension-of-googles-a2a-protocol-for-on-chain-agents-b474cc422c9a"
+      ],
+      "notes": "ERC-8004 still Draft; reputation-aware discovery is a proposal. AgentCard discovery itself is production; the trust-binding hand-off is available/prototyped. Revised UP from 3 to 4.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-02-03",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-02",
+      "to": "layer-03",
+      "name": "Negotiation → Contracts",
+      "title": "",
+      "score": 2,
+      "status": "experimental",
+      "summary": "AP2 mandates (Intent/Cart/Payment) into ERC-7710 on-chain delegation is conceptually aligned but lacks a shipping bridge.",
+      "reason": "This edge converts negotiated authority — AP2's verifiable mandates (Intent Mandate sets spend params, Cart Mandate seals items, Payment Mandate authorizes the charge) — into enforceable on-chain delegation (ERC-7710 / ERC-7715 permissions, e.g. MetaMask Delegation Toolkit). AP2's Agent Authorization Framework and TDIP's DelegationScope (allowed_payment_protocols incl. AP2) show the design intent, and AP2 mandates are themselves signed verifiable credentials, so the off-chain leg ships. But there is no widely deployed adapter that takes an AP2 mandate and instantiates an ERC-7710 delegation for autonomous agents.\n\nIt scores 2 (experimental) because both ends exist and the mapping is discussed (AP2 mandate chains and delegation scopes), yet the actual hand-off lives in specs, blog posts, and isolated demos rather than a named production integration. AP2 mandates are largely off-chain VC artifacts; ERC-7710 is EVM-native — the glue between credential-based authorization and smart-account delegation is still being prototyped, not shipped at scale.",
+      "metrics": [
+        {
+          "label": "AP2 mandate model",
+          "value": "Intent/Cart/Payment mandates live in AP2 spec; signed VCs",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "ERC-7710 delegation",
+          "value": "usable via MetaMask Delegation Toolkit; no named AP2->7710 bridge in production",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Bridge maturity",
+          "value": "TDIP DelegationScope references AP2; mapping conceptual, no shipping adapter",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Google (AP2 / Agentic Commerce)",
+          "role": "AP2 mandates + Agent Authorization Framework",
+          "where": "USA"
+        },
+        {
+          "name": "MetaMask / Consensys",
+          "role": "ERC-7710/7715 delegation + Delegation Toolkit",
+          "where": "USA/UK"
+        },
+        {
+          "name": "TDIP / DelegationScope authors",
+          "role": "maps AP2 to delegation scopes",
+          "where": "spec community"
+        },
+        {
+          "name": "FIDO Alliance",
+          "role": "verifiable-intent trust layer for AP2 mandates",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://ap2-protocol.org/ap2/agent_authorization/",
+        "https://ap2-protocol.org/ap2/specification/",
+        "https://fidoalliance.org/building-the-trust-layer-for-agentic-payments-with-ap2-and-verifiable-intent/"
+      ],
+      "notes": "Both ends real but no named production AP2->ERC-7710 adapter; AP2 mandates are mostly off-chain VCs, 7710 is on-chain. Revised DOWN from 3 to 2.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-03-04",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-03",
+      "to": "layer-04",
+      "name": "Contracts → Payment/Escrow",
+      "title": "",
+      "score": 4,
+      "status": "available",
+      "summary": "Google's a2a-x402 extension binds negotiated terms to on-chain payment with programmable escrow, milestones, deposits and dispute windows.",
+      "reason": "This edge takes an agreed contract/obligation and triggers payment or escrow. It really ships: the google-agentic-commerce/a2a-x402 extension is a production-ready implementation tying A2A/AP2 negotiation to x402 settlement, and its spec supports programmable escrow with milestone-based releases, deposits, refunds, and negotiated dispute windows. ERC-8183 (Agentic Commerce) adds an on-chain job-with-escrow lifecycle (Open->Funded->Submitted->Terminal) and Alkahest/Arkhai implements EIP-8183 natural-language agreements live on Sepolia with anchored receipts.\n\nIt scores 4 because the bridge is built and released (a2a-x402 v0.1.0, 526 stars, developed with Coinbase/MetaMask/EF) and multiple escrow standards (ERC-8183, x402r, Alkahest) instantiate the contracts-to-escrow hand-off. It is not a 5 because the escrow side is still maturing — a2a-x402 escrow is recent, ERC-8183 is a Draft EIP with testnet deployments, and the milestone/dispute-window features are largely demonstrated rather than running large autonomous volume.",
+      "metrics": [
+        {
+          "label": "a2a-x402 extension",
+          "value": "v0.1.0 (Sep 2025), 526 stars / 134 forks; programmable escrow, milestones, dispute windows in spec",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "ERC-8183",
+          "value": "Agentic Commerce escrow standard (Draft); 4-state job lifecycle",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Alkahest/Arkhai",
+          "value": "EIP-8183 NL-agreement lifecycle live on Sepolia (testnet)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "Escrow gap",
+          "value": "Core x402 is one-shot payment; escrow/dispute-window logic added by extensions, not the base rail",
+          "asOf": "2026-06",
+          "confidence": "high"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Google (Agentic Commerce)",
+          "role": "a2a-x402 extension maintainer",
+          "where": "USA"
+        },
+        {
+          "name": "Coinbase",
+          "role": "x402 settlement + co-developer of a2a-x402",
+          "where": "USA"
+        },
+        {
+          "name": "MetaMask",
+          "role": "co-developer of a2a-x402 extension",
+          "where": "USA/UK"
+        },
+        {
+          "name": "Ethereum Foundation",
+          "role": "co-developer of a2a-x402",
+          "where": "open-source"
+        },
+        {
+          "name": "AgentEscrow / ERC-8183 authors",
+          "role": "on-chain escrow + evaluator attestation",
+          "where": "open-source"
+        },
+        {
+          "name": "Arkhai / Alkahest",
+          "role": "EIP-8183 escrow w/ NL agreements on Sepolia",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://github.com/google-agentic-commerce/a2a-x402",
+        "https://eips.ethereum.org/EIPS/eip-8183",
+        "https://www.coinbase.com/developer-platform/discover/launches/google_x402"
+      ],
+      "notes": "Base x402 is single-shot; escrow/dispute-windows come from a2a-x402, ERC-8183, x402r, Alkahest — mostly testnet/recent. Revised UP from 3 to 4.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-04-05",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-04",
+      "to": "layer-05",
+      "name": "Payment → Execution",
+      "title": "",
+      "score": 5,
+      "status": "production",
+      "summary": "x402 paywalls gate MCP tool execution in production: Vercel x402-mcp, Cloudflare paid MCP tools, and Zuplo gateway all ship.",
+      "reason": "This is the strongest edge: payment directly gating execution of MCP tools and APIs. It is genuinely production. Vercel's x402-mcp (npm, launched Sep 12 2025) adds a paidTool primitive to the Vercel AI SDK so an MCP tool requires x402 payment before running, settling USDC on Base in ~100-200ms with sub-$0.01 fees. Cloudflare Agents ships first-class 'Charge for MCP tools' via x402, and Zuplo offers x402 paywalls for API-gateway customers. Coinbase AgentKit and the x402 facilitator network complete the loop.\n\nIt scores 5 because three independent, named platforms (Vercel, Cloudflare, Zuplo) plus Coinbase tooling have shipped the pay-to-execute hand-off as installable products, not demos, governed by the x402 Foundation (Coinbase + Cloudflare). The main caveat is that public production-volume numbers are scarce — vendors ship the capability and reference templates, but quantified autonomous-agent usage is not yet disclosed.",
+      "metrics": [
+        {
+          "label": "Vercel x402-mcp",
+          "value": "Live npm pkg in AI SDK (Sep 12 2025); paidTool primitive; USDC on Base, ~100-200ms settle",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Cloudflare",
+          "value": "'Charge for MCP tools' shipped in Cloudflare Agents docs (x402)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Zuplo",
+          "value": "x402 paywalls available for API gateway customers",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Usage volume",
+          "value": "sub-$0.01 fees reported but no public agent-volume stats",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Vercel",
+          "role": "x402-mcp library + paidTool in AI SDK",
+          "where": "USA"
+        },
+        {
+          "name": "Cloudflare",
+          "role": "charge-for-MCP-tools via x402; x402 Foundation co-founder",
+          "where": "USA"
+        },
+        {
+          "name": "Zuplo",
+          "role": "x402 paywalls for API gateway",
+          "where": "USA"
+        },
+        {
+          "name": "Coinbase",
+          "role": "x402 protocol, facilitator, AgentKit; x402 Foundation co-founder",
+          "where": "USA"
+        },
+        {
+          "name": "Anthropic",
+          "role": "MCP standard being gated",
+          "where": "USA"
+        },
+        {
+          "name": "x402 Foundation",
+          "role": "Apache-2.0 governance of x402",
+          "where": "USA"
+        }
+      ],
+      "sources": [
+        "https://vercel.com/blog/introducing-x402-mcp-open-protocol-payments-for-mcp-tools",
+        "https://developers.cloudflare.com/agents/agentic-payments/x402/charge-for-mcp-tools/",
+        "https://zuplo.com/blog/mcp-api-payments-with-x402"
+      ],
+      "notes": "Capability is production across 3+ platforms; quantified autonomous usage not publicly disclosed. Revised UP from 4 to 5 — strongest edge in the stack.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-05-06",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-05",
+      "to": "layer-06",
+      "name": "Execution → Verification",
+      "title": "",
+      "score": 3,
+      "status": "emerging",
+      "summary": "MCP/A2A execution traces become verifiable evidence via RAILS, zk-MCP validators, and ERC-8004 Validation Registry hooks.",
+      "reason": "This edge turns what an agent actually did — MCP tool traces, A2A subdelegation events — into admissible evidence for verification. It is emerging-to-real: RAILS (Evolutionary AI, Toronto) is a verification-native clearing protocol that explicitly consumes MCP tool traces and A2A subdelegation events, classifies them under an admissibility hierarchy (SELF/SIGN/WIT/REC/ATT/PROOF), and emits sound settlement instructions targeting x402. Reclaim Protocol's ReclaimValidator8004 posts ZK-proof validation results to the ERC-8004 Validation Registry, and the registry's URI+hash design lets validators anchor trace/ZK evidence on-chain.\n\nIt scores 3 because the architecture and concrete components exist (RAILS paper + spec, a deployed Reclaim zk-validator repo, ERC-8004 validation hooks) but most are research/early implementation rather than broadly deployed pipelines. The trace-to-evidence conversion is well-specified and partially shipping (zk validators), yet end-to-end autonomous execution-to-verification clearing is not yet at production scale.",
+      "metrics": [
+        {
+          "label": "RAILS",
+          "value": "arXiv spec (Evolutionary AI); consumes MCP traces + A2A subdelegation, settles via x402",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "zk-MCP / Reclaim",
+          "value": "reclaim-8004-validator repo: ZK proofs posted to ERC-8004 Validation Registry",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "ERC-8004 Validation",
+          "value": "registry hooks store off-chain trace/ZK evidence by URI+hash; method-agnostic",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Production scale",
+          "value": "Mostly research + early implementations; no broad trace->verification pipeline at volume",
+          "asOf": "2026-06",
+          "confidence": "low"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Evolutionary AI",
+          "role": "RAILS verification-native clearing (trace->evidence)",
+          "where": "Toronto, Canada"
+        },
+        {
+          "name": "Reclaim Protocol",
+          "role": "ZK credential validator for ERC-8004 Validation Registry",
+          "where": "open-source"
+        },
+        {
+          "name": "Anthropic",
+          "role": "MCP traces as evidence source",
+          "where": "USA"
+        },
+        {
+          "name": "Google",
+          "role": "A2A subdelegation events as evidence source",
+          "where": "USA"
+        },
+        {
+          "name": "ERC-8004 team / EF",
+          "role": "Validation Registry standard",
+          "where": "open-source"
+        },
+        {
+          "name": "Oasis / TEE validators",
+          "role": "TEE-based execution attestation for ERC-8004",
+          "where": "protocol"
+        }
+      ],
+      "sources": [
+        "https://arxiv.org/html/2606.08790v1",
+        "https://github.com/reclaimprotocol/reclaim-8004-validator",
+        "https://blog.quicknode.com/erc-8004-a-developers-guide-to-trustless-ai-agent-identity/",
+        "https://eips.ethereum.org/EIPS/eip-8004"
+      ],
+      "notes": "RAILS is a spec/paper; zk validators ship but narrowly; ERC-8004 validation method-agnostic. Architecture strong, deployment early.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-01-06",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-01",
+      "to": "layer-06",
+      "name": "Identity ↔ Verification (reputation loop)",
+      "title": "",
+      "score": 2,
+      "status": "experimental",
+      "summary": "Closing dispute outcomes back into ERC-8004 reputation is possible via registry hooks but the loop is deliberately under-specified.",
+      "reason": "This edge is the feedback loop: a verification/dispute outcome updating an agent's portable identity/reputation so future discovery reflects past behavior. ERC-8004 provides the substrate — a Reputation Registry for feedback signals and a Validation Registry for verification results, and ERC-8183 lets evaluators attach attestation hashes that compose with ERC-8004 reputation. So the wiring points exist on-chain.\n\nIt scores 2 (experimental) because ERC-8004 deliberately omits the actual trust/scoring model — it standardizes how feedback and validation results are recorded but not how disputes translate into reputation deltas, leaving that 'pluggable and tiered.' There is no widely adopted, named system that automatically feeds dispute/verification verdicts back into discovery-time reputation for autonomous agents. The loop is architecturally enabled and prototyped (ERC-8183 attestations referencing ERC-8004), but the scoring/aggregation half is open and unstandardized.",
+      "metrics": [
+        {
+          "label": "ERC-8004 registries",
+          "value": "Reputation + Validation registries record feedback; scoring model intentionally omitted",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Dispute->reputation",
+          "value": "No standardized mapping; trust model 'pluggable and tiered', left to apps",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Composition",
+          "value": "ERC-8183 optional attestation hash composes with ERC-8004 reputation",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "ERC-8004 team / EF / MetaMask",
+          "role": "Reputation + Validation registries (the hooks)",
+          "where": "open-source"
+        },
+        {
+          "name": "AgentEscrow / ERC-8183",
+          "role": "evaluator attestations composing into ERC-8004 reputation",
+          "where": "open-source"
+        },
+        {
+          "name": "Reclaim Protocol",
+          "role": "validation results written to registry (input to reputation)",
+          "where": "open-source"
+        },
+        {
+          "name": "ChaosChain",
+          "role": "prototype exercising reputation across discovery+verification",
+          "where": "crypto-native"
+        }
+      ],
+      "sources": [
+        "https://eips.ethereum.org/EIPS/eip-8004",
+        "https://github.com/erc-8004/erc-8004-contracts",
+        "https://eips.ethereum.org/EIPS/eip-8183",
+        "https://composable-security.com/blog/erc-8004-a-practical-explainer-for-trustless-agents/"
+      ],
+      "notes": "ERC-8004 deliberately omits the scoring/trust-model layer; dispute->reputation loop enabled by hooks but not standardized or widely shipped. Weakest edge in the stack.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-03-06",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-03",
+      "to": "layer-06",
+      "name": "Contracts ↔ Verification (obligations judged)",
+      "title": "",
+      "score": 3,
+      "status": "emerging",
+      "summary": "GenLayer Intelligent Contracts and UMA/Kleros can adjudicate natural-language agent obligations; GenLayer is on incentivized testnet.",
+      "reason": "This edge is where a contract's obligations get judged by a verification layer. It is genuinely emerging: GenLayer's Intelligent Contracts (GenVM, Optimistic Democracy consensus) let a committee of LLM-running validators read a statement + guidelines and return TRUE/FALSE/UNDETERMINED — purpose-built to adjudicate natural-language obligations and run autonomous escrow that releases on the verdict. UMA's Optimistic Oracle V3 can assert/dispute arbitrary claims (obligation fulfilled?) with bonds escrowed until resolution, and Kleros Court can rule on subjective obligations. ERC-8183/Alkahest define the evaluator role these systems can fill.\n\nIt scores 3 because the judging machinery is real and partly live but not yet mainstream for agent obligations: GenLayer launched its incentivized Asimov testnet ('Court of the Internet') rather than scaled mainnet, and while UMA OOv3 and Kleros are production dispute systems, their use specifically to judge agent contract obligations is early. The capability ships in demos and testnets; broad autonomous-obligation adjudication is still ramping.",
+      "metrics": [
+        {
+          "label": "GenLayer",
+          "value": "Intelligent Contracts judge NL statements (TRUE/FALSE/UNDETERMINED); testnet Asimov live, mainnet pending",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "UMA OOv3",
+          "value": "production optimistic oracle; bonds escrowed, DVM resolves disputed assertions",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Kleros",
+          "value": "production court; jurors rule on subjective obligations; V2 in Certora audit",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "Agent-obligation use",
+          "value": "GenLayer freelance-escrow demos; UMA/Kleros agent-obligation use early, not at volume",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "GenLayer",
+          "role": "Intelligent Contracts + AI jury adjudicating NL obligations (Internet Court)",
+          "where": "crypto + AI native"
+        },
+        {
+          "name": "UMA",
+          "role": "Optimistic Oracle V3 judges arbitrary obligation claims",
+          "where": "USA"
+        },
+        {
+          "name": "Kleros",
+          "role": "decentralized court ruling on subjective obligations",
+          "where": "France/global"
+        },
+        {
+          "name": "Arkhai / Alkahest",
+          "role": "NL agreement lifecycle defining evaluator role (EIP-8183)",
+          "where": "open-source"
+        },
+        {
+          "name": "AgentEscrow / ERC-8183",
+          "role": "standardized evaluator that marks job completed/rejected",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://www.genlayer.com/news/genlayer-launches-incentivized-testnet-asimov-the-court-of-the-internet-activates",
+        "https://docs.uma.xyz/developers/optimistic-oracle-v3",
+        "https://kleros.io/",
+        "https://docs.genlayer.com/understand-genlayer-protocol/what-are-intelligent-contracts"
+      ],
+      "notes": "GenLayer on incentivized testnet (not scaled mainnet); UMA/Kleros production but agent-obligation judging is early. This edge is Internet Court's core thesis.",
+      "lastReviewed": "2026-06-20"
+    },
+    {
+      "id": "conn-04-06",
+      "type": "connection",
+      "layer": null,
+      "from": "layer-04",
+      "to": "layer-06",
+      "name": "Escrow ↔ Verification (resolution releases funds)",
+      "title": "",
+      "score": 4,
+      "status": "available",
+      "summary": "Verification verdicts release escrowed funds: Kleros Escrow, UMA OOv3 bond escrow, x402r refunds, GenLayer auto-release.",
+      "reason": "This edge is where a verification ruling actually moves escrowed money. It is the most production-proven verification edge after pay-to-execute: Kleros Escrow lets Kleros Court decide whether escrowed assets release (standalone or via smart-contract calls), and UMA's OOv3 holds bond currency in escrow until an assertion resolves, releasing on ruling — both are live production systems. x402r adds escrow-backed refunds for x402 payments, with funds held in a contract and released by a pluggable arbiter (automated, human, or hybrid). GenLayer Intelligent Contracts auto-release escrow when the AI jury confirms the agreement was fulfilled.\n\nIt scores 4 because release-on-ruling demonstrably ships across multiple independent systems (Kleros Escrow, UMA OOv3, x402r, GenLayer), with Kleros and UMA having years of mainnet dispute history. It's not a 5 for the agentic context specifically: x402r and GenLayer escrow-release are new/testnet, Kleros Escrow 2.0 and Kleros V2 are still in development/audit, and the agent-native escrow-to-verdict-to-release loop (vs. human-driven escrow) is only beginning to run autonomously.",
+      "metrics": [
+        {
+          "label": "Kleros Escrow",
+          "value": "Live: Court ruling decides escrow release; Escrow 2.0 / Court V2 in audit (Certora)",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "UMA OOv3",
+          "value": "production: bond escrowed until assertion resolves, released per DVM ruling",
+          "asOf": "2026-06",
+          "confidence": "high"
+        },
+        {
+          "label": "x402r",
+          "value": "escrow-backed refunds for x402; pluggable arbiter releases funds",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        },
+        {
+          "label": "GenLayer escrow",
+          "value": "Intelligent Contracts auto-release escrow on AI-jury verdict (testnet-stage)",
+          "asOf": "2026-06",
+          "confidence": "medium"
+        }
+      ],
+      "partners": [
+        {
+          "name": "Kleros",
+          "role": "Kleros Escrow + Court ruling releases escrowed assets",
+          "where": "France/global"
+        },
+        {
+          "name": "UMA",
+          "role": "OOv3 bond escrow released on assertion resolution",
+          "where": "USA"
+        },
+        {
+          "name": "x402r",
+          "role": "refundable/escrowed x402 payments released by arbiter",
+          "where": "open-source"
+        },
+        {
+          "name": "GenLayer",
+          "role": "AI-jury verdict triggers autonomous escrow release",
+          "where": "crypto + AI native"
+        },
+        {
+          "name": "Coinbase",
+          "role": "x402 settlement rail underlying escrow/refund flows",
+          "where": "USA"
+        },
+        {
+          "name": "Arkhai / Alkahest / ERC-8183",
+          "role": "escrow lifecycle whose evaluator verdict releases funds",
+          "where": "open-source"
+        }
+      ],
+      "sources": [
+        "https://docs.kleros.io/products/court/famous-kleros-cases",
+        "https://docs.uma.xyz/developers/optimistic-oracle-v3",
+        "https://www.x402r.org/",
+        "https://blog.kleros.io/kleros-project-update-2026/"
+      ],
+      "notes": "Kleros/UMA escrow-release is mature but largely human-driven; x402r + GenLayer agent-native release are new/testnet. Score reflects strong primitives, early autonomous use.",
+      "lastReviewed": "2026-06-20"
+    }
+  ]
+}
