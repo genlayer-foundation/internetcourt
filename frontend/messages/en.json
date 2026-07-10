@@ -9,7 +9,8 @@
     "blog": "Blog",
     "faq": "FAQ",
     "homeAriaLabel": "Internet Court — home",
-    "logoAlt": "InternetCourt"
+    "logoAlt": "InternetCourt",
+    "changeLanguage": "Change language"
   },
   "social": {
     "telegram": "Telegram",
@@ -43,7 +44,9 @@
     "talkToBot": "Talk to the Clerk Agent"
   },
   "videoPlayer": {
-    "playAriaLabel": "Play video"
+    "playAriaLabel": "Play video",
+    "mute": "Mute",
+    "unmute": "Unmute"
   },
   "home": {
     "metadata": {
@@ -164,6 +167,11 @@
           "a": "The fastest way to explore it is to install the Internet Court skill and connect an agent. You can also talk to the Clerk Agent directly on <link>Telegram</link>. From there you can create a contract, agree on terms with a counterparty, and run the full flow end to end."
         }
       ]
+    },
+    "blog": {
+      "eyebrow": "Dispatches",
+      "title": "Briefings from the court",
+      "allPosts": "All posts"
     }
   },
   "brand": {

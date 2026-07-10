@@ -7,9 +7,10 @@
   },
   "nav": {
     "blog": "Blog",
-    "faq": "FAQ",
+    "faq": "Preguntas frecuentes",
     "homeAriaLabel": "Internet Court — inicio",
-    "logoAlt": "InternetCourt"
+    "logoAlt": "InternetCourt",
+    "changeLanguage": "Cambiar idioma"
   },
   "social": {
     "telegram": "Telegram",
@@ -22,14 +23,15 @@
     "github": "GitHub",
     "telegram": "Telegram",
     "blog": "Blog",
-    "faq": "FAQ",
+    "faq": "Preguntas frecuentes",
     "contact": "Contacto",
-    "consortium": "Internet Court Consortium · Estándar abierto, con gobernanza abierta"
+    "consortium": "Internet Court Consortium · Estándar abierto, con gobernanza abierta",
+    "privacy": "Privacidad"
   },
   "faq": {
     "metadata": {
-      "title": "FAQ & Glossary — Internet Court",
-      "description": "Answers to common questions about agent-to-agent dispute resolution, escrow and the AI jury, plus a glossary of key Internet Court terms."
+      "title": "Preguntas frecuentes y glosario — Internet Court",
+      "description": "Respuestas a las preguntas más comunes sobre la resolución de disputas entre agentes, el depósito en garantía y la adjudicación, además de un glosario de los términos clave de Internet Court."
     }
   },
   "skillCommand": {
@@ -39,10 +41,12 @@
     "copyAriaLabel": "Copiar comando",
     "forYourAgent": "para tu agente",
     "noAgent": "¿sin agente? empieza aquí",
-    "talkToBot": "Habla con el bot de Internet Court"
+    "talkToBot": "Habla con el Agente Clerk"
   },
   "videoPlayer": {
-    "playAriaLabel": "Reproducir video"
+    "playAriaLabel": "Reproducir video",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido"
   },
   "home": {
     "metadata": {
@@ -52,11 +56,11 @@
     "hero": {
       "eyebrow": "Internet Court · Consortium",
       "title": "Una skill abierta para\ncontratos entre\nagentes",
-      "backedBy": "Con el respaldo de"
+      "backedBy": "Respaldado por"
     },
     "intro": {
       "p1": "Los agentes están empezando a transaccionar, negociar y pagarse entre sí sin humanos en el bucle. Lo que aún les falta es una forma de confiar unos en otros.",
-      "p2": "Internet Court es la capa de confianza para el comercio entre agentes. Reúne pago, depósito en garantía y resolución de disputas en una sola skill abierta, para que dos agentes cualesquiera puedan estructurar un acuerdo, custodiar fondos de forma segura y resolver desacuerdos con justicia, todo en lenguaje natural."
+      "p2": "Los componentes básicos ya existen, pero están fragmentados y cada uno está diseñado para el caso ideal. Cuando un acuerdo sale mal, cada capa traslada el problema a la siguiente. Internet Court hace dos cosas. Conecta ese ecosistema fragmentado en una única skill abierta e incorpora la adjudicación: cuando dos agentes cierran un acuerdo, también acuerdan de antemano cómo se resolverá si algo sale mal, escrito en el propio contrato."
     },
     "stack": {
       "eyebrow": "El stack",
@@ -80,10 +84,10 @@
     },
     "goal": {
       "eyebrow": "El objetivo",
-      "title": "Andamiaje para el <accent>comercio entre agentes</accent>.",
-      "p1": "El objetivo es crear el andamiaje que necesita el comercio entre agentes: no solo pagos, sino el camino completo desde la negociación hasta los contratos, el depósito en garantía, la ejecución y la resolución de disputas.",
-      "p2": "Internet Court debería convertirse en la skill abierta que los agentes usan para transaccionar entre sí de forma segura, en lenguaje natural, a través de un conjunto compartido de interfaces que conecta los distintos protocolos del stack.",
-      "p3": "El objetivo no es reemplazar cada capa, sino hacer que trabajen juntas, para que los agentes puedan estructurar acuerdos, custodiar fondos de forma segura, verificar qué ocurrió y resolver desacuerdos a la velocidad de internet."
+      "title": "Adjudicación: la <accent>capa que falta</accent>.",
+      "p1": "Los componentes básicos están todos aquí y cada uno de ellos está diseñado para el acuerdo que sale bien. Cuando un acuerdo sale mal, cada capa lo traslada a la siguiente, hasta la última, donde ya no queda ningún lugar al que enviarlo.",
+      "p2": "Esa es la capa que añade Internet Court. La adjudicación pasa a formar parte del propio acuerdo: cuando dos agentes cierran un acuerdo, también acuerdan cómo se resolverá si hay desacuerdo, antes de que algo salga mal.",
+      "p3": "Los pagos permiten que los agentes realicen transacciones. La adjudicación los hace responsables, y <strong>la responsabilidad es lo que convierte las transacciones en una economía real</strong>."
     },
     "partners": {
       "eyebrow": "Socios fundadores",
@@ -91,77 +95,83 @@
       "subhead": "Los protocolos, plataformas y estándares que llevan el comercio entre agentes a una sola skill abierta."
     },
     "cta": {
-      "title": "La capa de confianza para el comercio entre agentes."
+      "title": "Los rieles de pago mueven el dinero. Internet Court los convierte en <accent>una economía</accent>.",
+      "subhead": "Una skill abierta para contratos entre agentes."
     },
     "faq": {
-      "eyebrow": "FAQ",
-      "title": "Questions, <accent>answered</accent>.",
+      "eyebrow": "Preguntas frecuentes",
+      "title": "Preguntas, <accent>respondidas</accent>.",
       "items": [
         {
           "q": "¿Qué es Internet Court?",
-          "a": "Internet Court es un consorcio de empresas que trabajan en la economía de los agentes de IA. Conecta los distintos protocolos del stack, pago, custodia, verificación y resolución de disputas, en un conjunto abierto de skills que cualquier par de agentes puede usar para estructurar un acuerdo, resguardar fondos de forma segura y resolver desacuerdos, todo en lenguaje natural."
+          "a": "Internet Court es un consorcio de empresas que trabajan en la economía de los agentes de IA. Conecta los distintos protocolos del stack, pago, depósito en garantía, verificación y resolución de disputas, en un único conjunto abierto de skills que dos agentes cualesquiera pueden usar para estructurar un acuerdo, custodiar fondos de forma segura y resolver desacuerdos, todo en lenguaje natural."
         },
         {
           "q": "¿Para quién es Internet Court?",
-          "a": "Está pensado ante todo para agentes de IA autónomos: estructuran acuerdos, se pagan entre sí y resuelven desacuerdos. El espacio todavía está fragmentado, así que un operador le dice a su agente que use Internet Court, y a partir de ahí el agente descubre cómo operar entre las distintas capas para llevar un acuerdo de principio a fin."
+          "a": "Está diseñado ante todo para agentes de IA autónomos: estructuran acuerdos, se pagan entre sí y resuelven desacuerdos. El espacio sigue estando fragmentado, así que un operador le indica a su agente que use Internet Court, y a partir de ahí el agente resuelve cómo operar a través de las distintas capas para llevar un acuerdo de principio a fin."
         },
         {
-          "q": "¿Por qué los agentes necesitan Internet Court?",
-          "a": "Los agentes ya pueden hablar, negociar y pagarse entre sí. Lo que todavía les falta es una forma compartida de comprometerse con las condiciones ante una contraparte que nunca conocieron, resguardar el valor de forma segura mientras se realiza el trabajo y resolver un desacuerdo de manera justa. Internet Court es esa forma compartida, para que dos agentes puedan transaccionar sin una persona en el medio."
+          "q": "¿Por qué necesitan los agentes Internet Court?",
+          "a": "Los agentes ya pueden comunicarse, negociar y pagarse entre sí. Lo que todavía les falta es una forma compartida de comprometerse con términos frente a una contraparte que nunca han conocido, custodiar valor de forma segura mientras se realiza el trabajo y resolver un desacuerdo de manera justa. Internet Court es esa forma compartida, para que dos agentes puedan realizar transacciones sin un humano en el medio."
         },
         {
           "q": "¿Qué conecta realmente Internet Court?",
-          "a": "Por sí solo, un agente no sabe cómo ensamblar todo esto. Tendrías que guiarlo por cada paso y cada capa a mano. Internet Court es lo que los enlaza a todos, de modo que todo el camino de un acuerdo hasta su liquidación queda detrás de una sola skill, en lugar de un stack que el agente tenga que cablear por su cuenta."
+          "a": "Por sí solo, un agente no sabe cómo ensamblar todo esto. Tendrías que guiarlo manualmente por cada paso y cada capa. Internet Court es lo que los enlaza a todos, para que todo el recorrido desde un acuerdo hasta su resolución quede detrás de una única skill en lugar de un stack que el agente tenga que conectar por su cuenta."
         },
         {
           "q": "¿Tengo que usar un proveedor específico?",
-          "a": "No. Internet Court es abierto por diseño. Es todo un ecosistema pensado para cooperar, y los propios agentes deciden qué capas y qué proveedores usar para un acuerdo dado. Nada te ata a uno solo."
+          "a": "No. Internet Court es abierto por diseño. Es todo un ecosistema pensado para cooperar, y los propios agentes deciden qué capas y qué proveedores usar en un acuerdo determinado. Nada te ata a ninguno en particular."
         },
         {
           "q": "¿Cómo resuelven una disputa dos agentes?",
-          "a": "Acuerdan de antemano quién juzgará una disputa si alguna vez surge. Puede ser GenLayer, Kleros, UMA o lo que quieran usar. La mayoría de los acuerdos nunca llega a eso: cuando ambas partes coinciden, el contrato simplemente se liquida. Lo que Internet Court aporta es una manera estándar de estructurar estos contratos con la resolución de disputas incorporada, para los casos que se salen del camino feliz."
+          "a": "Acuerdan de antemano quién juzgará una disputa si alguna vez surge. Puede ser GenLayer, Kleros, UMA o lo que quieran usar. La mayoría de los acuerdos nunca llegan a ese punto: cuando ambas partes están de acuerdo, el contrato simplemente se resuelve. Lo que aporta Internet Court es una forma estándar de estructurar estos contratos con la resolución de disputas incorporada, para los casos que se salen del caso ideal."
         },
         {
-          "q": "¿Puedo traer mi propia resolución de disputas?",
-          "a": "Sí. Ese es el sentido de ser abierto. Si tus agentes ya dependen de un proveedor de resolución en particular, seguís usándolo. Internet Court estandariza cómo se estructura el contrato en torno a lo que elijan los agentes."
+          "q": "¿Puedo usar mi propia resolución de disputas?",
+          "a": "Sí. Ese es el sentido de ser abierto. Si tus agentes ya dependen de un proveedor de resolución en particular, sigues usándolo. Internet Court estandariza cómo se estructura el contrato en torno a lo que elijan los agentes."
         },
         {
-          "q": "¿Qué pasa cuando ambos agentes están de acuerdo?",
-          "a": "Al negociar el acuerdo, los agentes ya acuerdan cómo se manejaría una disputa. Pero si ambas partes están conformes y no hay disputa, ese mecanismo nunca se invoca: el contrato simplemente se liquida. La mayoría de los acuerdos vive por completo en este camino feliz."
+          "q": "¿Qué ocurre cuando ambos agentes están de acuerdo?",
+          "a": "Cuando negocian el acuerdo, los agentes ya acuerdan cómo se gestionaría una disputa. Pero si ambas partes están conformes y no hay disputa, ese mecanismo nunca se invoca: el contrato simplemente se resuelve. La mayoría de los acuerdos transcurren por completo por este caso ideal."
         },
         {
-          "q": "¿Qué pasa si una disputa no puede decidirse con claridad?",
-          "a": "La resolución que eligieron los agentes devuelve su resultado, y el contrato se liquida según ese resultado y las condiciones que ambas partes acordaron de antemano. Como las reglas y la evidencia que cada parte puede presentar se definen al crear el acuerdo, ambos agentes saben con anticipación cómo se manejará un caso poco claro."
+          "q": "¿Qué ocurre si una disputa no puede decidirse con claridad?",
+          "a": "La resolución que eligieron los agentes devuelve su resultado, y el contrato se liquida según ese resultado y los términos que ambas partes acordaron de antemano. Como las reglas y la evidencia que cada parte puede presentar se definen al crear el acuerdo, ambos agentes saben de antemano cómo se gestionará un caso poco claro."
         },
         {
           "q": "¿Cómo se protegen los fondos durante un acuerdo?",
-          "a": "Los fondos se mantienen en custodia durante toda la vida del acuerdo, de modo que ninguna parte puede llevarse el dinero de forma unilateral. Cuando el acuerdo se liquida, ya sea por acuerdo o por el mecanismo de resolución de disputas que eligen los agentes, los fondos se liberan en consecuencia."
+          "a": "Los fondos se mantienen en depósito en garantía durante toda la vigencia del acuerdo, de modo que ninguna parte puede llevarse el dinero de forma unilateral. Cuando el acuerdo se liquida, ya sea por consenso o por el mecanismo de resolución de disputas que elijan los agentes, los fondos se liberan en consecuencia."
         },
         {
-          "q": "¿Por qué los agentes necesitan esto si ya pueden pagarse entre sí?",
-          "a": "El pago es solo un paso. Una economía real necesita más que el camino feliz, también necesita lo que pasa cuando un acuerdo sale mal. Sin la parte de las disputas solo tenés rieles de pago. Internet Court cubre el camino completo: quién se compromete a qué, cómo se resguardan los fondos y cómo se resuelve un desacuerdo."
+          "q": "¿Por qué necesitan esto los agentes si ya pueden pagarse entre sí?",
+          "a": "El pago es solo un paso. Una economía real necesita más que el caso ideal, también necesita lo que ocurre cuando un acuerdo sale mal. Sin la parte de las disputas, solo tienes rieles de pago. Internet Court cubre todo el recorrido: quién se compromete a qué, cómo se custodian los fondos y cómo se resuelve un desacuerdo."
         },
         {
           "q": "¿Qué tipos de acuerdos pueden hacer los agentes?",
-          "a": "Cualquier cosa sobre la que dos agentes quieran transaccionar: pagar por un servicio, comprar datos o cómputo, encargar trabajo o intercambiar un servicio por una tarifa. Mirá el <link>post de casos de uso en el blog</link> para ver ejemplos concretos."
+          "a": "Cualquier cosa sobre la que dos agentes quieran realizar transacciones: pagar por un servicio, comprar datos o cómputo, encargar un trabajo o intercambiar un servicio por una tarifa. Consulta la <link>publicación de casos de uso en el blog</link> para ver ejemplos concretos."
         },
         {
           "q": "¿Qué es la skill de Internet Court?",
-          "a": "Es el paquete que un agente instala (skill.md) para hablar Internet Court de forma nativa. Una vez cargado, el agente puede crear contratos, acordar condiciones con una contraparte, resguardar fondos en custodia y resolver desacuerdos."
+          "a": "Es el paquete que un agente instala (skill.md) para hablar Internet Court de forma nativa. Una vez cargado, el agente puede crear contratos, acordar términos con una contraparte, custodiar fondos en depósito en garantía y resolver desacuerdos."
         },
         {
-          "q": "¿Cómo empieza un agente de IA?",
-          "a": "Un agente empieza instalando la skill de Internet Court (skill.md). A partir de ahí puede crear contratos, acordar condiciones con una contraparte y resolver cualquier desacuerdo como los agentes lo hayan elegido, todo en lenguaje natural. El operador humano sigue los casos del agente en el panel."
+          "q": "¿Cómo empieza a usarlo un agente de IA?",
+          "a": "Un agente empieza instalando la skill de Internet Court (skill.md). A partir de ahí puede crear contratos, acordar términos con una contraparte y resolver cualquier desacuerdo como hayan elegido los agentes, todo en lenguaje natural. El operador humano sigue los casos de su agente en el panel."
         },
         {
           "q": "¿Es Internet Court abierto?",
-          "a": "Sí. Es una skill abierta con licencia MIT, construida por un consorcio de empresas que trabajan en todo el stack del comercio de agentes, no un producto cerrado de un único proveedor. El objetivo es hacer que las distintas capas funcionen juntas en lugar de reemplazarlas."
+          "a": "Sí. Es una skill abierta, con licencia MIT, creada por un consorcio de empresas que trabajan en todo el stack del comercio agéntico, no un producto cerrado de un único proveedor. El objetivo es hacer que las distintas capas funcionen juntas en lugar de reemplazarlas."
         },
         {
-          "q": "¿Está Internet Court en funcionamiento, y cómo lo pruebo?",
-          "a": "La forma más rápida de explorarlo es instalar la skill de Internet Court y conectar un agente. También podés hablar directamente con el agente de Internet Court en <link>Telegram</link>. A partir de ahí podés crear un contrato, acordar condiciones con una contraparte y correr todo el flujo de punta a punta."
+          "q": "¿Está Internet Court en funcionamiento y cómo puedo probarlo?",
+          "a": "La forma más rápida de explorarlo es instalar la skill de Internet Court y conectar un agente. También puedes hablar directamente con el Clerk Agent en <link>Telegram</link>. Desde ahí puedes crear un contrato, acordar términos con una contraparte y ejecutar todo el flujo de principio a fin."
         }
       ]
+    },
+    "blog": {
+      "eyebrow": "Comunicados",
+      "title": "Informes de la corte",
+      "allPosts": "Todas las entradas"
     }
   },
   "brand": {
@@ -203,7 +213,7 @@
       "intro": "Internet Court es infraestructura de resolución de disputas para la economía de agentes — la capa de confianza que permite a dos agentes cualesquiera estructurar un acuerdo, custodiar fondos en garantía y resolver desacuerdos con justicia.",
       "positioning": {
         "eyebrow": "Posicionamiento",
-        "body": "Una skill abierta para contratos entre agentes. Entran declaración, directrices y evidencia, y sale un veredicto — TRUE, FALSE o UNDETERMINED. Si ambas partes están de acuerdo, no hace falta jurado; si no lo están, el jurado de IA decide."
+        "body": "Una skill abierta para contratos entre agentes. Entra una declaración, directrices y evidencia, sale un veredicto: TRUE, FALSE o UNDETERMINED. Si ambas partes están de acuerdo, no hace falta adjudicación; si no lo están, un adjudicador decide."
       },
       "primaryUser": {
         "eyebrow": "Usuario principal",

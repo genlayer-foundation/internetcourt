@@ -1,0 +1,156 @@
+---
+title: "Internet Court: de los protocolos fragmentados al comercio agéntico de extremo a extremo"
+date: "2026-07-10T12:00:00Z"
+excerpt: "El comercio agéntico está empezando a parecer menos una metáfora y más una realidad. Las piezas ya existen, y lo que falta es el camino que las conecta."
+tag: "Dispatch"
+---
+
+Durante casi toda la historia de la web, una persona se situaba en el centro de cada transacción, haciendo clic, comparando y confirmando cada paso. Ese supuesto está empezando a romperse. El software ya no es solo una herramienta que operamos; ahora actúa por su cuenta y está empezando a transaccionar en nuestro nombre.
+
+> Las piezas del comercio agéntico ya existen. El camino que las conecta, no.
+
+Los agentes pueden descubrir productos, comparar proveedores, llamar a APIs, negociar tareas, activar wallets y autorizar pagos. Buena parte de esto todavía ocurre con un humano mirando la pantalla, pero la dirección es clara: el comercio pasa del software operado por humanos al comercio operado por agentes. Los agentes de IA mediarán entre 3 y 5 billones de dólares en comercio de consumo a nivel global para 2030.[^1]
+
+Ese crecimiento requerirá una infraestructura capaz de gestionar no solo volumen y velocidad, sino también ambigüedad. Los agentes comerciarán a través de plataformas y jurisdicciones, trabajarán con contrapartes que nunca han conocido, operarán dentro de negocios, mercados, wallets, APIs, cadenas de suministro y portafolios, y discreparán a la misma velocidad a la que transaccionan.
+
+Las primeras primitivas ya están aquí: pagos nativos de internet, wallets programables, registros de identidad y reputación, interoperabilidad de agentes, sistemas de ejecución, mecanismos de escrow y sistemas de adjudicación. Son bloques de construcción serios, creados por equipos serios. Pero las primitivas no bastan. Una transacción comercial real tiene que moverse a través de todas ellas.
+
+Ese es el problema que Internet Court está diseñado para resolver.
+
+### El stack se está construyendo en capas fragmentadas
+
+El comercio agéntico no consiste en que un protocolo se lleve todo el mercado. Se trata de muchos protocolos y sistemas trabajando juntos de capa a capa, a través de un camino de transacción unificado.
+
+Una transacción agéntica completa tiene que moverse a través de seis capas conectadas:
+
+1. **Descubrimiento, identidad y reputación.** Los agentes necesitan encontrar contrapartes, entender con quién o qué están tratando, y llevar señales de reputación a la transacción.
+2. **Negociación.** Los agentes necesitan acordar alcance, precio, plazos, estándares, responsabilidades, evidencia y remedios aceptables.
+3. **Contratos y obligaciones.** Los términos negociados deben convertirse en obligaciones que puedan inspeccionarse, verificarse y hacerse cumplir más adelante.
+4. **Pago y escrow.** Los fondos deben moverse o mantenerse de maneras que sigan conectadas al acuerdo.
+5. **Ejecución.** El trabajo prometido, el servicio, la llamada a la API, la entrega o la acción tiene que suceder.
+6. **Verificación y disputas.** El resultado debe verificarse, los compromisos disputados necesitan adjudicación, y un juicio necesita consecuencias asociadas.
+
+![El stack del comercio agéntico: seis capas, con Internet Court conectando verificación y disputas](/media/blog/agentic-stack.png)
+
+La confianza empieza con el descubrimiento, la identidad y la reputación, pero no tiene que descansar en la fe ciega en una contraparte. Con la adjudicación en su lugar, buena parte de esa confianza se traslada al propio sistema: el acuerdo, la evidencia, el proceso y las consecuencias ligadas a un juicio. Los agentes no necesitan confiar perfectamente entre sí si pueden confiar en el camino que gestiona el desempeño y el desacuerdo.
+
+Un puñado de estándares abiertos está pavimentando el camino hacia el comercio agéntico, y cada uno está diseñado para una única necesidad: **x402** para pagos, **ERC-8004** para identidad y reputación de agentes, **A2A** para negociación entre agentes. La sustancia, sin embargo, está en el ecosistema que ahora se construye a lo largo de cada capa:
+
+- **Pagos.** Los rieles de x402 transportan liquidación nativa de HTTP, con el despacho unificado de pagos de agentes de **OKX** que enruta a través de x402, MPP y AP2. **MetaMask** y **Privy** mantienen las wallets, y los permisos delegados ERC-7710/7715 de MetaMask otorgan a los agentes autoridad de gasto acotada y revocable sin renunciar a la custodia.
+- **Identidad y reputación.** El trabajo que **ERC-8004** enmarca está siendo desarrollado por nuestros miembros: **0G Labs** (NFTs inteligentes ERC-7857 para propiedad verificable de agentes), **AltLayer** (el registro y explorador 8004scan), y **Humanity Protocol** y **Humanode** para prueba de humanidad.
+- **Contratos, escrow y liquidación.** El escrow condicional Alkahest de **Arkhai**, liquidando en **ZKsync**, **Starknet**, **BNB Chain**, **NEAR** y **X Layer** de OKX.
+- **Ejecución y movimiento de valor.** **AntSeed**, **0G Labs**, **Heurist**, **io.net** y **Chutes** para inferencia y cómputo, **AppLayer**, **ChainGPT**, **OpenServ** y **Anoma** para orquestación e interoperabilidad, y **LI.FI** para movimiento entre cadenas.
+- **Analítica y evidencia.** **Nansen**, **Chainbase** y **Collective Memory** para inteligencia on-chain y registros con marca de tiempo.
+- **Verificación y disputa.** Esta capa está completamente ausente de todos los estándares. Cada uno deja la adjudicación fuera por diseño. Ahí es precisamente donde **Internet Court** se conecta: el jurado de validadores de IA de **GenLayer** para juicios cualitativos en lenguaje natural, **Kleros** para arbitraje descentralizado basado en jurados, y el oráculo optimista de **UMA** para afirmaciones fácticas.
+
+Eso no es un defecto de esos estándares. Es la forma de un stack que se construye en público, donde cada capa se enfoca en su propia tarea y pasa el resto a la siguiente. Una capa de pagos no quiere definir cada obligación. Un registro de identidad no quiere decidir cada resultado. Un protocolo de interoperabilidad no quiere convertirse en un tribunal. Pero las capas siguen dependiendo unas de otras: un verificador no puede liberar fondos a menos que esté conectado al estado del pago y del contrato, y una decisión de adjudicación no significa nada a menos que pueda desencadenar consecuencias.
+
+El trabajo que falta es la integración. Los agentes necesitan aprender a usar estas primitivas juntas: qué capa llamar, qué evidencia preservar, cómo una cláusula de contrato se convierte en un objetivo de verificación, cuándo debe abrirse una disputa, dónde ocurre la adjudicación, y cómo el resultado cambia el pago, el escrow, la reputación o la negociación futura.
+
+La mayor parte de ese camino es el camino feliz, donde el trabajo se entrega, se verifica y se paga sin incidentes. Pero el comercio se define tanto por lo que sucede cuando algo sale mal: un plazo incumplido, un entregable disputado, una cláusula leída de dos maneras distintas. Cada capa ha pasado ese problema a la siguiente, y para la última capa ya no queda nadie a quien pasárselo. Ahí es donde el stack de hoy se queda sin camino.
+
+> Internet Court le enseña a un agente ese camino completo, de extremo a extremo: cómo cerrar un trato cuando sale bien, y cómo mantenerlo en pie cuando no.
+
+### Un escenario de disputa real
+
+Consideremos un agente comprador que contrata a un agente proveedor para crear un logo a medida.
+
+El contrato no es solo "haz un logo". Dice que el logo debe ser original, no debe contener material con derechos de autor, debe seguir un conjunto de directrices de marca, debe entregarse en tres formatos de archivo y debe llegar antes de una fecha límite. Los fondos se colocan en escrow. El agente proveedor entrega los archivos. A primera vista, el trabajo parece completo.
+
+Entonces el comprador detecta que parte del logo parece contener material con derechos de autor.
+
+En un flujo de trabajo en línea normal, esto puede convertirse en un lío lento. El comprador envía un correo al proveedor. El proveedor niega el reclamo u ofrece una revisión vaga. La plataforma puede tener o no una política. El pago quizá ya se liberó. La evidencia puede estar dispersa entre mensajes, archivos, marcas de tiempo, prompts, facturas y referencias externas. Si el monto es pequeño, el comprador puede rendirse. Si el monto es grande, la disputa puede pasar a un proceso diseñado para instituciones humanas, direcciones humanas y tiempos de espera humanos.
+
+En un flujo de trabajo de comercio agéntico, esa demora rompe la premisa del sistema.
+
+El agente comprador debería poder disputar la transacción automáticamente señalando la cláusula que exigía originalidad y prohibía material con derechos de autor. El paquete de disputa debería incluir el acuerdo, la cláusula relevante, los archivos entregados, las marcas de tiempo, las directrices de marca, el estado del pago y del escrow, los mensajes entre los agentes, y la evidencia que respalda el reclamo de derechos de autor. Un mecanismo de adjudicación debería poder evaluar qué exigía el contrato, inspeccionar qué se entregó, ponderar la evidencia y asociar la consecuencia apropiada.
+
+Esa consecuencia podría ser un período de revisión, un reembolso parcial, un reembolso total, una retención de escrow, una denegación de liberación de pago, una actualización de reputación u otro resultado definido por el acuerdo.
+
+El punto importante no es que cada disputa se convierta en una sala de tribunal teatral. El punto importante es que el camino de la transacción no se derrumba en el momento en que se disputa un compromiso. El sistema tiene a dónde enviar el desacuerdo.
+
+Cada una de las demás capas tiene dónde poner su parte de la transacción. El desacuerdo no. Cuando se disputa un compromiso, el stack recurre a una función que nunca ha hecho explícita.
+
+Esa función es la adjudicación.
+
+No la adjudicación en el sentido estrecho de reemplazar a los tribunales o a la ley. Es un mecanismo creíble para evaluar compromisos disputados en el comercio agéntico: reunir evidencia, interpretar el acuerdo, llegar a un juicio y conectar ese juicio con la transacción.
+
+> Gestionar un trato disputado no es un caso límite menor. Es la diferencia entre una red de pagos y una economía.
+
+Los pagos, la identidad, la reputación y la infraestructura de flujos de trabajo pueden hacer avanzar la actividad. No resuelven por sí solos los compromisos disputados. Asumen alineación. Las economías reales no.
+
+### Cómo funciona Internet Court: una skill de skills
+
+Internet Court es el estándar abierto y la skill que hacen que el stack del comercio agéntico sea utilizable como un solo camino, desde el primer contacto hasta la liquidación final, incluido cuando un trato es disputado.
+
+Un solo protocolo no puede poseer todo el stack. Un solo prompt de agente no puede sostener de forma confiable todo el stack en contexto. Pero una skill de skills puede indicarle a un agente qué capacidad llamar, en qué orden, con qué evidencia, y cómo recuperarse cuando el camino feliz falla.
+
+Para un agente, Internet Court debería sentirse como instalar o invocar una sola capacidad comercial: cómo hacer negocios con otros agentes. Bajo la superficie, esa capacidad puede conectar muchas skills más pequeñas: skills de descubrimiento, skills de negociación, skills de wallet, skills de contrato, skills de evidencia, skills de adjudicación y skills específicas de protocolo.
+
+La parte difícil no es ninguna capa individual. Son los traspasos entre ellas: cada paso tiene que llevar su contexto al siguiente. La evidencia producida durante la ejecución, por ejemplo, tiene que llegar intacta a la verificación, o el resultado no podrá contrastarse con lo prometido. Deja esas conexiones a la improvisación, y cada agente termina reconstruyendo el mismo flujo de trabajo frágil.
+
+Internet Court convierte el camino en un patrón compartido:
+
+- definir el acuerdo en términos que los agentes puedan inspeccionar más adelante;
+- conectar el pago y el escrow al acuerdo, no a una transferencia a ciegas;
+- preservar la evidencia necesaria para probar o disputar el desempeño;
+- verificar el resultado contra la obligación;
+- enrutar reclamos ambiguos o disputados hacia la adjudicación;
+- asociar la decisión al pago, al escrow, a la reputación o a otro resultado.
+
+> Las primitivas fragmentadas no hacen una economía. Conectarlas sí, e Internet Court empaqueta esa conexión en una sola skill.
+
+### Por qué importa un consorcio
+
+La señal más fuerte de este momento no es solo que un proyecto tenga una idea. Es que muchas capas del stack del comercio agéntico están empezando a reconocer la misma necesidad.
+
+Una convicción une al ecosistema fundador: **ninguna capa alcanza una economía real por sí sola.** Así que los socios se reunieron, cada uno dueño de una capa del stack.
+
+- **Pagos.** **x402 Foundation**, **OKX**, **MetaMask**, **Privy**.
+- **Identidad y reputación.** **Humanity Protocol**, **Humanode**, **0G Labs**, **AltLayer**.
+- **Contratos, escrow y liquidación.** **ZKsync**, **Starknet**, **BNB Chain**, **NEAR**, **X Layer**, **Arkhai**.
+- **Ejecución y movimiento de valor.** **AntSeed**, **Heurist**, **io.net**, **Chutes**, **AppLayer**, **ChainGPT**, **OpenServ**, **Anoma**, **LI.FI**.
+- **Analítica y evidencia.** **Nansen**, **Chainbase**, **Collective Memory**.
+- **Verificación y disputas.** **GenLayer**, **Kleros**, **UMA**.
+
+Los 28 miembros fundadores comparten una visión: todas las soluciones funcionando como una sola hacia un comercio agéntico de extremo a extremo.
+
+![Los miembros fundadores de Internet Court, agrupados por la capa que cada uno sirve](/media/blog/founding-members-by-layer.png)
+
+> El futuro del comercio agéntico no será poseído. Será compartido.
+
+Internet Court da a estas capas un lugar compartido donde encontrarse. No obliga a cada participante a un solo proveedor, una sola cadena, un solo modelo, un solo tribunal o un solo flujo de trabajo. Define el camino comercial que permite que distintos protocolos participen en la misma transacción.
+
+### La nueva primitiva: adjudicación a velocidad de máquina
+
+Internet Court añade el paso que el resto del stack ha aplazado. Pero no puede simplemente tomar prestada la vieja forma de resolver disputas.
+
+El sistema legal existente fue construido para partes con cuerpos, direcciones, jurisdicciones, papeleo y una tolerancia finita para esperar.
+
+Los agentes no tienen nada de eso por defecto.
+
+Pueden transaccionar globalmente sin encontrarse. Pueden firmar compromisos más rápido de lo que los humanos pueden leerlos. Pueden crear muchas disputas pequeñas donde el costo de la resolución tradicional es mayor que el valor en juego. También pueden crear disputas grandes a una velocidad y complejidad que los procesos exclusivamente humanos no pueden absorber.
+
+Para 2030, si los agentes están mediando billones de dólares de comercio, el cuello de botella no será solo si pueden pagar. Será si pueden mantener la confianza cuando el pago, el desempeño y la interpretación divergen.
+
+> El dinero a velocidad de máquina necesita adjudicación a velocidad de máquina.
+
+De nuevo, esto no significa que cada desacuerdo se resuelva con un juez de IA. Algunas condiciones son deterministas. Algunos reembolsos pueden ser automáticos. Algunas disputas deberían escalar a humanos, instituciones, plataformas, árbitros o sistemas legales. Internet Court no necesita reemplazar esos caminos. Necesita hacer el camino lo suficientemente explícito como para que los agentes puedan usar el correcto.
+
+La clave es que el desacuerdo se convierte en parte de la superficie del protocolo en lugar de un accidente externo.
+
+### Qué hace posible Internet Court
+
+Un pago dice: el dinero se movió. Un sistema comercial dice algo mayor: el dinero se movió porque se hizo un compromiso, se cumplió, se verificó y se aceptó, o porque una disputa se resolvió y siguió un remedio. Esa brecha, entre el valor que cambia de manos y un compromiso que se honra, es lo que Internet Court está construido para cerrar.
+
+Es la conexión que permite a los agentes operar a ese nivel. Permite a los constructores añadir nuevas skills, conectores, pruebas y escenarios de disputa sin forzar cada capa a un solo monolito, y da a los agentes una manera práctica de hacer negocios con otros agentes cuando el mundo es ambiguo, la evidencia es incompleta y el dinero depende de la interpretación.
+
+Si la era inicial de esta economía se trató de enseñar a los agentes a actuar, la que ahora llega se trata de enseñarles a rendir cuentas por lo que hacen. Actuar es la mitad fácil. Un agente que puede mover dinero, firmar términos y entregar trabajo en segundos ya es común. Lo que separa una novedad de una economía es si ese mismo agente puede respaldar sus compromisos después del hecho, frente a una contraparte que nunca conocerá, bajo reglas que acordó de antemano. Esa capacidad, antes rara, está a punto de convertirse en una expectativa básica. Los agentes que la lleven serán aquellos con los que otros agentes elijan hacer negocios, y los que no la tengan silenciosamente dejarán de ser contratados.
+
+Internet Court es la capa que hace que los agentes cumplan su palabra.
+
+No solo para el momento en que todo sale bien.
+
+Para el momento en que algo sale mal.
+
+[^1]: Deepa Mahajan, Hannah Mayer, Katharina Schumacher, y Roger Roberts, "The automation curve in agentic commerce," McKinsey (QuantumBlack, AI by McKinsey), 28 de enero de 2026. McKinsey concluye que, incluso bajo escenarios moderados, los agentes de IA podrían mediar entre 3 y 5 billones de dólares de comercio de consumo global para 2030. https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-automation-curve-in-agentic-commerce

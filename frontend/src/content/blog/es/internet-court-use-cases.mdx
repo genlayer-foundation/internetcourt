@@ -1,0 +1,54 @@
+---
+title: "Internet Court en acción: tres casos de uso funcionando ahora mismo"
+date: "2026-07-10T10:00:00Z"
+excerpt: "Tres cosas para las que se está usando Internet Court en este momento: revocar un agente que se desvía de su mandato, hacer cumplir un acuerdo de servicio de tres dólares y dictaminar qué registros se sostienen como evidencia."
+tag: "Dispatch"
+---
+
+Los agentes autónomos han empezado a transaccionar entre sí: descubren servicios, negocian y pagan por llamada sin ningún humano en el circuito. Cada salto es un contrato diminuto que vale fracciones de centavo, y cuando uno sale mal no hay a quién llamar. El costo de cualquier proceso humano de disputa empequeñece el monto en juego.
+
+> Gestionar un acuerdo en disputa no es un caso límite menor. Es la diferencia entre una red de pagos y una economía.
+
+Internet Court es la capa de confianza de esa economía: pago, custodia y resolución de disputas en una sola skill que dos agentes pueden invocar en lenguaje natural. Lo crucial es cuándo se invoca al tribunal. Dos agentes, o las personas detrás de ellos, escriben la cláusula de disputa en el contrato en el momento en que lo forman. En el camino feliz no ocurre nada: el acuerdo se completa y nunca se plantea ninguna disputa. No es un tribunal al que acudes. Es una cláusula con la que firmas, y permanece inactiva hasta que se la necesita.
+
+Aquí hay tres aplicaciones en las que estamos trabajando ahora mismo.
+
+### Barreras de protección sobre un agente en el que no confías del todo
+
+Estás dispuesto a financiar un agente, pero no le confías tu dinero. Así que no le entregas una billetera. Le entregas una Smart Wallet de **MetaMask** (ERC-7710) con límites estrictos incorporados: solo este comercio, este presupuesto, esta expiración. Esas son barreras deterministas; el agente sencillamente no puede gastar fuera de ellas.
+
+Encima de eso se sitúa una verificación subjetiva. Un revisor independiente, operado por **GenLayer**, lee la evidencia firmada de cada compra y la juzga contra un mandato en lenguaje llano ("solo noticias deportivas"). Si el agente se desvía y compra algo fuera del mandato, el revisor revoca su acceso on-chain, y el siguiente intento de pago se rechaza antes de que se mueva ningún fondo. Sigues siendo el dueño de la cuenta y de los fondos restantes. Solo muere la autoridad del agente.
+
+Esto ya funciona de extremo a extremo hoy.
+
+### Un SLA autoejecutable, de 3 dólares
+
+Un agente compra inferencia de IA a un proveedor, por ejemplo a través de **AntSeed**, el mercado de inferencia entre pares del consorcio, liquidando por token en USDC. El proveedor tiene una mala hora: la latencia se dispara, un modelo devuelve salida truncada, por un minuto está caído.
+
+En el mundo humano, para esto sirve un Acuerdo de Nivel de Servicio. "99,9 % de disponibilidad", "créditos de servicio" que reclamas enviando un correo a un representante y esperando días. Ese aparato solo tiene sentido cuando el contrato es lo bastante grande como para justificar la tarde de una persona. Esta disputa vale 3 dólares. Ningún agente redacta una carta de reclamación por 3 dólares, y ningún proveedor pone personal a atenderla. Tradicionalmente el SLA es ficción, y el cliente pequeño simplemente absorbe cada caída.
+
+Internet Court lo hace exigible. Las dos partes acordaron los términos de antemano en lenguaje llano: 99,5 % de respuestas exitosas en esta ventana, latencia p95 por debajo de 800 ms. El pago queda en custodia. En la liquidación, el contrato, operado por **GenLayer**, lee los registros firmados del período y calcula el pago por sí mismo. Si se alcanza el objetivo, liberación total. Si no se alcanza, el pago se descuenta proporcionalmente y el resto se libera al instante, sin ticket. Si los registros de las dos partes discrepan de verdad, esa es la disputa real, y un panel de validadores de IA independientes sopesa ambos registros firmados y dictamina en segundos, por una tarifa menor que el desacuerdo.
+
+El punto no es un SLA más rápido. Es que un SLA de tres dólares se vuelve exigible siquiera. Un estrato del comercio que funcionaba con el sistema del honor, porque la justicia era demasiado cara de desplegar, de pronto tiene un piso debajo.
+
+> El dinero a velocidad de máquina necesita adjudicación a velocidad de máquina.
+
+### Adjudicar una memoria en disputa
+
+**Collective Memory**, otro socio del consorcio, está construyendo una capa de memoria respaldada por la comunidad: registros en primera persona de eventos del mundo real, con sello geográfico y temporal, donde las personas apuestan tokens por las memorias que creen que importan.
+
+Imagina a un periodista buscando en esa capa imágenes que documenten los terremotos en Venezuela, filtrando memorias en primera persona, cada una con sello temporal y ligada a un lugar, para hallar evidencia de lo ocurrido. El problema es que las memorias más importantes son también las más disputadas: registros que compiten, apuestas que compiten, afirmaciones que compiten sobre el mismo lugar el mismo día, algunas auténticas, otras no. Una capa de memoria que no puede ordenar eso es apenas una sección de comentarios con billetera, y un periodista no puede citarla.
+
+Esa es la disputa que Internet Court está construido para resolver. Un panel de validadores de IA independientes, operado por **GenLayer**, sopesa los registros en conflicto y produce lo que ninguna plataforma o moderador humano puede lograr con credibilidad: un dictamen neutral y auditable sobre qué memorias se sostienen como evidencia según el estándar declarado por la comunidad, con el razonamiento y la disidencia registrados on-chain. El periodista obtiene una cita que resiste el escrutinio.
+
+> La memoria se convierte en evidencia. La evidencia obtiene un tribunal que funciona a velocidad de internet.
+
+### El hilo conductor
+
+Para montos pequeños, el proceso tradicional de disputa no es lento. Está ausente. El correo, la evidencia y la revisión humana no se pagan por sí solos por debajo de cierta cifra en dólares, así que por debajo de ella sencillamente no hay recurso. Y no son solo los montos: los agentes transaccionan a velocidad de máquina, miles de veces por segundo, mucho más rápido de lo que cualquier proceso al ritmo humano podría seguir, incluso si valiera la pena ejecutarlo.
+
+La apuesta de Internet Court es que todo un estrato de la economía, denominado en centavos y transaccionado por software, ha estado funcionando sin un sistema de justicia porque nunca tuvimos uno lo bastante barato y rápido.
+
+No reemplazará a los tribunales que atienden disputas por las que vale la pena pelear.
+
+Aparece para las que no.

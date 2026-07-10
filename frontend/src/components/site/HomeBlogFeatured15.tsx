@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { RiArrowRightLine } from "@/components/icons/remix";
 import { type BlogPost } from "@/lib/blog";
 
@@ -21,9 +22,14 @@ function formatShortDate(iso: string): string {
   });
 }
 
-export default function HomeBlogFeatured15({ posts }: { posts: BlogPost[] }) {
+export default async function HomeBlogFeatured15({
+  posts,
+}: {
+  posts: BlogPost[];
+}) {
   if (posts.length === 0) return null;
 
+  const t = await getTranslations("home.blog");
   const lead = posts[0];
   const rest = posts.slice(1);
 
@@ -34,17 +40,17 @@ export default function HomeBlogFeatured15({ posts }: { posts: BlogPost[] }) {
         <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div>
             <div className="font-mono text-xs uppercase tracking-[0.16em] text-[#dc2626]">
-              Dispatches
+              {t("eyebrow")}
             </div>
             <h2 className="pt-2 font-sans text-3xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#1c1a16] md:text-4xl">
-              Briefings from the court
+              {t("title")}
             </h2>
           </div>
           <Link
             href="/blog"
             className="group inline-flex items-center gap-2 rounded-full bg-[#ebe9e0] px-4 py-1.5 font-mono text-xs uppercase tracking-[0.16em] text-[#1c1a16] transition-colors hover:text-[#dc2626]"
           >
-            All posts
+            {t("allPosts")}
             <RiArrowRightLine
               size={12}
               className="transition-transform duration-300 group-hover:translate-x-0.5"

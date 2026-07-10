@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { RiArrowDownSLine, RiCheckLine } from "@/components/icons/remix";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,8 @@ const LOCALE_LABELS: Record<(typeof routing.locales)[number], string> = {
  */
 export function MastheadLangToggle() {
   const activeLocale = useLocale();
-  // Locale-agnostic pathname (no locale prefix), e.g. `/brand`, `/blog/welcome`.
+  const t = useTranslations("nav");
+  // Locale-agnostic pathname (no locale prefix), e.g. `/brand`, `/blog`.
   const pathname = usePathname();
 
   const [open, setOpen] = useState(false);
@@ -66,7 +67,7 @@ export function MastheadLangToggle() {
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        aria-label="Change language"
+        aria-label={t("changeLanguage")}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
@@ -90,7 +91,7 @@ export function MastheadLangToggle() {
         <ul
           id={listboxId}
           role="listbox"
-          aria-label="Change language"
+          aria-label={t("changeLanguage")}
           className={cn(
             "absolute right-0 z-50 mt-2 min-w-[9.5rem] overflow-hidden rounded-[10px]",
             "border border-border/70 bg-[#f7f4ec] p-1 shadow-lg shadow-black/5",
