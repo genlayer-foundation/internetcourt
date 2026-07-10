@@ -136,6 +136,14 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Paint the base canvas paper (not browser-default white) so there is no
+     white flash before the page paints, especially right after a deploy when
+     the CSS bundle is uncached. color-scheme keeps form controls/scrollbars
+     light regardless of the OS setting. */
+  html {
+    background-color: var(--background);
+    color-scheme: light;
+  }
   body {
     @apply bg-background text-foreground;
   }

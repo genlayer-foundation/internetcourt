@@ -116,7 +116,7 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: "metadata" });
 
   return (
-    <html lang={locale}>
+    <html lang={locale} style={{ backgroundColor: "#f7f4ec", colorScheme: "light" }}>
       <body
         className={`${dmSans.variable} ${dmMono.variable} font-sans antialiased`}
       >
