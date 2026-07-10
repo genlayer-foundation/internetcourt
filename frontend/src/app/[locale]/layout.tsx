@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { DM_Sans, DM_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -152,6 +153,7 @@ gtag('config', '${GA_MEASUREMENT_ID}');`,
             />
           </>
         )}
+        <Analytics />
       </body>
     </html>
   );
