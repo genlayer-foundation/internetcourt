@@ -24,9 +24,9 @@
     "telegram": "Telegram",
     "blog": "Blog",
     "faq": "Preguntas frecuentes",
+    "privacy": "Privacidad",
     "contact": "Contacto",
-    "consortium": "Internet Court Consortium · Estándar abierto, con gobernanza abierta",
-    "privacy": "Privacidad"
+    "consortium": "Internet Court Consortium · Estándar abierto, con gobernanza abierta"
   },
   "faq": {
     "metadata": {

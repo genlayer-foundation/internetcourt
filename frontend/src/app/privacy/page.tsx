@@ -1,34 +1,24 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
-import { buildAlternates, localizedUrl } from "@/lib/i18n-metadata";
 
 const TITLE = "Privacy Policy · Internet Court";
 const DESCRIPTION =
   "How GenLayer Foundation collects, uses, and discloses information in connection with Internet Court, the trust layer for agent-to-agent commerce.";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-
-  return {
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/privacy" },
+  openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    alternates: buildAlternates("/privacy", locale),
-    openGraph: {
-      title: TITLE,
-      description: DESCRIPTION,
-      url: localizedUrl("/privacy", locale),
-      type: "website",
-    },
-    twitter: {
-      title: TITLE,
-      description: DESCRIPTION,
-    },
-  };
-}
+    url: "https://internetcourt.org/privacy",
+    type: "website",
+  },
+  twitter: {
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+};
 
 /** Red-accent inline link styling, matching the long-form prose spec. */
 const linkClass =
@@ -91,14 +81,7 @@ function List({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default async function PrivacyPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
+export default function PrivacyPage() {
   return (
     <div className="bg-[#f7f4ec] pt-16 md:pt-20">
       <div className="max-w-3xl mx-auto px-5 md:px-6 py-16 md:py-24">
@@ -108,12 +91,6 @@ export default async function PrivacyPage({
         <p className="mt-3 text-sm text-[#6c665a]">
           Last updated: July 9, 2026
         </p>
-
-        {locale !== "en" && (
-          <p className="mt-6 italic text-[#6c665a]">
-            This Privacy Policy is available in English only.
-          </p>
-        )}
 
         <Section title="Who we are">
           <P>

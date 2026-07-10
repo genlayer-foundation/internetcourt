@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import NextLink from "next/link";
 import { Link } from "@/i18n/routing";
 import { TELEGRAM_URL } from "@/lib/site-content";
 
@@ -35,9 +36,9 @@ export async function Footer() {
           <Link href="/faq" className={linkClasses}>
             {t("faq")}
           </Link>
-          <Link href="/privacy" className={linkClasses}>
+          <NextLink href="/privacy" className={linkClasses}>
             {t("privacy")}
-          </Link>
+          </NextLink>
           <a href="mailto:ivan@genlayer.foundation" className={linkClasses}>
             {t("contact")}
           </a>

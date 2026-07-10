@@ -1,10 +1,13 @@
 {
   "es": {
-    "launch-video": {
-      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
+    "a-neutral-venue-for-agents": {
+      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
     },
-    "press-release": {
-      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
+    "escrow-and-skin-in-the-game": {
+      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    },
+    "how-the-ai-jury-works": {
+      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
     },
     "internet-court-agentic-commerce": {
       "srcHash": "85542cbd81b638de95164c22a182f3afb7f162c9b22f4e07f5a40a53eaf6bd07"
@@ -12,22 +15,22 @@
     "internet-court-use-cases": {
       "srcHash": "78f5e8c3e3df3db4a1dc3e3c1e6deeec4f8dc2063e84c09227dfb0cce04d8335"
     },
-    "a-neutral-venue-for-agents": {
-      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
+    "launch-video": {
+      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
     },
-    "how-the-ai-jury-works": {
-      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
-    },
-    "escrow-and-skin-in-the-game": {
-      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    "press-release": {
+      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
     }
   },
   "ko": {
-    "launch-video": {
-      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
+    "a-neutral-venue-for-agents": {
+      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
     },
-    "press-release": {
-      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
+    "escrow-and-skin-in-the-game": {
+      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    },
+    "how-the-ai-jury-works": {
+      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
     },
     "internet-court-agentic-commerce": {
       "srcHash": "85542cbd81b638de95164c22a182f3afb7f162c9b22f4e07f5a40a53eaf6bd07"
@@ -35,22 +38,22 @@
     "internet-court-use-cases": {
       "srcHash": "78f5e8c3e3df3db4a1dc3e3c1e6deeec4f8dc2063e84c09227dfb0cce04d8335"
     },
-    "a-neutral-venue-for-agents": {
-      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
+    "launch-video": {
+      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
     },
-    "how-the-ai-jury-works": {
-      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
-    },
-    "escrow-and-skin-in-the-game": {
-      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    "press-release": {
+      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
     }
   },
   "zh": {
-    "launch-video": {
-      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
+    "a-neutral-venue-for-agents": {
+      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
     },
-    "press-release": {
-      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
+    "escrow-and-skin-in-the-game": {
+      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    },
+    "how-the-ai-jury-works": {
+      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
     },
     "internet-court-agentic-commerce": {
       "srcHash": "85542cbd81b638de95164c22a182f3afb7f162c9b22f4e07f5a40a53eaf6bd07"
@@ -58,22 +61,22 @@
     "internet-court-use-cases": {
       "srcHash": "78f5e8c3e3df3db4a1dc3e3c1e6deeec4f8dc2063e84c09227dfb0cce04d8335"
     },
-    "a-neutral-venue-for-agents": {
-      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
+    "launch-video": {
+      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
     },
-    "how-the-ai-jury-works": {
-      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
-    },
-    "escrow-and-skin-in-the-game": {
-      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    "press-release": {
+      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
     }
   },
   "ru": {
-    "launch-video": {
-      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
+    "a-neutral-venue-for-agents": {
+      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
     },
-    "press-release": {
-      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
+    "escrow-and-skin-in-the-game": {
+      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    },
+    "how-the-ai-jury-works": {
+      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
     },
     "internet-court-agentic-commerce": {
       "srcHash": "85542cbd81b638de95164c22a182f3afb7f162c9b22f4e07f5a40a53eaf6bd07"
@@ -81,14 +84,11 @@
     "internet-court-use-cases": {
       "srcHash": "78f5e8c3e3df3db4a1dc3e3c1e6deeec4f8dc2063e84c09227dfb0cce04d8335"
     },
-    "a-neutral-venue-for-agents": {
-      "srcHash": "3ceea40896a64b35322a95176da47860b198d92395171e85e2c45ff7aa53a970"
+    "launch-video": {
+      "srcHash": "32964915eb37874213d2f2f9d36d55c47991749c2da177f13bb903b8a0b0a565"
     },
-    "how-the-ai-jury-works": {
-      "srcHash": "4a913e4faadee62a30dba0293f507cee90bc1a801fa3f43c1fc1579f0ff40941"
-    },
-    "escrow-and-skin-in-the-game": {
-      "srcHash": "07c9a4fc8a1bf6e37276adc22fab6eca90df3b99665b5918aa7ccbb851220622"
+    "press-release": {
+      "srcHash": "f9541292c166f7a82d9d1106f9631d6d7926c3d29e469547750c618f03379b26"
     }
   }
 }

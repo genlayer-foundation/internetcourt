@@ -24,9 +24,9 @@
     "telegram": "Telegram",
     "blog": "博客",
     "faq": "常见问题",
+    "privacy": "隐私政策",
     "contact": "联系我们",
-    "consortium": "Internet Court Consortium · 开放标准，公开治理",
-    "privacy": "隐私政策"
+    "consortium": "Internet Court Consortium · 开放标准，公开治理"
   },
   "faq": {
     "metadata": {

@@ -1,5 +1,5 @@
 import createMiddleware from "next-intl/middleware";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
@@ -38,6 +38,14 @@ export default function middleware(request: NextRequest) {
     if (providedUser !== user || providedPass !== password) {
       return unauthorized();
     }
+  }
+
+  // The privacy policy is a static, English-only route that lives outside the
+  // `[locale]` segment. Skip next-intl so it is never localized (no
+  // `/es/privacy`, `/ko/privacy`, ...). Basic Auth above still applies.
+  const { pathname } = request.nextUrl;
+  if (pathname === "/privacy" || pathname.startsWith("/privacy/")) {
+    return NextResponse.next();
   }
 
   return intlMiddleware(request);
