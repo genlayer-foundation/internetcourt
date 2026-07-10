@@ -35,6 +35,9 @@ export async function Footer() {
           <Link href="/faq" className={linkClasses}>
             {t("faq")}
           </Link>
+          <Link href="/privacy" className={linkClasses}>
+            {t("privacy")}
+          </Link>
           <a href="mailto:ivan@genlayer.foundation" className={linkClasses}>
             {t("contact")}
           </a>

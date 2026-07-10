@@ -4,6 +4,10 @@
 
 ## In Progress
 
+### Privacy Policy page (/privacy) — static, English-only
+- Source: `Privacy Policy - Internet Court Skills July 9 2026.docx` (GenLayer Foundation legal copy).
+- DONE (uncommitted, tsc clean, 2026-07-09): new `src/app/[locale]/privacy/page.tsx` renders the full policy as HARDCODED JSX (never touched by the translate pipeline, English by construction). Lives under `[locale]` so `/privacy` + `/es|ko|zh|ru/privacy` all return 200 with the same English text (no 404, sitemap/hreflang stay valid). On non-en locales a subtle italic note "This Privacy Policy is available in English only." shows above the body. Footer got a "Privacy" link (site-links column, between FAQ and Contact); only new message key is `footer.privacy`="Privacy" (label only). Em dashes from the docx converted to parens/colons per the hard no-em-dash rule (title clause + service-provider list). Metadata hardcoded English. NOT committed, NOT deployed.
+
 ### Brand restyle — apply TIC one-pager look and feel site-wide (Pablo)
 - Apply the Internet Court brand system (from the one-pager at `/Users/pdepablo/Documents/02 Work/01 GenLayer/07 Internet Court/00 TIC Files/One Pager/index.html`) to the whole frontend: paper `#f7f4ec` background, ink `#1c1a16`, muted `#6c665a`, band `#efe9da`, lines `#d9d3c4`/`#e7e1d4`, red `#dc2626`, oxblood accent `#c0362b`.
 - Fonts: DM Sans body + DM Mono labels (already wired). Headings: Martina Plantijn is the brand serif but Pablo will supply an alternative; interim = Spectral via a single `--font-serif-brand` swap point.
