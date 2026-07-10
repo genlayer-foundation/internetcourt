@@ -24,7 +24,7 @@ const GA_MEASUREMENT_ID =
   process.env.VERCEL_ENV === "production"
     ? "G-89MRCLMMC5"
     : process.env.VERCEL_ENV === "preview"
-      ? "G-JB6HWBHGF8"
+      ? "G-XGHQ9399SG"
       : null;
 
 const dmSans = DM_Sans({
