@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { DM_Sans, DM_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -18,6 +19,13 @@ import {
   websiteSchema,
   softwareApplicationSchema,
 } from "@/lib/structured-data";
+
+const GA_MEASUREMENT_ID =
+  process.env.VERCEL_ENV === "production"
+    ? "G-89MRCLMMC5"
+    : process.env.VERCEL_ENV === "preview"
+      ? "G-JB6HWBHGF8"
+      : null;
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -126,6 +134,24 @@ export default async function LocaleLayout({
             <Footer />
           </div>
         </NextIntlClientProvider>
+        {GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script
+              id="gtag-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`,
+              }}
+            />
+          </>
+        )}
       </body>
     </html>
   );
