@@ -25,5 +25,5 @@ SEO/GEO optimization merged: metadata, structured data, sitemap, and robots. Wat
 
 ## Before release
 
-### Finalize logos and regenerate blog infographics (pending)
-Before releasing, update the partner logos, finalizing provisional ones such as NEAR and Starknet, then regenerate the blog infographic images (`agentic-stack.png` and `founding-members-by-layer.png`) per `frontend/tools/blog-images/README.md`. Also re-export the stale one-pager PDFs.
+### Regenerate blog infographics and re-export PDFs (pending)
+Partner logos are finalized (NEAR and Starknet confirmed OK). Regenerate the blog infographic images (`agentic-stack.png` and `founding-members-by-layer.png`) per `frontend/tools/blog-images/README.md`, and re-export the stale one-pager PDFs.
