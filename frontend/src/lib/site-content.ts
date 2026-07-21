@@ -70,7 +70,7 @@ export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
   { name: "LI.FI", src: "/partners/lifi.svg", white: true },
   { name: "OpenServ", src: "/partners/openserv.svg" },
   { name: "UMA", src: "/partners/uma.svg" },
-  { name: "Humanode", src: "/partners/humanode.png", white: true },
+  { name: "Humanode", src: "/partners/humanode.svg" },
   { name: "Privy", src: "/partners/privy.svg" },
   { name: "AIVM", src: "/partners/aivm.svg", white: true },
   { name: "Chutes", src: "/partners/chutes.svg" },
@@ -133,7 +133,7 @@ export const FOUNDING_MEMBERS_GRID: Partner[] = (
     ["Chutes", 13.75],
     ["ChainGPT", 16],
     ["OpenServ", 22],
-    ["Humanode", 13],
+    ["Humanode", 15],
     ["Humanity Protocol", 21.9],
   ] as const
 ).map(([name, gridHeight]) => ({ ...PARTNERS_BY_NAME[name], gridHeight }));

@@ -4,6 +4,15 @@
 
 ## In Progress
 
+### Humanode logo replaced with official brand asset (2026-07-21)
+- Old `frontend/public/partners/humanode.png` was a bare red triangle (logomark only, tiny inside a very wide mostly-empty canvas, aspect 7.9:1) flagged `white: true`, so it rendered as a small black triangle with no wordmark.
+- New asset: "Humanode Wordmark Bold Black.svg" from the brand Drive folder (`drive.google.com/drive/folders/1VzlxJyFOhbieyDZ5DinLfHKDHxjJQrIt`), mountain mark + HUMANODE wordmark, black on transparent, tight viewBox 131x22 (aspect 5.95:1). Saved as `partners/humanode.svg`; PNG deleted.
+- Website edits: `site-content.ts` src → `/partners/humanode.svg` and `white: true` dropped (asset is already black ink, so the standard `grayscale(1)` treatment applies); `gridHeight` 13 → 15 so rendered width (~89 units) sits mid-pack next to chainbase/zksync/humanity-protocol instead of the broken 13 tuned for the old empty canvas. `frontend/tools/blog-images/founding-members-by-layer.html` src + height (15 × SCALE 1.75 = 26.25px), `class="white"` removed.
+- internet-court-skill edits: `tests/buro-app/public/partners/humanode.svg` added (PNG deleted; `partnerLogos()` auto-discovers by directory read so no src wiring needed), `app/lib/data.ts` LOGO_GRID_HEIGHT 13 → 15 and "humanode" removed from WHITE_LOGOS.
+- Verified: no stale `humanode.png` refs in either repo, `npx tsc --noEmit` clean, headless-Chrome render confirms the logo reads at the same optical weight as its neighbours under the grid's grayscale/opacity treatment.
+- NOT touched: `/Users/rasca/Dev/genlayer/Internet Court one pager/logos/{humanode/,partners/humanode.png}` (a third copy, outside both repos, feeding the one-pager PDF/HTML). Update there separately if the one-pager gets regenerated.
+- NOT committed in either repo.
+
 ### Soften consortium/founding-member framing in first article (2026-07-13, MetaMask PR feedback)
 - MetaMask PR flagged that coverage calls MetaMask a consortium member; only approved framing is "GenLayer is using the MetaMask Smart Accounts Kit... as part of Internet Court".
 - User decisions: text-only fix in `internet-court-agentic-commerce.mdx` (all 5 locales). Do NOT touch line 39 Payments bullet, do NOT remove MetaMask from any list/logo grid, do NOT touch press-release.mdx, site-content.ts, or the founding-members PNG.
