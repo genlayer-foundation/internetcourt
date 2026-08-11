@@ -51,6 +51,9 @@ export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
   { name: "x402", src: "/partners/x402.svg", white: true },
   { name: "ZKsync", src: "/partners/zksync.svg" },
   { name: "OKX", src: "/partners/okx.svg" },
+  // Official horizontal lockup: gradient mark + white wordmark, so it takes the
+  // `white` (brightness(0)) treatment to read as dark ink on the light rows.
+  { name: "Solana", src: "/partners/solana.svg", white: true },
   { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
   { name: "Nansen", src: "/partners/nansen.png" },
   { name: "0G Labs", src: "/partners/0g-labs.svg" },
@@ -96,7 +99,7 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
 );
 
 /**
- * Founding members laid out as a 10-column grid (10 / 10 / 8) in reading order
+ * Founding members laid out as a 10-column grid (11 / 10 / 8) in reading order
  * (left to right, top to bottom). `gridHeight` is the logo's
  * height within a 40px-tall Figma cell — PartnerGrid multiplies it by a single
  * SCALE factor so the relative sizing is preserved. Each entry reuses the
@@ -104,10 +107,11 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
  */
 export const FOUNDING_MEMBERS_GRID: Partner[] = (
   [
-    // Row 1 (10)
+    // Row 1 (11)
     ["GenLayer", 24],
     ["MetaMask", 22],
     ["OKX", 14],
+    ["Solana", 16],
     ["NEAR", 16],
     ["Starknet", 16],
     ["x402", 16],
