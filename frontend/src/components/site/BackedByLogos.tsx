@@ -153,7 +153,7 @@ function BoxMarqueeRow({
 /**
  * "Backed by" double marquee: TWO counter-scrolling lines of logo boxes (no
  * label; the `home.hero.backedBy` message key still exists but is not
- * rendered). Row 1 (the 8 primary founding members) scrolls right-to-left;
+ * rendered). Row 1 (the primary founding members) scrolls right-to-left;
  * row 2 (the secondary members) scrolls left-to-right, mirroring the site's old double
  * marquee. Every logo is always somewhere in the track (no swapping or
  * crossfade), and the rows run full-bleed edge to edge with no fade masks,
