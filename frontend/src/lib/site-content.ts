@@ -85,6 +85,13 @@ export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
   { name: "NEAR", src: "/partners/near.svg" },
   { name: "Starknet", src: "/partners/starknet.svg" },
   { name: "Kleros", src: "/partners/kleros.svg" },
+  // Official horizontal lockup. The wordmark is already black, but the yellow
+  // (#FCD000) accents are structural: one of them is the left diagonal of the
+  // "w". `grayscale(1)` maps that yellow to a near-white grey that drops out on
+  // the light rows and breaks the letterform, so this takes the `white`
+  // (brightness(0)) treatment instead, which flattens the accents into the same
+  // dark ink and keeps the word intact.
+  { name: "Yellow", src: "/partners/yellow.svg", white: true },
 ];
 
 /** Combined list (all founding members). */
@@ -99,7 +106,7 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
 );
 
 /**
- * Founding members laid out as a 10-column grid (11 / 10 / 8) in reading order
+ * Founding members laid out as a 10-column grid (12 / 10 / 8) in reading order
  * (left to right, top to bottom). `gridHeight` is the logo's
  * height within a 40px-tall Figma cell — PartnerGrid multiplies it by a single
  * SCALE factor so the relative sizing is preserved. Each entry reuses the
@@ -107,7 +114,7 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
  */
 export const FOUNDING_MEMBERS_GRID: Partner[] = (
   [
-    // Row 1 (11)
+    // Row 1 (12)
     ["GenLayer", 24],
     ["MetaMask", 22],
     ["OKX", 14],
@@ -119,6 +126,11 @@ export const FOUNDING_MEMBERS_GRID: Partner[] = (
     ["ZKsync", 18.9],
     ["Nansen", 16],
     ["Kleros", 16],
+    // Lowercase lockup: its ascenders and descender fill the whole viewBox, so
+    // it needs a taller unit than a cap-height wordmark to read at the same
+    // size. At 3.18:1 the width never binds (69px in the 120px marquee box,
+    // 111px in the ~150px grid cell), so the unit is set for optical weight.
+    ["Yellow", 20],
     // Row 2 (10)
     ["Privy", 16.9],
     ["AntSeed", 20],
