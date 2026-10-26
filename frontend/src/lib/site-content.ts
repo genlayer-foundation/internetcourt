@@ -42,7 +42,7 @@ export type Partner = {
 };
 
 /**
- * Headline founding members — rendered large in the top marquee row. Mirrors
+ * Headline founding members, rendered large in the top marquee row. Mirrors
  * the prominent first row of the Internet Court one-pager.
  */
 export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
@@ -57,10 +57,24 @@ export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
   { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
   { name: "Nansen", src: "/partners/nansen.png" },
   { name: "0G Labs", src: "/partners/0g-labs.svg" },
+  // Neither Certisyn nor Blocksee ships a logo file, so both assets are their
+  // own nav-bar SVG geometry copied verbatim, with the wordmark outlined from
+  // the real font (Inter 300 and Bricolage Grotesque 800). Replace with an
+  // official file when the partner provides one.
+  // Certisyn's nav lockup is all light fills on dark (pale blue peaks, #f0ede4
+  // wordmark), so it takes the `white` (brightness(0)) treatment to read as
+  // dark ink on the light rows.
+  { name: "Certisyn", src: "/partners/certisyn.svg", white: true },
+  // Blocksee's nav wordmark is white on navy, which would vanish under
+  // `grayscale(1)`, but its mark is a solid hexagon with a dark inner hexagon,
+  // so brightness(0) would collapse it into a blob (the Starknet/Anoma case).
+  // The asset therefore sets the wordmark in Blocksee's own navy (#0E0B3D,
+  // the same colour as the inner hexagon) and keeps the default treatment.
+  { name: "Blocksee", src: "/partners/blocksee.svg" },
 ];
 
 /**
- * Remaining founding members — rendered smaller in the second marquee row,
+ * Remaining founding members, rendered smaller in the second marquee row,
  * scrolling the opposite direction.
  */
 export const FOUNDING_MEMBERS_SECONDARY: Partner[] = [
@@ -106,15 +120,17 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
 );
 
 /**
- * Founding members laid out as a 10-column grid (12 / 10 / 8) in reading order
- * (left to right, top to bottom). `gridHeight` is the logo's
- * height within a 40px-tall Figma cell — PartnerGrid multiplies it by a single
+ * Founding members in reading order (left to right, top to bottom), grouped
+ * as the Figma rows (14 / 10 / 8). PartnerGrid itself wraps them 6 per row
+ * on desktop and 3 on mobile, centering any trailing partial row.
+ * `gridHeight` is the logo's height within a 40px-tall Figma cell:
+ * PartnerGrid multiplies it by a single
  * SCALE factor so the relative sizing is preserved. Each entry reuses the
  * existing Partner object (same src/iconSrc) with its grid height attached.
  */
 export const FOUNDING_MEMBERS_GRID: Partner[] = (
   [
-    // Row 1 (12)
+    // Row 1 (14)
     ["GenLayer", 24],
     ["MetaMask", 22],
     ["OKX", 14],
@@ -131,6 +147,11 @@ export const FOUNDING_MEMBERS_GRID: Partner[] = (
     // size. At 3.18:1 the width never binds (69px in the 120px marquee box,
     // 111px in the ~150px grid cell), so the unit is set for optical weight.
     ["Yellow", 20],
+    // Certisyn and Blocksee are both ~4.7:1 and land at about the grid cell
+    // width at 18, which reads at the same weight as Kleros and Yellow beside
+    // them. Swept 14 to 24 side by side; past 18 the width clamps anyway.
+    ["Certisyn", 18],
+    ["Blocksee", 18],
     // Row 2 (10)
     ["Privy", 16.9],
     ["AntSeed", 20],
