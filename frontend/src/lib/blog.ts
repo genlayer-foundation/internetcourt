@@ -13,6 +13,8 @@ export type BlogPost = {
   tag?: BlogTag;
   updated?: string;
   author?: string;
+  /** True when the post embeds a <Livestream> card (it has a replay to watch). */
+  livestream: boolean;
   content: string;
 };
 
@@ -77,6 +79,7 @@ export function getPostBySlug(
     tag: data.tag as BlogTag | undefined,
     updated: typeof data.updated === "string" ? data.updated : undefined,
     author: typeof data.author === "string" ? data.author : undefined,
+    livestream: content.includes("<Livestream"),
     content,
   };
 }

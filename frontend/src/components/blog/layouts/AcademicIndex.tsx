@@ -43,6 +43,19 @@ export async function AcademicIndex({
                   <span className="text-[#dc2626]">{t(`tags.${post.tag}`)}</span>
                 )}
                 <span>{formatDate(post.date, locale)}</span>
+                {post.livestream && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1c1a16] py-[3px] pl-[5px] pr-2.5 text-[10px] text-[#f4efe2]">
+                    <span
+                      aria-hidden
+                      className="flex h-4 w-4 items-center justify-center rounded-full bg-[#dc2626]"
+                    >
+                      <svg viewBox="0 0 24 24" className="ml-px h-2.5 w-2.5 fill-white">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                    Livestream
+                  </span>
+                )}
               </div>
               <h3 className="font-heading text-2xl md:text-3xl leading-snug text-[#1c1a16] group-hover:text-[#dc2626] transition-colors">
                 {post.title}
