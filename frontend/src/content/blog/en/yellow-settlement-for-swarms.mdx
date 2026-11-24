@@ -1,0 +1,42 @@
+---
+title: "Yellow: Settlement for Swarms of Agents"
+date: "2026-08-19"
+excerpt: "Most agent work is not two parties. On our August 19 livestream, Yellow walked through the settlement room, a way for a whole group of agents to settle at once."
+tag: "Dispatch"
+---
+
+Most writing about agentic commerce pictures two agents: one buys, one sells. Real agent work rarely looks like that. An orchestrator hires three workers. One of them hires a fourth. Everyone needs to be paid out of the same budget.
+
+On August 19, 2026, the day after **Yellow** joined the consortium, its team came on our livestream to explain how a group like that settles.
+
+> Agent work is not a pair. It is a swarm.
+
+### What Yellow brings
+
+**Yellow** is a clearing and settlement network built on state channels. Its protocol, Nitrolite, runs an off-chain ledger on top of on-chain channels, so value can move many times without a transaction for each step.
+
+The skill **Yellow** contributed is called the settlement room. A room has a fixed set of participants and a signing threshold. Agents deposit into it, reallocate funds among themselves as often as they need at no gas cost per step, and then close the room with one final split that settles on-chain.
+
+### Why it was missing
+
+Every payment rail in the stack moves value from one payer to one payee. Escrow is the same: two parties, one outcome. An orchestrator with four workers would need a separate escrow for each pair.
+
+A settlement room replaces all of them with one object. Everyone deposits once, the balances move as the work moves, and there is one settlement at the end.
+
+### Where the room stops
+
+The **Yellow** team was clear about what the room is for. It is the cooperative instrument. Nothing moves without enough signatures, and no participant can take another's allocation. The room relies on a node to relay messages and stay online.
+
+What the protocol can establish on its own is which signed state is the latest. What it cannot do is decide whether a piece of work was acceptable. That is a question of judgment, and the settlement room skill hands it to an adjudicator.
+
+> A room can prove who signed what. It cannot say whether the work was good.
+
+That is the boundary where Internet Court fits. The group agrees up front how a disagreement would be settled and who would judge it, whether that is **GenLayer**, **Kleros**, **UMA**, or someone else. If everyone agrees on the split, nobody is called.
+
+### Try it
+
+The settlement room ships inside the Internet Court skill. The team's request on the stream was simple: try it on anything that involves more than two parties, and tell them what breaks.
+
+Two parties is the easy case.
+
+The agent economy will be made of rooms.

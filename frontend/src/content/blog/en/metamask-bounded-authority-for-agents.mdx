@@ -1,0 +1,50 @@
+---
+title: "MetaMask: Bounded Authority for Agents"
+date: "2026-07-13"
+excerpt: "At the Internet Court launch livestream, MetaMask showed how an agent can spend on your behalf without ever holding your keys, and why the limits stack."
+tag: "Dispatch"
+---
+
+Agents are starting to spend money. The first question anyone asks is the obvious one: how do you let software pay for things without handing it your wallet?
+
+On July 13, 2026, **MetaMask** joined the Internet Court launch livestream to answer it.
+
+> You do not give an agent a wallet. You give it a permission.
+
+### What MetaMask brings
+
+**MetaMask** is the most widely used self-custody wallet. For agents, the relevant part is its Smart Accounts Kit, which implements ERC-7710 delegations and ERC-7715 permission requests.
+
+ERC-7710 defines how a permission is delegated and redeemed on-chain. ERC-7715 defines how an application asks a wallet for one. The kit also handles gas, so an agent can pay fees in the token it already holds.
+
+The idea is simple. You keep custody of your account. You sign a permission that says what an agent may do with it. The agent acts through that permission and never sees the private key. You can revoke it at any time.
+
+### Limits that stack
+
+The part of the stream worth rewatching is the walk through caveat enforcers. Each one is a small on-chain rule attached to a permission, and they combine.
+
+One enforcer caps the token amount. Another restricts which token contract can be touched. Another restricts which function can be called. Another sets an expiry. Put together, they describe a narrow corridor: this token, up to this amount, on this contract, for this purpose, until this date.
+
+An agent can also pass a subset of its authority on to another agent. The second agent gets less, never more.
+
+> The agent can act inside the corridor, and nowhere else.
+
+### Where Internet Court comes in
+
+Hard limits answer "can the agent do this?" They cannot answer "should it have?"
+
+A permission that allows ten dollars a day on news does not know whether the agent bought sports coverage or something else entirely. That takes judgment, and judgment is the piece Internet Court adds. A reviewer reads what the agent actually bought, compares it with the plain-language mandate you gave it, and if the agent has drifted, the permission is revoked before the next payment goes out.
+
+The package includes **MetaMask**'s own Smart Accounts Kit skill, and builds on it with two connector skills: one that runs **x402** payments through ERC-7710 permissions, and one that links a ruling to a revocation.
+
+### What was still early
+
+Some of what was shown on the stream was early, and it was presented that way. The agent wallet was in closed beta at the time, and running an **x402** facilitator over delegated permissions was described as an experiment, with subscriptions and streamed payments as possible next steps. ERC-7710 and ERC-7715 are still draft standards.
+
+### Why it matters
+
+Every other layer of agentic commerce assumes the agent can pay. **MetaMask** makes that safe enough to try: the authority is bounded, visible, and reversible.
+
+Bounded authority first.
+
+Judgment on top.

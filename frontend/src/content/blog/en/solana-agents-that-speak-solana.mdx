@@ -1,0 +1,56 @@
+---
+title: "Solana: Agents That Speak Solana"
+date: "2026-08-12"
+excerpt: "Solana joined the consortium and brought more than 50 skills with it. On our August 12 livestream, we talked about what agents are buying, why skills beat SDKs, and what still has to be judged."
+tag: "Dispatch"
+---
+
+Agents are already spending money. Not in demos: on-chain, at volume, every day. A large share of that activity runs on **Solana**.
+
+On August 12, 2026, the day after **Solana** joined the consortium, the **Solana** Foundation came on our livestream to talk about where that activity is going.
+
+> Install one skill, and your agent speaks Solana.
+
+### What Solana brings
+
+The Internet Court skill now includes more than 50 **Solana** skills. Some come from the **Solana** Foundation, and most come from the community: **Jupiter** for swaps, **Metaplex** for the agent registry, **MagicBlock** for delegated authority, **QuickNode** for **x402**, and others.
+
+Underneath is a chain built for volume: blocks in well under a second and fees of a fraction of a cent. **Solana** is one of the most active networks for **x402** payments, and the **Solana** Foundation is a founding member of the **x402** Foundation.
+
+**Solana** also ships an agent registry, which gives an agent an on-chain identity and a reputation that follows it around. It is designed to interoperate with ERC-8004 on Ethereum. The registry includes a hook for independent validation, and the Foundation has deliberately left it open, so different teams can experiment with how an agent's behavior gets checked.
+
+One more thing sets **Solana** apart for agent builders, in the team's words: you can use programs that are already deployed and audited without deploying your own. An agent can work at the application level from day one.
+
+### What agents are actually buying
+
+According to the **Solana** Foundation, most agent spending today is inference, paid for over **x402**.
+
+Two things are coming next. One is agents buying their own compute and storage, which opens the door to agents that sustain themselves. The other is paying for an agent that works over data its owner will never expose through an API. Code is no longer the moat. Data is, and an agent is how a company can sell answers without giving the data away.
+
+### Why skills, not SDKs
+
+A skill is a file that teaches an agent how to use something. The **Solana** team's reason for choosing skills over one more SDK is that a skill is interpreted. It carries instructions about how things should be done alongside the code that does them, so the agent has context, not just function calls.
+
+A curated set matters too. Nobody has to reinvent the same integration, and nobody has to wonder whether a copy of a skill was quietly changed.
+
+One lesson from our own side: skills from different teams do not know about each other. Agents often need a small connector that explains how the output of one skill becomes the input of the next. Writing those connectors is much of our current work.
+
+### What still has to be judged
+
+The registry leaves room for judgment, and the conversation went there.
+
+Everything that can be deterministic should be. Checking a number is cheaper, faster, and fully reliable in code. But most real agreements include terms that code cannot check. "A nicely designed front end" is not arbitrary, and reasonable people would mostly agree on it, yet no formula decides it.
+
+> Subjective is not the same as arbitrary.
+
+Reputation alone does not cover that gap. A reputation works until the one high-stakes deal where it is worth spending, and an anonymous identity can always start again from zero.
+
+So two agents agree up front on who would judge a disagreement, whether that is **GenLayer**, **Kleros**, **UMA**, or someone else, and they can stack those options, from fast and cheap to slower and stronger.
+
+### What comes next
+
+Asked about the next twelve months, the **Solana** side gave one answer: sovereign agents, which pay their own way and answer to no single operator. Those agents will need contracts, and somewhere to take a dispute.
+
+Identity, a wallet, and a way to pay.
+
+Then a way to settle it when the deal goes wrong.

@@ -1,0 +1,46 @@
+---
+title: "Blocksee: Proof of What Was Signed"
+date: "2026-09-23"
+excerpt: "Every dispute starts from the agreement. On our September 23 livestream, Blocksee showed how to seal one so a third party can check it later."
+tag: "Dispatch"
+---
+
+When two agents disagree about a deal, the first question is never who is right. It is what they agreed to. If that record lives with one of the parties, the argument is lost before it starts.
+
+On September 23, 2026, **Blocksee** joined our livestream to demo the piece that fixes the record. It has since joined the consortium.
+
+> Before anyone can judge a deal, someone has to prove what the deal was.
+
+### What Blocksee brings
+
+**Blocksee** is document signing with an on-chain proof. A document is signed, a cryptographic hash of it is anchored on-chain, and anyone can later check who signed it and when, without an account.
+
+Two details from the demo stood out.
+
+The first is price. Signing a document costs one dollar, which puts a verifiable signature within reach of deals too small for a lawyer.
+
+The second is Proof of Understanding. Before a signature unlocks, the signer answers questions about the document, and the result is recorded with the signature. It is evidence that the terms were read and understood, not just clicked through.
+
+The team was clear that the product shown was a beta, anchoring to a test network on the day.
+
+### What a signature cannot say
+
+A sealed agreement proves what was signed, that it was understood, and that nobody changed it afterwards.
+
+It does not prove the work was done, or that what was paid for was delivered. That is the gap Internet Court closes. **Blocksee** fixes the agreement. The adjudicator the parties chose decides whether it was honored.
+
+> A signature proves the promise. It does not prove the performance.
+
+### One practical detail for builders
+
+In its private mode, **Blocksee** stores only a hash on-chain, not the document. That matters when a case reaches an adjudicator.
+
+A hash alone is not evidence a jury can read. One of the parties has to submit the signed document itself. The adjudicator then recomputes the hash and checks that it matches the one recorded on-chain. If it matches, the document is the one both sides signed. If it does not, it is not evidence.
+
+### What comes next
+
+On the stream we proposed a joint demo that runs the full path: seal the agreement with **Blocksee**, do the work, then verify that the delivered work falls inside the terms that were signed. **Blocksee** already runs an MCP server that lets agents draft, send, and seal agreements. A published agent skill is the next step.
+
+Every dispute starts from the agreement.
+
+It helps when nobody can argue about what it said.

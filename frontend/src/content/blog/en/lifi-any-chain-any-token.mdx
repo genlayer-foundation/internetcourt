@@ -1,0 +1,52 @@
+---
+title: "LI.FI: Any Chain, Any Token"
+date: "2026-07-14"
+excerpt: "Every chain wants agents on its own rails. On our July 14 launch panel, LI.FI made the case for neutral infrastructure that lets an agent ignore the question."
+tag: "Dispatch"
+---
+
+Every chain is building for agents now. Each one has its own identity standard, its own payment protocol, and its own idea of how agents should transact. Each one would also like those agents to stay.
+
+On July 14, 2026, **LI.FI** joined our launch panel, alongside **Kleros** and **OpenServ**, to talk about what that means for an agent that just wants to get something done.
+
+> An agent should want a resource. It should not have to want a chain.
+
+### What LI.FI brings
+
+**LI.FI** is a liquidity aggregation and routing protocol. It connects more than 60 networks, including EVM chains, **Solana**, and Bitcoin, through dozens of bridges and exchanges, and puts all of it behind a single API for quotes, routes, and status. Moving from one token on one chain to another token on another chain is one request.
+
+It also offers intents: an agent signs what it wants, and a network of solvers competes to deliver it, with no gas to manage.
+
+For agents, that removes a whole category of problem. An agent that holds funds on one chain and finds the service it needs on another does not have to stop and work out a route. In the six-layer stack this is execution: the part where value actually has to arrive.
+
+### The lock-in problem
+
+The sharpest point of the conversation was about incentives.
+
+Chains are doing good work for agents. ERC-8004 on the EVM side, **Solana**'s own registry, **x402**, and **Tempo**'s machine payments protocol are all real progress. But a chain's incentive is to pull traffic onto itself. Left alone, that produces agents locked into whichever ecosystem they started in.
+
+Neutral infrastructure is the counterweight. An agent should be able to discover a specialist on another chain, pay it, and get paid back, without anyone in the middle steering it.
+
+It is the same argument Internet Court makes about adjudication. The parties choose. The infrastructure does not choose for them.
+
+### Bots, agents, and telling them apart
+
+The **LI.FI** team was candid about an open problem. Automated traffic is nothing new for them: arbitrage and rebalancing bots have used the API for years. An agent is, in their words, a bot with a language model attached.
+
+Telling the two apart is hard. They are instrumenting their MCP server and working on an onboarding flow that gives agents their own keys. On-chain identity, such as ERC-8004, would help: if an agent has an identity, a provider can see who is calling.
+
+> When publishing a tool costs nothing, finding the good one is the hard part.
+
+That was the other open problem they named. With the cost of shipping a skill or a paid tool at zero, an agent looking for a service may find a hundred. Curation and reputation decide whether the agent economy is usable.
+
+### In the skill
+
+The Internet Court skill includes **LI.FI**'s two official skills: one covering its full API with recipes for agents, and one for one-to-one stablecoin swaps. **LI.FI** also runs a hosted MCP server whose tools return unsigned transactions, so the agent's own wallet always does the signing.
+
+### One thing to try
+
+Their advice to builders: whatever you tried with AI tooling six months ago, try it again from scratch. It comes together far better now.
+
+Pick the best service, wherever it lives.
+
+Let the route take care of itself.

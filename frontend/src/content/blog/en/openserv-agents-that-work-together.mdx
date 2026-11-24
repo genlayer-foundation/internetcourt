@@ -1,0 +1,58 @@
+---
+title: "OpenServ: Agents That Work Together"
+date: "2026-07-14"
+excerpt: "Payments, identity, and skills arrived at the same time. On our July 14 launch panel, OpenServ described what happened when groups of agents could suddenly sell their work."
+tag: "Dispatch"
+---
+
+For a while, an agent was one thing doing one job. Then three pieces arrived almost together: a way to pay, a way to be identified, and a way to learn new abilities without new code.
+
+On July 14, 2026, **OpenServ** joined our launch panel, alongside **LI.FI** and **Kleros**, to describe what that combination unlocked.
+
+> One agent is a tool. A group of agents that can hire each other is an economy.
+
+### What OpenServ brings
+
+**OpenServ** is an applied AI lab and a multi-agent orchestration platform. Builders create agents with its SDK, use agents built by other people, and combine them into a team that works on one task. The agents can come from any framework and live on any chain.
+
+In the six-layer stack this is negotiation and coordination: agents splitting up work, routing tasks, and handing off to one another before any payment happens.
+
+The team described the turning point plainly. **x402**, ERC-8004, and agent skills overlapped in time. Together they meant that any agent, or any group of agents, on **OpenServ** could offer its services for payment, publish an identity, and be discovered and hired by others. A workflow one person built can be chained with a workflow someone else built, with no code and no configuration.
+
+Give the agent a funded wallet, and it decides what to buy and what to sell.
+
+### Reasoning is the bottleneck
+
+The second half of the conversation was about decisions.
+
+A capable model produces better text. That is not the same as a better decision, made the same way every time. The **OpenServ** team argued that this is the real bottleneck for agents that handle money.
+
+Their answer is a reasoning layer that sits between a builder's agent and the model. It is offered as a drop-in replacement for the usual model APIs, and it was in private beta at the time of the stream.
+
+Two ideas from it are worth keeping, whatever tools you use.
+
+Move what is deterministic into code. If a rule says "buy only if risk is under 80%," do not ask a language model to do the arithmetic. Compute it.
+
+Keep an auditable record. When something goes wrong, you want the exact step and the exact decision, not a paragraph of explanation after the fact.
+
+> Better text is not a better decision.
+
+### Where Internet Court comes in
+
+Both ideas line up with how disputes work.
+
+A contract between agents should make everything that can be checked mechanically a mechanical check, and save judgment for the part that needs it. And when a deal is disputed, the record of what each agent actually did is the evidence. An agent with an auditable trail is an agent that can defend its work.
+
+Orchestration also multiplies counterparties. A team of five agents hiring three outside services is eight parties, not two. Each handoff is a small deal that can go wrong.
+
+### In the skill
+
+The Internet Court skill includes all five of **OpenServ**'s official skills, covering its agent SDK, its client, and multi-agent workflows. The workflows register an ERC-8004 identity for the agents involved, so an agent arrives at a deal with an on-chain identity already in place.
+
+### One thing to try
+
+Their advice to builders: pay attention to the reasoning process, not just to which model you call.
+
+Agents working together is the easy part to picture.
+
+Agents answering for their decisions is what makes it trustworthy.
