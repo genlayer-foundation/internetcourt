@@ -1,0 +1,85 @@
+---
+title: "1inch: The Deal Around the Swap"
+date: "2026-11-23"
+excerpt: "Agents can already swap. On our November 23 livestream, 1inch explained what a swap can prove, what it cannot, and why the rest of the deal belongs somewhere else."
+tag: "Dispatch"
+---
+
+Swapping is the part of agentic commerce that already works. An agent can ask for a trade in plain language, a route is found, a wallet signs, and the tokens arrive.
+
+On November 23, 2026, **1inch** joined us on a livestream to mark its entry into the Internet Court consortium. The conversation started from a prediction made inside **1inch** this year: by 2030, agents, not humans, will execute most swaps. So we asked what is still missing before two agents can do business with no human watching.
+
+Their answer was not the swap. It was everything around it.
+
+> The swap exists. What is missing is the deal around the swap.
+
+### What 1inch is
+
+**1inch** started in 2019 as the first aggregator for decentralized exchanges. It pools liquidity from many sources, and by pooling it, offers a better rate than any one of them. The routing is the same whether a person or an agent is asking.
+
+Three ways to swap matter for agents:
+
+- **Classic.** The trade is routed across liquidity sources for the best rate, and the wallet pays the gas.
+- **Fusion.** The user signs what they want. Third-party resolvers compete to fill the order and pay the gas themselves.
+- **Fusion+.** The same idea across chains, with no bridge in the middle.
+
+Around those sit a limit-order protocol, a shared-liquidity layer called **Aqua**, and a set of APIs for prices, balances, and history. All of it is reachable through one hosted MCP server, and the APIs can be paid per request over **x402**.
+
+### Why intents fit agents
+
+The **1inch** team spent the most time on **Fusion**, their intent-based swap, because its shape suits an agent.
+
+The agent does not build a route. It states an outcome: this much of one token for at least that much of another. Resolvers then compete to deliver it. The user pays no gas on-chain. That cost sits inside the rate the resolver offers, and the user still receives at least the minimum they signed for.
+
+State the outcome, and let someone else find the path. That is how an agent already works.
+
+Two caveats came with it. A fill is not guaranteed, since a resolver moves when the trade makes sense for it, and many resolvers work with just-in-time liquidity instead of holding large balances. And when orders come from machines, there are more of them and they are smaller.
+
+### What a swap can prove
+
+Cross-chain swaps on **1inch** are atomic. Both sides are held in escrow against the same secret, in hash time-locked contracts. Either the swap completes on both chains, or the funds are returned.
+
+That proves something useful: the trade matched what was signed.
+
+It does not prove that the work the payment was for got done. In the team's words, that is not a routing question.
+
+> A swap can show the trade matched what was signed. It cannot show the work was delivered.
+
+This is why **1inch** plugged in. With Internet Court, the rules of a deal are agreed before any tokens move. The swap inside the deal routes through **1inch**. The dispute, if there is one, goes to the adjudicator the two parties chose. The team called it a separation of concerns: they are the rails, and they do not want to be the judge.
+
+### Who signs
+
+The flow **1inch** ships today is deliberate. The agent proposes a swap, and the human approves it in their own wallet. **1inch** never holds a key.
+
+The alternative is an agent signing with its own key and nobody approving anything. The team was direct about that: today, it is the same as giving your key away.
+
+But approving every trade does not scale either. If agents are going to trade around the clock, at volume, a person cannot tap to confirm each fill. Where this should land is a limit set once: amounts, tokens, time frames, recipients. The key stays in the human's wallet, and the agent works inside the boundary.
+
+That is not fully here yet. Today the signature is still on each order, though a builder can already cap chains, pairs, slippage, and size.
+
+It is the same idea as the bounded authority we use elsewhere in the stack, where an agent gets a mandate instead of a wallet.
+
+### The limits, stated plainly
+
+We write down what each protocol does not do, because agents will rely on it.
+
+- One server. Every **1inch** skill runs through a server that **1inch** operates, and executing trades needs a **1inch** Business login.
+- Execution is the default. Once a wallet is paired, the tools execute unless told otherwise. An agent should ask for a quote only, until its mandate authorizes the trade.
+- The secret is held server-side. For cross-chain swaps, **1inch**'s backend reveals the secret that completes the trade. If it never does, the swap times out and refunds.
+- Not yet audited. **1inch**'s own legal notice says the AI code it publishes has not been independently audited.
+
+### In the skill
+
+The Internet Court package includes all nine of **1inch**'s official skills, MIT licensed and shipped as the **1inch** team wrote them. One is the hub that explains the server and how to connect. The others cover swaps, limit orders, wallet pairing, market data, wallet data, infrastructure, **Aqua**, and debugging.
+
+The skill also tells an agent when to pick it. **1inch** is the choice for a swap or an order, mainly on or between EVM chains. For a route across many bridges, it points to **LI.FI**. For liquidity native to **Solana**, it points to **Jupiter**.
+
+### One thing to build
+
+Their ask to builders was simple: try the **1inch** MCP server, build on **Aqua**, and send back what you find.
+
+We added one of our own. Put a reviewer between the agent and the signature: something that reads each proposed trade, compares it with the agent's stated objective, and only lets through the ones that fit. That is the step between a human approving every swap and nobody approving any.
+
+Swapping was never the hard part.
+
+Knowing the deal was kept is.
