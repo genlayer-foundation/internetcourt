@@ -54,6 +54,11 @@ export const FOUNDING_MEMBERS_PRIMARY: Partner[] = [
   // Official horizontal lockup: gradient mark + white wordmark, so it takes the
   // `white` (brightness(0)) treatment to read as dark ink on the light rows.
   { name: "Solana", src: "/partners/solana.svg", white: true },
+  // Official press-room wordmark (1inch_logo_black.svg), path data untouched,
+  // viewBox cropped to the artwork because the press file carries clear-space
+  // padding. It is a single #000 fill, so the default grayscale treatment
+  // already renders it as dark ink and no `white` flag is needed.
+  { name: "1inch", src: "/partners/1inch.svg" },
   { name: "BNB Chain", src: "/partners/bnb-chain.svg" },
   { name: "Nansen", src: "/partners/nansen.png" },
   { name: "0G Labs", src: "/partners/0g-labs.svg" },
@@ -121,7 +126,7 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
 
 /**
  * Founding members in reading order (left to right, top to bottom), grouped
- * as the Figma rows (14 / 10 / 8). PartnerGrid itself wraps them 6 per row
+ * as the Figma rows (15 / 10 / 8). PartnerGrid itself wraps them 6 per row
  * on desktop and 3 on mobile, centering any trailing partial row.
  * `gridHeight` is the logo's height within a 40px-tall Figma cell:
  * PartnerGrid multiplies it by a single
@@ -130,11 +135,17 @@ const PARTNERS_BY_NAME: Record<string, Partner> = Object.fromEntries(
  */
 export const FOUNDING_MEMBERS_GRID: Partner[] = (
   [
-    // Row 1 (14)
+    // Row 1 (15)
     ["GenLayer", 24],
     ["MetaMask", 22],
     ["OKX", 14],
     ["Solana", 16],
+    // Lowercase wordmark with ascenders and no descenders, 3.76:1 once cropped.
+    // Swept 16 / 18 / 20 against OKX, Solana and NEAR beside it: at 16 its
+    // x-height falls below Solana's caps, at 20 it overtops NEAR. 18 puts the
+    // x-height level with the neighbours and the width (119px desktop) stays
+    // inside the grid cell.
+    ["1inch", 18],
     ["NEAR", 16],
     ["Starknet", 16],
     ["x402", 16],
