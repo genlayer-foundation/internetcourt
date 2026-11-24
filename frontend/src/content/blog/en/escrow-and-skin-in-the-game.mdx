@@ -1,14 +1,56 @@
 ---
 title: "Escrow, and Why Skin in the Game Matters"
 date: "2026-06-19"
-excerpt: "Funds locked at the start of a contract are what make a verdict mean something. A short note on escrow, incentives, and honest agents."
+excerpt: "A payment proves that money moved. It does not prove the work was done. Escrow is what connects the two, and what gives a verdict something to act on."
 tag: "Opinion"
 ---
 
-A verdict is only worth as much as what stands behind it. An agent can claim anything — that the work shipped, that the terms were met, that the other side is wrong. Talk is free. Escrow is what turns a claim into a commitment.
+Agents have become very good at paying. With **x402**, an agent can settle a bill inside a single HTTP request, with no account, no invoice, and no human approving the charge.
 
-When a contract is created, funds are locked. Both parties have something at stake before a single piece of evidence is filed, and that changes the incentives immediately. Stalling costs you. Bluffing costs you. Walking away from a deal you agreed to costs you. The cheapest path becomes the honest one: do what you said, or settle the disagreement fairly.
+But a payment only proves that money moved. It says nothing about whether the work was done, whether it was done well, or whether the agent that paid got what it was promised. **x402** is deliberately simple: it settles the payment and leaves escrow, refunds, and disputes to the layers around it. It is not alone in that. Most of the payment stack assumes the deal goes right and passes the question of whether the work was any good down the line.
 
-That is also why agreement is the fast path. If both agents are acting in good faith, they confirm the outcome, the locked funds are released on resolution, and everyone moves on. No standoff, no delay. Escrow does not exist to punish; it exists to make the honest outcome the obvious one.
+For a call worth a fraction of a cent, that is fine. For anything where performance can fail, it is a problem.
 
-Skin in the game is not a slogan here; it is the mechanism. It is the difference between a network where agents promise and a network where agents perform. Lock the funds, and the verdict has teeth.
+> A payment proves that money moved. It does not prove the work was done.
+
+### A verdict needs something to act on
+
+Dispute resolution without escrow is an opinion. An adjudicator can rule that the provider failed to deliver, but if the provider already holds the money, the ruling changes nothing. The buyer is left with a correct verdict and an empty wallet.
+
+Escrow closes that gap. Funds are locked when the deal is formed and tied to the agreement itself, not sent as a blind transfer. This is what **Arkhai**'s Alkahest does for the stack: funds stay held until the agreed condition is fulfilled.
+
+The simplest version has two outcomes. Say an agent puts up three dollars for a logo. Releasing the escrow takes both parties: pay the designer, or refund the buyer. If they agree, they sign and it is done. If they do not, the adjudicator they chose when they made the deal checks the delivered work against the contract and signs one way or the other.
+
+> Put three dollars in for a logo, and you get the logo or the three dollars back.
+
+### Honest becomes the cheap option
+
+Locked funds change behavior before any dispute exists.
+
+Conflict is built into commerce, because each side is trying to get the most out of the deal. A provider that has not been paid yet wants the work accepted. A buyer whose money is already committed has no reason to stall. Bluffing costs time, stalling costs time, and neither one gets the funds released. The cheapest path for both sides is the honest one: do what you said, confirm the result, and move on.
+
+That is why most deals never reach an adjudicator. Escrow does not exist to punish anyone. It exists to make the fair outcome the obvious one.
+
+### It does not have to be all or nothing
+
+Escrow also allows outcomes that a plain payment cannot express: milestones, penalties, partial payments. An adjudicator can rule that the work deserves 80% of the price, not all of it.
+
+There is one condition. Those outcomes have to be written into the contract before the deal starts. A contract that only knows "pay" and "refund" cannot produce anything in between, and the same goes for renegotiation. If the two agents want the option, they agree to it up front.
+
+The same structure fits a service agreement. An agent buying inference or compute can agree on the service level in plain language and leave payment in escrow. If the service falls short, the contract checks how the provider actually performed over the period and settles accordingly: a refund, a discount, or credits. Today those clauses are mostly fiction for small customers, because claiming on one costs more than it returns.
+
+### Skin in the game works both ways
+
+The same idea applies to the agent you fund yourself. You do not hand it a wallet. You hand it bounded authority.
+
+With **MetaMask**'s ERC-7710 delegated permissions, the limits are enforced on-chain and they stack: this token, up to this amount, on this contract, calling this function, until this expiry. The agent cannot spend outside them.
+
+Hard limits cannot tell whether a purchase was a good idea, though. That takes judgment. So a reviewer run on **GenLayer** reads what the agent actually bought and compares it with a plain-language mandate, for example "sports news only." If the agent drifts, its permission is revoked, and the next payment is refused before any funds move. You keep the account and the remaining balance.
+
+In both cases the principle is the same. Value is committed under rules both sides can inspect, and it only moves when those rules say so.
+
+> Lock the funds, and the verdict has teeth.
+
+A network where agents promise is a payment network.
+
+A network where agents perform is an economy.

@@ -1,14 +1,66 @@
 ---
 title: "How the AI Jury Reaches a Verdict"
 date: "2026-06-18"
-excerpt: "When two agents disagree, GenLayer's validators read the evidence and return a verdict. Here's how the AI jury actually decides."
-tag: "Order"
+excerpt: "Most deals between agents never need a judge. For the ones that do: what the jury reads, who sits on it, how it votes, how long it takes, and what happens on appeal."
+tag: "Dispatch"
 ---
 
-Most cases never reach a jury. Every contract starts with two agents holding a key each, and when they agree on the outcome, those two keys settle it on their own. Two-of-two. No deliberation, no delay, no third party. Agreement is the fast path, and it is the common one.
+Most deals between agents never reach a jury. The work is delivered, both sides are satisfied, and the contract settles on its own. Agreement is the fast path, and it is the common one.
 
-The jury exists for the other case — the disagreement. When one agent says the statement is true and the other says it is not, the case escalates. Each side files its evidence under the evidence definitions set when the contract was created. Then GenLayer's validators read that evidence against the contract's guidelines and return a verdict.
+The jury exists for the other case. One agent says the terms were met. The other says they were not. Neither can settle it alone, and the amount at stake is usually far too small to justify a person reading the contract, the conversation, and the evidence.
 
-The guidelines are the rule of decision. The jury does not improvise a standard of its own; it applies the one both parties agreed to up front. It weighs the statement against the evidence and reaches one of three results — the statement is confirmed, denied, or left undetermined when the evidence does not support a confident answer. That last result matters. A jury that is allowed to say "we can't tell" is more honest than one forced to guess.
+> Nobody is going to review a case by hand over twenty cents.
 
-Neutrality is the whole point. The jury holds the resolution key, and it is not one of the parties. It has no stake in either side winning, and it only runs when the parties cannot settle themselves. The verdict it returns is the one the evidence and the guidelines produce — nothing more, nothing less.
+### The rules are written before the dispute
+
+The jury does not invent a standard. It applies the one both agents agreed to when they formed the deal.
+
+Every contract carries what the jury will later depend on: the terms themselves, the guidelines for judging them, and a definition of what each side may submit as evidence. Those are fixed up front, in plain language, while both parties still want the deal to happen. Nobody gets to rewrite the rules once they know which side of the argument they are on.
+
+Take a buyer agent that commissions a logo. The contract says the logo must be original, must contain no copyrighted material, must follow a set of brand guidelines, and must arrive in three file formats before a deadline. The provider delivers. The buyer finds what looks like copyrighted material in the design and opens a dispute, pointing at the exact clause.
+
+### What the jury reads
+
+The dispute travels as a package: the agreement, the contested clause, the delivered files, the timestamps, the escrow state, the messages between the two agents, and whatever each side offers to support its claim.
+
+The jury does not care about every branch the deal took along the way. Its question is narrow: given what the contract required and what the evidence shows, was the obligation met? It checks the work against the contract. It applies the agreed rules to the evidence. It does not offer an opinion of its own.
+
+A jury can only judge what it is given, so which sources count as trustworthy is also decided when the contract is written. Signed logs are stronger than screenshots. If only the hash of a signed agreement was anchored on-chain, one party submits the document and the jury checks it against that hash before relying on it.
+
+### Who sits on it
+
+When the agents have chosen **GenLayer** as their adjudicator, the jury is a panel of AI validators. A case starts with five. Each is run by a different operator and reasons with its own model.
+
+One validator, the leader, proposes a ruling. The other four assess the same evidence and vote on whether they agree. Votes are committed before they are revealed, so no validator can simply copy its neighbor. The ruling is accepted when a majority agrees: three out of five. If no majority forms, the leader rotates and the panel tries again.
+
+> No single model decides. A panel votes, and the majority has to agree.
+
+A panel does not make mistakes impossible. Models can still be wrong, and running several of them does not remove that risk. It makes a wrong answer much harder to produce, because different models run by different operators would all have to fail the same way. For the cases where they do, there is an appeal.
+
+### Appeals, timing, and cost
+
+An accepted ruling is not final straight away. It enters a 30-minute window in which anyone on the network can appeal by posting a bond. An appeal puts the case in front of a larger panel, roughly double the size each round: five validators, then eleven, then twenty-three. If the larger panel reaches a different result, the ruling changes and the appeal is rewarded.
+
+That gives honest numbers for speed. The first ruling takes a few minutes. With no appeal it is final 30 minutes later. If every round is appealed, each new window is half the length of the one before, and the whole process runs to about two hours.
+
+Cost is set up front as well. The parties choose how many leader rotations and how many appeal rounds to budget for when they create the contract, and whatever goes unused is refunded.
+
+**GenLayer** runs on testnet today, with mainnet to follow after its security audits.
+
+### What a ruling changes
+
+A verdict that stays on paper is worth nothing. The ruling is connected to the transaction, so it has consequences: a full release of escrow, a refund, a partial payment, a revision period, or any other outcome the agreement defined in advance.
+
+The jury is also allowed to come back without an answer. If every validator has taken a turn as leader and no majority forms, the result is undetermined. That matters. A judge permitted to say "we cannot tell" is more honest than one forced to guess, and because the contract already defines what happens in that case, both sides know in advance how an unclear dispute ends.
+
+### One adjudicator among several
+
+An AI jury is the right tool for qualitative, natural-language questions: was this work original, did this agent stay inside its mandate, does this deliverable match the brief. Other disputes suit other mechanisms. **Kleros** offers decentralized arbitration by human jurors. **UMA**'s optimistic oracle handles factual assertions.
+
+Not every disagreement needs the heaviest process, either. Think of the jury as a supreme court: not everything has to go there, only what matters most.
+
+Internet Court does not pick for you. The agents choose their adjudicator when they sign, and the skill makes sure the contract is structured around that choice.
+
+The verdict is the last step.
+
+The agreement that makes it possible is the first.

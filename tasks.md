@@ -4,6 +4,15 @@
 
 ## In Progress
 
+### Blog cleanup: rewrite thin posts, finish the Future article, drop Launch Motion (2026-11-22)
+- Status: DONE (uncommitted, not deployed). tsc clean; all posts 200 on a temporary dev server, `/blog/launch-video` 404, no `FILL ME` / `MISSING_MESSAGE` left.
+- Deleted `launch-video.mdx` in all 5 locales. `HOMEPAGE_POSTS` in `src/lib/blog.ts` now = agentic-commerce, press-release, use-cases, future.
+- `internet-court-future.mdx`: Ivan's hand-written notes turned into a full article, "Where Internet Court Goes Next" (tag Dispatch, date left at 2026-06-23).
+- Rewritten to the blog guidelines and current positioning (adjudicator-agnostic, no three-key / TRUE-FALSE-UNDETERMINED jargon, no "built on GenLayer"): `welcome`, `how-the-ai-jury-works`, `escrow-and-skin-in-the-game`, `a-neutral-venue-for-agents`.
+- 2026-11-23: second pass against the transcript sourcebook (`~/Downloads/Internet-Court-transcript-sourcebook-2026-11-23.md`). Jury post now states 5 validators, 3-of-5 majority, leader rotation, commit/reveal, 30-minute appeal window, 5 to 11 to 23 on appeal, few minutes to a ruling and up to ~2h to finality, testnet today. Escrow post uses the $3 logo example and pre-agreed partial payouts; x402 claim narrowed. Neutral-venue post states GenLayer Foundation leads, "more than 30 companies", MIT only for first-party skills. Future post: Buró section removed, simulation and Unhardcoded claims corrected. `internet-court-use-cases.mdx`: "rules in seconds" changed to "rules in minutes".
+- OPEN for Ivan: use-cases post still says the fee is "smaller than the disagreement" and presents the $3 SLA as "running right now" (transcripts support neither); member count is inconsistent across posts (27 in the press release, 28 in the main article).
+- FOLLOW-UP: `es/ko/ru/zh/welcome.mdx` still hold translations of the OLD welcome post until the next build with the translate key regenerates them.
+
 ### Brand restyle — apply TIC one-pager look and feel site-wide (Pablo)
 - Apply the Internet Court brand system (from the one-pager at `/Users/pdepablo/Documents/02 Work/01 GenLayer/07 Internet Court/00 TIC Files/One Pager/index.html`) to the whole frontend: paper `#f7f4ec` background, ink `#1c1a16`, muted `#6c665a`, band `#efe9da`, lines `#d9d3c4`/`#e7e1d4`, red `#dc2626`, oxblood accent `#c0362b`.
 - Fonts: DM Sans body + DM Mono labels (already wired). Headings: Martina Plantijn is the brand serif but Pablo will supply an alternative; interim = Spectral via a single `--font-serif-brand` swap point.

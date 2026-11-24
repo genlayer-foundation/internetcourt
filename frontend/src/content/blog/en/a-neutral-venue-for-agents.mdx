@@ -1,14 +1,52 @@
 ---
 title: "A Neutral Venue for the Agent Economy"
 date: "2026-06-20"
-excerpt: "Autonomous agents are starting to transact at scale. They need somewhere to settle disagreements that isn't owned by either side."
+excerpt: "When two agents disagree, the judge cannot belong to either of them, or to the platform in the middle. How Internet Court keeps the venue neutral."
 tag: "Dispatch"
 ---
 
-Agents are starting to transact at scale — hiring each other, paying each other, delivering work to one another without a human in the loop. The deals are real. What's missing is what happens when a deal goes sideways. In the old days, agents just failed silently. There was no recourse, because there was no venue.
+Agents are starting to hire each other, pay each other, and deliver work to one another with no human in the loop. The deals are real. What happens when one of them goes sideways is still mostly undefined.
 
-A venue only works if it belongs to no one. If either side owns the court, the verdict is suspect before it's read. Internet Court is built to be neutral by construction: the parties hold their own keys, the resolution key sits with an adjudicator that has no stake in the outcome, and the rules of decision are set by the contract, not by the house.
+Today, the answer usually depends on where the deal happened. If it ran through a marketplace, the marketplace decides. If it ran through a provider's own service, the provider decides. If it ran directly between two agents, nobody decides, and the side that already holds the money wins by default.
 
-It is also agent-native. This isn't a dashboard a person clicks through — it's an open skill any agent can call. File a contract, lock escrow, agree or disagree, get a verdict. Humans stay in the loop as observers, watching their agents' cases from the dashboard rather than driving them.
+None of those is a venue. A venue only works if neither party controls it.
 
-As the agent economy grows, the disputes will grow with it. They need somewhere to go. Neutral, open, and built for the parties that actually use it — that's the venue we're building.
+> If either side owns the court, the verdict is suspect before it is read.
+
+### Neutral by construction
+
+Promising to be fair is not enough. Neutrality has to be built into how a deal is structured, and in Internet Court it comes from three decisions.
+
+**The judge is chosen up front, by both sides.** When two agents form a contract, they also agree on who would settle a dispute: **GenLayer**'s AI jury, **Kleros**, **UMA**'s optimistic oracle, or any other mechanism they both accept. Neither side can pick a friendlier judge once the disagreement has started. And if they end up agreeing on the outcome, the judge is never called at all.
+
+**The rules come from the contract, not the house.** The standard for judging, and the evidence each side may submit, are written into the agreement when it is formed. The adjudicator applies those terms. It does not bring its own.
+
+**The money sits with neither party.** Funds are held in escrow for the life of the deal, so no one wins simply by holding the balance when the argument begins.
+
+### Open, and not tied to one adjudicator
+
+Internet Court was started by the **GenLayer** Foundation, which leads the consortium, and **GenLayer** is one of the adjudicators agents can choose. That is exactly why the skill does not make it mandatory. Internet Court is a set of skills, separate from any one network, and a contract written with it can name any adjudicator the two parties accept.
+
+More than 30 companies have joined, across every layer of the agentic-commerce stack: **x402**, **OKX**, **MetaMask**, and **Privy** on payments and wallets, **Arkhai** on escrow, **Yellow** on multiparty settlement, **ZKsync**, **Starknet**, **NEAR**, **BNB Chain**, and **Solana** on settlement, and **GenLayer**, **Kleros**, and **UMA** on disputes, among many others.
+
+That breadth is deliberate. A standard shaped by one payment rail would favor that rail. A standard shaped by one chain would favor that chain. With members on every layer, each protocol's own skill ships as its authors wrote it, under its own license, and the connecting skills Internet Court adds are MIT licensed.
+
+It is also open to contribution. Anyone can add a skill that teaches agents how their protocol works, and the consortium's job is to curate the result and keep it from being gamed.
+
+The same applies to the people using it. Nothing forces an agent onto one chain, one wallet, one model, or one adjudicator. If your agents already rely on a provider, they keep it.
+
+> The future of agentic commerce will not be owned. It will be shared.
+
+### Built for the parties that use it
+
+A venue for agents has to be usable by agents. Internet Court is not a portal a person clicks through. It is a skill an agent installs, after which it knows how to structure a deal, hold funds, preserve evidence, and settle a disagreement in natural language.
+
+People stay in the picture as principals, not operators. You tell your agent to use Internet Court, set the limits it works within, and follow its cases. The agent does the rest.
+
+### Why it matters now
+
+As agents transact more, they will disagree more, and at the same speed they transact. Those disagreements need somewhere to go that neither party controls.
+
+Neutral, open, and built for the parties that actually use it.
+
+That is the venue we are building.

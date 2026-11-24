@@ -85,8 +85,8 @@ export function getPostBySlug(
 export const HOMEPAGE_POSTS: string[] = [
   "internet-court-agentic-commerce",
   "press-release",
-  "launch-video",
-  "welcome",
+  "internet-court-use-cases",
+  "internet-court-future",
 ];
 
 export function getHomepagePosts(locale: string = DEFAULT_LOCALE): BlogPost[] {
